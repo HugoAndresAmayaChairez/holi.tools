@@ -407,7 +407,7 @@ const arrowRightIcon = getIconSvg("arrow-right", 24);
   /* === INPUT BAR CONTAINER === */
   .shared-input-container {
     position: relative;
-    top: 20px;
+    margin-top: 20px;
     z-index: 20;
     display: flex;
     align-items: center; /* Center vertically */
@@ -826,131 +826,7 @@ const arrowRightIcon = getIconSvg("arrow-right", 24);
   }
 </style>
 
-<script is:inline>
-  // === TYPE SWITCHER LOGIC ===
-  (function () {
-    // Prefetch WASM when the user starts interacting with inputs.
-    // This keeps initial page load lighter, but avoids a delay on the first render/export.
-    var wasmPrefetchPromise = null;
-    var wasmPrefetchScheduled = false;
-
-    function scheduleWasmPrefetchOnce() {
-      if (wasmPrefetchScheduled) return;
-      wasmPrefetchScheduled = true;
-
-      var run = function () {
-        if (wasmPrefetchPromise) return wasmPrefetchPromise;
-        wasmPrefetchPromise = import("../lib/wasm-qr-svg-loader")
-          .then(function (m) {
-            return m.getHoliQrSvg();
-          })
-          .catch(function () {
-            return null;
-          });
-        return wasmPrefetchPromise;
-      };
-
-      // Prefer idle-time prefetch so we don't compete with the first render.
-      if (typeof window !== "undefined" && window.requestIdleCallback) {
-        window.requestIdleCallback(
-          function () {
-            run();
-          },
-          { timeout: 1200 }
-        );
-      } else {
-        // Fallback: slight delay yields to input/render.
-        setTimeout(run, 200);
-      }
-    }
-
-    document.addEventListener(
-      "focusin",
-      function (e) {
-        // Only trigger for this component's input area
-        var t = e && e.target;
-        if (!t || !t.closest) return;
-        if (t.closest(".shared-input-container")) scheduleWasmPrefetchOnce();
-      },
-      { passive: true }
-    );
-
-    const typeSwitcherBtn = document.getElementById("type-switcher-btn");
-    const typeDropdown = document.getElementById("type-dropdown");
-    const typeIcon = document.getElementById("current-type-icon");
-    const typeLabel = document.getElementById("current-type-label");
-    const typeOptions = document.querySelectorAll(".type-option");
-    const templates = document.querySelectorAll(".input-template");
-
-    // Initialize dropdown icons with SVG (runs after icons.ts is loaded)
-    function initDropdownIcons() {
-      if (!window.getIconSvg) {
-        setTimeout(initDropdownIcons, 50);
-        return;
-      }
-      document
-        .querySelectorAll(".type-option .icon")
-        .forEach(function (iconEl) {
-          var iconName = iconEl.textContent.trim();
-          if (iconName && !iconEl.querySelector("svg")) {
-            iconEl.innerHTML = window.getIconSvg(iconName, 18);
-          }
-        });
-    }
-    initDropdownIcons();
-
-    // Select type from dropdown
-    typeOptions.forEach(function (opt) {
-      opt.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const type = opt.getAttribute("data-type");
-        if (type && window.setContentType) {
-          window.setContentType(type);
-        }
-        // Close dropdown
-        if (typeSwitcherBtn) typeSwitcherBtn.classList.remove("open");
-        if (typeDropdown) typeDropdown.classList.remove("open");
-      });
-    });
-
-    // Set content type function
-    window.setContentType = function (type) {
-      window.currentContentType = type;
-
-      // Auto-config icon/label from the dropdown option itself (supports localization)
-      const opt = document.querySelector(`.type-option[data-type="${type}"]`);
-      if (!opt) return;
-
-      const iconEl = opt.querySelector(".icon");
-      const labelEl = opt.querySelector("span:last-child");
-
-      const iconName =
-        opt.getAttribute("data-icon") ||
-        (iconEl ? iconEl.textContent.trim() : "link");
-      const labelText = labelEl
-        ? labelEl.textContent.trim()
-        : type.toUpperCase();
-
-      // Update button display with SVG icon
-      if (typeIcon && typeof window.getIconSvg === "function")
-        typeIcon.innerHTML = window.getIconSvg(iconName, 20);
-      if (typeLabel) typeLabel.textContent = labelText;
-
-      // Update active states in dropdown (if it exists)
-      typeOptions.forEach(function (o) {
-        o.classList.toggle("active", o.getAttribute("data-type") === type);
-      });
-
-      // Switch template
-      templates.forEach(function (tpl) {
-        tpl.classList.toggle("active", tpl.id === "template-" + type);
-      });
-
-      // Dispatch event for parent components to handle logic (like logo injection)
-      const event = new CustomEvent("qr-type-changed", {
-        detail: { type: type },
-      });
-      window.dispatchEvent(event);
-    };
-  })();
+<script>
+  // Type switcher logic extracted to input-area-logic.ts
+  import('../lib/input-area-logic');
 </script>
