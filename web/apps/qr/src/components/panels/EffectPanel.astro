@@ -37,6 +37,7 @@ const t = useTranslations(lang);
 <!-- Level 2: Effects -->
 <div class="advanced-section">
   <div class="advanced-content">
+    <div class="layer-hint">{t("color.foreground")}</div>
     <!-- Liquid Toggle -->
     <div class="effect-row">
       <label class="switch-label">
@@ -54,12 +55,24 @@ const t = useTranslations(lang);
       id="liquid-controls"
       style="display:none; flex-direction: column; gap: 12px; margin-top: 8px;"
     >
+      <div class="effect-presets" aria-label="Liquid presets">
+        <button onclick="applyLiquidPreset(0.25, 10.5)" title="Sharp">
+          Sharp
+        </button>
+        <button onclick="applyLiquidPreset(0.55, 8)" title="Melt">
+          Melt
+        </button>
+        <button onclick="applyLiquidPreset(0.95, 6)" title="Soft">
+          Soft
+        </button>
+      </div>
       <div class="range-control">
         <label>{t("effect.fluidity")}</label>
         <input
+          id="liquid-blur"
           type="range"
-          min="0.1"
-          max="1.0"
+          min="0.05"
+          max="1.4"
           step="0.05"
           value="0.55"
           oninput="updateLiquidParam('blur', this.value)"
@@ -68,9 +81,10 @@ const t = useTranslations(lang);
       <div class="range-control">
         <label>{t("effect.adhesion")}</label>
         <input
+          id="liquid-thresh"
           type="range"
           min="1"
-          max="15"
+          max="18"
           step="0.5"
           value="8"
           oninput="updateLiquidParam('thresh', this.value)"
@@ -210,6 +224,23 @@ const t = useTranslations(lang);
     throttledFilterTweak();
   };
 
+  window.applyLiquidPreset = (blur, thresh) => {
+    currentEffects.liquid = true;
+    currentEffects.blur = Number(blur);
+    currentEffects.thresh = Number(thresh);
+    const toggle = document.getElementById("effect-liquid-toggle");
+    const controls = document.getElementById("liquid-controls");
+    const blurInput = document.getElementById("liquid-blur");
+    const threshInput = document.getElementById("liquid-thresh");
+    if (toggle) toggle.checked = true;
+    if (controls) controls.style.display = "flex";
+    if (blurInput) blurInput.value = String(currentEffects.blur);
+    if (threshInput) threshInput.value = String(currentEffects.thresh);
+    window.dispatchEvent(
+      new CustomEvent("qr-effect-change", { detail: currentEffects })
+    );
+  };
+
   // ===== NOISE EFFECT =====
   let currentNoise = { enabled: false, amount: 30, scale: 100 };
 
@@ -251,6 +282,15 @@ const t = useTranslations(lang);
 </script>
 
 <style>
+  .layer-hint {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text-muted, rgba(127, 127, 127, 0.8));
+    margin-bottom: 4px;
+  }
+
   /* Effects Controls */
   .effect-row {
     display: flex;
@@ -326,6 +366,28 @@ const t = useTranslations(lang);
     height: 4px;
     background: rgba(127, 127, 127, 0.2);
     border-radius: 2px;
+  }
+
+  .effect-presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .effect-presets button {
+    min-height: 28px;
+    border-radius: 7px;
+    border: 1px solid rgba(127, 127, 127, 0.18);
+    background: rgba(127, 127, 127, 0.08);
+    color: var(--text-main, white);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .effect-presets button:hover {
+    border-color: rgba(127, 127, 127, 0.36);
+    background: rgba(127, 127, 127, 0.16);
   }
 
   /* Presets */

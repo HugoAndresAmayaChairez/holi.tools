@@ -1,0 +1,33 @@
+# Holi Labs
+
+Holi Labs publishes practical tutorials, field notes, experiments, and reviewed
+technical papers for the Holi.tools ecosystem in English, Spanish, Chinese,
+Hindi, Arabic, Bengali, and Portuguese.
+
+## URL
+
+- https://labs.holi.tools/
+- Papers collection: https://labs.holi.tools/en/papers/
+
+## Purpose
+
+- Teach local-first file, QR, Typst, privacy, performance, and graphics patterns.
+- Separate measured or verified behavior from hypotheses and experiments.
+- Treat Papers as a long-form editorial format inside Labs, never as a separate
+  Holi product or deployment.
+- Keep technical writing close to shipped code and testable behavior.
+
+## Implementation Parameters
+
+- App package: `holi-labs`
+- App path: `web/apps/labs`
+- Content source: `web/apps/labs/src/content`
+- Product context: `docs/product.md`
+- Project map: `docs/architecture.md`
+- Current priorities: `docs/roadmap.md`
+
+## Bot Guidance
+
+- Treat Labs as educational and explanatory content, not normative behavior.
+- For product requirements, prefer `spec/` and accepted decision records.
+- For implementation details, inspect the referenced app or crate.

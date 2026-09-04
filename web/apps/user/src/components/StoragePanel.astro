@@ -4,166 +4,69 @@
  * Shows files stored in the project's local folder
  */
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import HoliCard from "./ui/HoliCard.astro";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<div
-  id="storage-panel"
-  class="glass-card p-6 rounded-2xl border border-white/10 relative overflow-hidden"
->
-  <div
-    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-30"
-  >
+<HoliCard id="storage-panel" class="group relative flex min-h-[400px] flex-col overflow-hidden" padding="none" rounded="lg">
+  <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-30"></div>
+
+  <!-- Global Drop Zone Overlay -->
+  <div id="storage-dropzone" class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4 animate-bounce">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    </div>
+    <h3 class="mb-2 text-xl font-bold text-white">{t("storage.drop_title")}</h3>
+    <p class="text-sm text-zinc-400">{t("storage.drop_desc")}</p>
   </div>
 
-  <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="text-purple-400"
-      ><path
-        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-      ></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line
-        x1="12"
-        y1="22.08"
-        x2="12"
-        y2="12"></line></svg
-    >
-    {t("storage.title")}
-  </h2>
+  <div class="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
 
-  <!-- Upload into project/ -->
-  <div class="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
-    <div class="flex items-center justify-between gap-3">
-      <div class="min-w-0">
-        <div class="text-sm font-semibold text-white">
-          {t("storage.upload_title")}
-        </div>
-        <div class="text-xs text-zinc-500">{t("storage.upload_desc")}</div>
-      </div>
-      <button
-        id="open-project-folder"
-        type="button"
-        class="text-xs text-purple-400 hover:text-purple-300"
-      >
-        {t("storage.open_folder")}
+    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      {t("storage.title")}
+    </h2>
+
+    <div class="flex items-center gap-2">
+      <button type="button" id="refresh-files-btn" class="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors" title={t("storage.refresh")} aria-label={t("storage.refresh")}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path></svg>
       </button>
-    </div>
-
-    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div class="space-y-1">
-        <label class="text-[11px] text-zinc-500">{t("storage.subfolder")}</label
-        >
-        <input
-          id="project-upload-folder"
-          type="text"
-          placeholder={t("storage.subfolder_placeholder")}
-          class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40"
-        />
-      </div>
-      <div class="space-y-1">
-        <label class="text-[11px] text-zinc-500">{t("storage.files")}</label>
-        <input
-          id="project-upload-input"
-          type="file"
-          multiple
-          class="block w-full text-sm text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white/10 file:text-zinc-200 hover:file:bg-white/15"
-        />
-        <label
-          class="flex items-center gap-2 text-xs text-zinc-400 select-none"
-        >
-          <input
-            id="project-upload-announce"
-            type="checkbox"
-            class="accent-purple-500"
-            checked
-          />
-          {t("storage.post_to_chat")}
-        </label>
-      </div>
-    </div>
-
-    <div class="mt-3 flex items-center justify-end">
-      <button
-        id="project-upload-btn"
-        type="button"
-        class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors text-sm"
-      >
+      <label class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium cursor-pointer transition-colors shadow-lg shadow-purple-500/20">
         {t("storage.upload_button")}
+        <input id="project-upload-input" type="file" multiple class="hidden" />
+      </label>
+    </div>
+  </div>
+
+  <div class="flex flex-1 flex-col p-6">
+
+    <div id="file-breadcrumb" class="text-xs text-zinc-400 flex items-center gap-2 px-1 mb-4">
+      <button type="button" id="breadcrumb-root" class="hover:text-purple-400 transition-colors flex items-center gap-1" aria-label={t("storage.root")}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </button>
+      <span class="text-zinc-600">/</span>
+      <span id="breadcrumb-path" class="text-zinc-300 font-medium truncate"></span>
+    </div>
+
+    <!-- Explorer Grid -->
+    <div id="file-list" class="grid grid-cols-2 sm:grid-cols-3 pb-8 md:grid-cols-4 lg:grid-cols-5 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+      <div class="col-span-full flex flex-col items-center justify-center py-12 text-zinc-500 gap-3">
+        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <p class="text-sm italic">{t("vault.loading")}</p>
+      </div>
     </div>
   </div>
 
-  <!-- No Workspace Warning -->
-  <div
-    id="no-workspace-warning"
-    class="hidden p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 mb-4"
-  >
-    <p class="text-sm text-yellow-400">
-      ⚠️ {t("storage.no_workspace")}
-    </p>
-    <p class="text-xs text-zinc-500 mt-1">
-      {t("storage.no_workspace_desc")}
-    </p>
-  </div>
 
-  <!-- File List -->
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-white">
-        {t("storage.stored_files")}
-      </h3>
-      <button
-        id="refresh-files-btn"
-        class="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          ><path
-            d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"
-          ></path></svg
-        >
-        {t("storage.refresh")}
-      </button>
-    </div>
-
-    <div
-      id="file-breadcrumb"
-      class="text-xs text-zinc-400 flex items-center gap-2"
-    >
-      <button id="breadcrumb-root" class="text-purple-400 hover:underline"
-        >{t("storage.root")}</button
-      >
-      <span id="breadcrumb-path" class="truncate"></span>
-    </div>
-    <div id="file-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-      <p class="text-xs text-zinc-500 italic">{t("vault.loading")}</p>
-    </div>
-  </div>
-</div>
+</HoliCard>
 
 <!-- File Preview Dialog -->
 <dialog
   id="file-preview-dialog"
   class="backdrop:bg-black/70 rounded-xl p-0 w-[min(92vw,48rem)]"
 >
-  <div class="glass-card border border-white/10 rounded-xl overflow-hidden">
+  <HoliCard class="overflow-hidden" padding="none" rounded="lg">
     <div class="flex items-center justify-between p-4 border-b border-white/10">
       <div class="min-w-0">
         <div class="text-sm text-zinc-400">{t("storage.preview_title")}</div>
@@ -171,6 +74,7 @@ const t = useTranslations(lang);
         </div>
       </div>
       <button
+        type="button"
         id="file-preview-close"
         class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm"
       >
@@ -183,6 +87,7 @@ const t = useTranslations(lang);
         class="flex items-center justify-end gap-2 pt-2 border-t border-white/10"
       >
         <button
+          type="button"
           id="file-preview-download"
           class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors text-sm"
         >
@@ -190,7 +95,7 @@ const t = useTranslations(lang);
         </button>
       </div>
     </div>
-  </div>
+  </HoliCard>
 </dialog>
 
 <script
@@ -210,7 +115,10 @@ const t = useTranslations(lang);
     size: t("storage.size"),
     previewDownloadDesc: t("storage.preview_download_desc"),
     previewFailed: t("storage.preview_failed"),
-    uploading: t("vault.loading"),
+    uploading: t("storage.uploading"),
+    uploadFailed: t("storage.upload_failed"),
+    uploadNotReady: t("storage.upload_not_ready"),
+    dropTitle: t("storage.drop_title"),
   }}
 >
   window.storageStrings = {
@@ -230,37 +138,30 @@ const t = useTranslations(lang);
     previewDownloadDesc,
     previewFailed,
     uploading,
+    uploadFailed,
+    uploadNotReady,
+    dropTitle,
   };
 </script>
 
 <script>
   import * as fsdb from "../lib/db/fs";
   import { getActiveHandle } from "../lib/workspace";
+  import { toast } from "../lib/ui/toast";
 
   const strings = (window as any).storageStrings;
+  const panel = document.getElementById("storage-panel");
+  const dropzone = document.getElementById("storage-dropzone");
   const fileList = document.getElementById("file-list");
   const refreshFilesBtn = document.getElementById("refresh-files-btn");
-  const noWorkspaceWarning = document.getElementById("no-workspace-warning");
   const breadcrumbRoot = document.getElementById(
     "breadcrumb-root"
   ) as HTMLButtonElement | null;
   const breadcrumbPath = document.getElementById("breadcrumb-path");
 
-  const projectUploadFolder = document.getElementById(
-    "project-upload-folder"
-  ) as HTMLInputElement | null;
   const projectUploadInput = document.getElementById(
     "project-upload-input"
   ) as HTMLInputElement | null;
-  const projectUploadAnnounce = document.getElementById(
-    "project-upload-announce"
-  ) as HTMLInputElement | null;
-  const projectUploadBtn = document.getElementById(
-    "project-upload-btn"
-  ) as HTMLButtonElement | null;
-  const openProjectFolderBtn = document.getElementById(
-    "open-project-folder"
-  ) as HTMLButtonElement | null;
 
   let currentFolder = "";
 
@@ -293,12 +194,16 @@ const t = useTranslations(lang);
       return;
 
     if (!getActiveHandle()) {
-      alert("Open your Vault folder to preview files.");
+      toast.info(strings.noActiveWorkspace);
       return;
     }
 
     previewName.textContent = filename;
-    previewBody.innerHTML = `<p class="text-sm text-zinc-400">${strings.previewLoading}</p>`;
+    previewBody.textContent = "";
+    const loading = document.createElement("p");
+    loading.className = "text-sm text-zinc-400";
+    loading.textContent = strings.previewLoading;
+    previewBody.appendChild(loading);
     previewDialog.showModal();
 
     try {
@@ -314,11 +219,15 @@ const t = useTranslations(lang);
         /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lower);
 
       if (isImage) {
-        previewBody.innerHTML = `
-          <div class="rounded-lg border border-white/10 bg-black/30 p-2">
-            <img src="${url}" alt="${filename}" class="max-h-[60vh] w-full object-contain rounded" />
-          </div>
-        `;
+        previewBody.textContent = "";
+        const frame = document.createElement("div");
+        frame.className = "rounded-lg border border-white/10 bg-black/30 p-2";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = filename;
+        img.className = "max-h-[60vh] w-full object-contain rounded";
+        frame.appendChild(img);
+        previewBody.appendChild(frame);
       } else if (
         typeStr.startsWith("text/") ||
         /\.(txt|md|json|log|csv)$/.test(lower)
@@ -336,7 +245,7 @@ const t = useTranslations(lang);
         previewBody.innerHTML = `
           <div class="text-sm text-zinc-300">
             <div class="font-medium">${strings.noInlinePreview}</div>
-            <div class="text-zinc-500 mt-1">${strings.type}: ${typeStr || "unknown"} • ${strings.size}: ${sizeKb} KB</div>
+            <div class="text-zinc-500 mt-1">${typeStr ? `${strings.type}: ${typeStr} • ` : ""}${strings.size}: ${sizeKb} KB</div>
             <div class="text-zinc-500 mt-1">${strings.previewDownloadDesc}</div>
           </div>
         `;
@@ -354,7 +263,11 @@ const t = useTranslations(lang);
       };
     } catch (e) {
       console.error("Preview failed", e);
-      previewBody.innerHTML = `<p class="text-sm text-red-400">${strings.previewFailed}</p>`;
+      previewBody.textContent = "";
+      const error = document.createElement("p");
+      error.className = "text-sm text-red-400";
+      error.textContent = strings.previewFailed;
+      previewBody.appendChild(error);
     }
   }
 
@@ -386,52 +299,75 @@ const t = useTranslations(lang);
     return projectId || "";
   }
 
-  openProjectFolderBtn?.addEventListener("click", () => {
-    setCurrentFolder("project");
-    (window as any).holiScrollToProjectFiles?.();
-  });
-
-  projectUploadBtn?.addEventListener("click", async () => {
+  async function handleFileUploads(files: FileList | File[]) {
     const projectId = getCurrentProjectId();
-    const files = projectUploadInput?.files
-      ? Array.from(projectUploadInput.files)
-      : [];
-    const folder = (projectUploadFolder?.value || "").trim();
-    const announce = Boolean(projectUploadAnnounce?.checked);
+    const fileArray = Array.from(files);
 
     if (!projectId) {
-      alert("No project selected.");
+      toast.info(strings.noProjectSelected);
       return;
     }
 
-    if (files.length === 0) {
-      alert("Pick one or more files to upload.");
-      return;
-    }
+    if (fileArray.length === 0) return;
 
     const fn = (window as any).holiUploadProjectFiles as
       | ((files: File[], folder: string, announce: boolean) => Promise<void>)
       | undefined;
 
     if (!fn) {
-      alert("Upload handler not ready yet. Reload the page.");
+      toast.info(strings.uploadNotReady);
       return;
     }
 
-    projectUploadBtn.disabled = true;
-    const prevText = projectUploadBtn.textContent;
-    projectUploadBtn.textContent = strings.uploading;
     try {
-      await fn(files, folder, announce);
-      if (projectUploadInput) projectUploadInput.value = "";
-      // Jump to where the files landed.
-      setCurrentFolder(folder ? `project/${folder}` : "project");
+      if (dropzone) dropzone.querySelector("h3")!.textContent = strings.uploading;
+      // Upload via vault's internal processor. Announce defaults to true.
+      await fn(fileArray, currentFolder, true);
     } catch (e) {
       console.error("Upload failed", e);
-      alert("Upload failed: " + ((e as any)?.message || "unknown error"));
+      toast.error(strings.uploadFailed);
     } finally {
-      projectUploadBtn.disabled = false;
-      projectUploadBtn.textContent = prevText || "Upload";
+      if (dropzone) dropzone.querySelector("h3")!.textContent = strings.dropTitle;
+      if (projectUploadInput) projectUploadInput.value = "";
+      setCurrentFolder(currentFolder); // triggers refresh
+    }
+  }
+
+  // Upload Input binding
+  projectUploadInput?.addEventListener("change", (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (files) handleFileUploads(files);
+  });
+
+  // Drag and drop overlay bindings
+  let dragCounter = 0;
+  panel?.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    dragCounter++;
+    if (dropzone) {
+      dropzone.classList.remove("opacity-0", "pointer-events-none");
+      dropzone.querySelector("h3")!.textContent = strings.dropTitle;
+    }
+  });
+
+  panel?.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter === 0 && dropzone) {
+      dropzone.classList.add("opacity-0", "pointer-events-none");
+    }
+  });
+
+  panel?.addEventListener("dragover", (e) => e.preventDefault());
+
+  panel?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dragCounter = 0;
+    if (dropzone) dropzone.classList.add("opacity-0", "pointer-events-none");
+
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleFileUploads(files);
     }
   });
 
@@ -482,47 +418,32 @@ const t = useTranslations(lang);
       const filesSorted = directFiles.sort((a, b) => a.localeCompare(b));
 
       if (folders.length === 0 && filesSorted.length === 0) {
-        fileList.innerHTML = `<p class="text-xs text-zinc-500 italic">${strings.noFilesYet}</p>`;
+        fileList.className = "flex flex-col items-center justify-center py-16 text-zinc-500 h-full w-full col-span-full";
+        fileList.innerHTML = `<div class="p-4 rounded-full bg-white/5 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div><p class="text-sm">${strings.noFilesYet}</p>`;
         return;
       }
 
+      fileList.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar";
       fileList.innerHTML = "";
 
-      // Folders first
       for (const folderName of folders) {
         const div = document.createElement("div");
         div.className =
-          "flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors";
+          "group flex flex-col items-center justify-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-purple-500/30 hover:bg-white/10 transition-all cursor-pointer shadow-lg";
 
-        const left = document.createElement("div");
-        left.className = "flex items-center gap-2 min-w-0";
-        left.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+        const iconContainer = document.createElement("div");
+        iconContainer.className = "w-12 h-12 flex items-center justify-center text-purple-400 mb-3 group-hover:scale-110 transition-transform";
+        iconContainer.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="opacity-80"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
 
         const nameSpan = document.createElement("span");
-        nameSpan.className = "text-sm text-zinc-200 truncate cursor-pointer";
+        nameSpan.className = "text-xs font-medium text-zinc-200 truncate w-full text-center";
         nameSpan.textContent = folderName;
-        nameSpan.title = strings.openFolderTitle;
-        nameSpan.onclick = () =>
-          setCurrentFolder(
-            currentFolder ? `${currentFolder}/${folderName}` : folderName
-          );
 
-        left.appendChild(nameSpan);
+        div.onclick = () => setCurrentFolder(currentFolder ? `${currentFolder}/${folderName}` : folderName);
 
-        const openBtn = document.createElement("button");
-        openBtn.className =
-          "text-zinc-400 hover:text-white p-1.5 rounded hover:bg-white/10";
-        openBtn.title = strings.open;
-        openBtn.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-        openBtn.onclick = () =>
-          setCurrentFolder(
-            currentFolder ? `${currentFolder}/${folderName}` : folderName
-          );
-
-        div.appendChild(left);
-        div.appendChild(openBtn);
+        div.appendChild(iconContainer);
+        div.appendChild(nameSpan);
         fileList.appendChild(div);
       }
 
@@ -530,57 +451,27 @@ const t = useTranslations(lang);
         const fullPath = prefix ? `${prefix}${filename}` : filename;
         const div = document.createElement("div");
         div.className =
-          "flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors";
+          "group flex flex-col items-center justify-center p-4 bg-white/[0.03] rounded-xl border border-white/5 hover:border-zinc-500/30 hover:bg-white/5 transition-all cursor-pointer relative shadow-md";
+
+        const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(filename);
+
+        const iconContainer = document.createElement("div");
+        iconContainer.className = "w-12 h-12 flex items-center justify-center text-zinc-400 mb-3 group-hover:text-zinc-200 transition-colors";
+
+        if (isImage) {
+            iconContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+        } else {
+            iconContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>';
+        }
 
         const nameSpan = document.createElement("span");
-        nameSpan.className = "text-sm text-zinc-300 truncate max-w-[200px]";
+        nameSpan.className = "text-xs font-medium text-zinc-300 truncate w-full text-center px-1";
         nameSpan.textContent = filename;
 
-        const actions = document.createElement("div");
-        actions.className = "flex items-center gap-1";
+        div.onclick = () => openPreview(projectId, fullPath);
 
-        const previewBtn = document.createElement("button");
-        previewBtn.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-        previewBtn.className =
-          "text-zinc-400 hover:text-white p-1.5 rounded hover:bg-white/10";
-        previewBtn.title = strings.preview;
-        previewBtn.onclick = () => openPreview(projectId, fullPath);
-
-        const downloadBtn = document.createElement("button");
-        downloadBtn.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-        downloadBtn.className =
-          "text-zinc-400 hover:text-white p-1.5 rounded hover:bg-white/10";
-        downloadBtn.title = strings.download;
-
-        downloadBtn.onclick = async () => {
-          try {
-            const blob = await fsdb.readProjectFile(projectId, fullPath);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          } catch (e) {
-            console.error("Download failed", e);
-            alert("Download failed: " + (e as Error).message);
-          }
-        };
-
-        nameSpan.role = "button";
-        nameSpan.title = strings.preview;
-        nameSpan.classList.add("cursor-pointer");
-        nameSpan.onclick = () => openPreview(projectId, fullPath);
-
-        actions.appendChild(previewBtn);
-        actions.appendChild(downloadBtn);
-
+        div.appendChild(iconContainer);
         div.appendChild(nameSpan);
-        div.appendChild(actions);
         fileList.appendChild(div);
       }
     } catch (e) {

@@ -10,6 +10,7 @@
  * clear error telling the user to request a new Instant Link.
  */
 import VaultLayout from "../../layouts/VaultLayout.astro";
+import HoliCard from "../../components/ui/HoliCard.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 import { SUPPORTED_LANGS } from "@holi/configs/i18n";
 
@@ -23,7 +24,7 @@ const basePath = lang === "en" ? "/en" : `/${lang}`;
 ---
 
 <VaultLayout title={t("join.title")}>
-  <div class="max-w-xl mx-auto space-y-6 text-center">
+  <HoliCard class="holi-center max-w-xl mx-auto space-y-6 text-center" padding="lg" rounded="lg">
     <div id="loading" class="py-12 space-y-3">
       <div
         class="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"
@@ -50,7 +51,7 @@ const basePath = lang === "en" ? "/en" : `/${lang}`;
         </a>
       </div>
     </div>
-  </div>
+  </HoliCard>
 
   <script
     define:vars={{

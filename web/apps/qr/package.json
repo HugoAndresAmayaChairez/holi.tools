@@ -1,27 +1,29 @@
 {
   "name": "holi-qr",
   "type": "module",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/tailwind": "catalog:",
     "@holi/configs": "workspace:*",
     "@holi/ui": "workspace:*",
-    "astro": "^4.0.0",
+    "@holi/wasm-qr": "workspace:*",
+    "@holi/wasm-qr-svg": "workspace:*",
+    "astro": "catalog:",
     "gif.js": "^0.2.0",
     "gifuct-js": "^2.1.2",
-    "jsqr": "^1.4.0",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.5.0",
-    "vitest": "^4.0.16"
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:",
+    "vitest": "catalog:"
   }
 }

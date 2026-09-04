@@ -1,0 +1,22 @@
+---
+import GlassCard from "@holi/ui/components/GlassCard.astro";
+
+type GlassProps = Astro.ComponentProps<typeof GlassCard>;
+
+const {
+  class: className,
+  padding = "md",
+  rounded = "lg",
+  ...rest
+} = Astro.props as GlassProps;
+---
+
+<GlassCard
+  {...rest}
+  padding={padding}
+  rounded={rounded}
+  class={["holi-panel", className].filter(Boolean).join(" ")}
+>
+  <slot />
+</GlassCard>
+

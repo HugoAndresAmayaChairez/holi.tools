@@ -3,18 +3,28 @@
 //! High-performance 3D rendering module using wgpu.
 //! Provides animated mesh rendering with WebGPU/WebGL fallback.
 
+#[cfg(target_arch = "wasm32")]
 mod math;
+#[cfg(target_arch = "wasm32")]
 mod mesh;
+#[cfg(target_arch = "wasm32")]
 mod pipeline;
+#[cfg(target_arch = "wasm32")]
 mod state;
 
+#[cfg(target_arch = "wasm32")]
 use std::{cell::RefCell, rc::Rc};
+#[cfg(target_arch = "wasm32")]
 use gloo::render::{request_animation_frame, AnimationFrame};
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
 use web_sys::{HtmlCanvasElement, Window};
 
+#[cfg(target_arch = "wasm32")]
 pub use state::State;
 
+#[cfg(target_arch = "wasm32")]
 thread_local! {
     static RAF_HANDLE: RefCell<Option<AnimationFrame>> = const { RefCell::new(None) };
     static RENDERER_STATE: RefCell<Option<Rc<RefCell<State>>>> = const { RefCell::new(None) };
@@ -22,6 +32,7 @@ thread_local! {
 
 /// Update QR Code Instance Data
 /// data: Flat float32 array [x,y,scale,r,g,b, ...]
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn update_qr(data: &[f32]) {
     RENDERER_STATE.with(|s| {
@@ -85,7 +96,13 @@ pub fn stop() {
 }
 
 /// Get the version info for this module
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn renderer_version() -> String {
+    "holi-wasm-renderer v0.1.0".to_string()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub fn renderer_version() -> String {
     "holi-wasm-renderer v0.1.0".to_string()
 }

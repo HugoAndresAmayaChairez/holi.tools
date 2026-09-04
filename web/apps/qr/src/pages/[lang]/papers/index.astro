@@ -1,105 +1,90 @@
 ---
-import BaseLayout from "@holi/ui/src/layouts/BaseLayout.astro";
-import GlassCard from "@holi/ui/src/components/GlassCard.astro";
-import Icon from "@holi/ui/src/components/Icon.astro";
+import GlassCard from "@holi/ui/components/GlassCard.astro";
+import Icon from "@holi/ui/components/Icon.astro";
+import { DEFAULT_LANG, SUPPORTED_LANGS } from "@holi/configs/i18n";
+import QrLayout from "../../../layouts/QrLayout.astro";
+import { getPaperCopy, type PaperLocale } from "../../../i18n/papers";
 
-// Get language from params
 export function getStaticPaths() {
-  return [{ params: { lang: "en" } }, { params: { lang: "es" } }];
+  return SUPPORTED_LANGS.filter((locale) => locale !== DEFAULT_LANG).map((locale) => ({
+    params: { lang: locale },
+  }));
 }
 
-const { lang } = Astro.params;
+const lang = (Astro.params.lang ?? DEFAULT_LANG) as PaperLocale;
+const copy = getPaperCopy(lang);
 
 const papers = [
   {
     slug: "rust-svg-engine",
-    title: {
-      en: "The <10KB Engine: Why Math beats GPU",
-      es: "El Motor <10KB: Por qué las matemáticas vencen a la GPU",
-    },
-    desc: {
-      en: "How we replaced a 2MB WebGPU renderer with 27KB of Rust and SVG paths.",
-      es: "Cómo reemplazamos un renderizador WebGPU de 2MB con 27KB de Rust y vectores.",
-    },
+    title: copy.cardTitle,
+    desc: copy.cardDescription,
     date: "2024-01-08",
     tag: "Astro / Rust / WASM",
   },
 ];
 ---
 
-<html lang={lang}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Holi Papers</title>
-  </head>
-  <body>
-    <BaseLayout
-      title="Holi Papers"
-      lang={lang}
-      languages={[
-        { code: "en", name: "English" },
-        { code: "es", name: "Español" },
-      ]}
-      colorScheme="qr"
+<QrLayout
+  title={copy.indexSeoTitle}
+  description={copy.indexDescription}
+  lang={lang}
+>
+  <header class="pt-32 pb-16 text-center px-4">
+    <h1
+      class="text-4xl md:text-6xl font-black mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-white/60"
     >
-      <header class="pt-32 pb-16 text-center px-4">
-        <h1
-          class="text-4xl md:text-6xl font-black mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-white/60"
-        >
-          {lang === "es" ? "Ingeniería & Papers" : "Engineering & Papers"}
-        </h1>
-        <p class="text-xl text-white/60 max-w-2xl mx-auto">
-          {
-            lang === "es"
-              ? "Deep dives técnicos sobre cómo construimos herramientas soberanas."
-              : "Technical deep dives on building sovereign tools."
-          }
-        </p>
-      </header>
+      {copy.indexTitle}
+    </h1>
+    <p class="text-xl text-white/60 max-w-2xl mx-auto">
+      {copy.indexDescription}
+    </p>
+  </header>
 
-      <main class="max-w-4xl mx-auto px-4 pb-32">
-        <div class="grid gap-6">
-          {
-            papers.map((paper) => (
-              <a href={`/${lang}/papers/${paper.slug}`}>
-                <GlassCard
-                  class="paper-card group"
-                  padding="lg"
-                  hover={true}
-                  clickable={true}
-                >
-                  <div class="flex flex-col md:flex-row gap-6 md:items-center text-left">
-                    <div class="flex-1">
-                      <div class="flex items-center gap-3 mb-3">
-                        <span class="text-xs font-mono px-2 py-1 rounded bg-white/5 border border-white/10 text-white/50">
-                          {paper.date}
-                        </span>
-                        <span class="text-xs font-bold text-[var(--color-accent)] tracking-wider uppercase">
-                          {paper.tag}
-                        </span>
-                      </div>
-                      <h2 class="text-2xl font-bold mb-2 group-hover:text-[var(--color-accent)] transition-colors">
-                        {lang === "es" ? paper.title.es : paper.title.en}
-                      </h2>
-                      <p class="text-white/60 leading-relaxed">
-                        {lang === "es" ? paper.desc.es : paper.desc.en}
-                      </p>
-                    </div>
-
-                    <div class="flex items-center justify-center w-12 h-12 rounded-full border border-white/10 bg-white/5 group-hover:bg-white/10 transition-all group-hover:scale-110">
-                      <Icon name="arrow_forward" size={16} class="text-white/50 group-hover:text-white" />
-                    </div>
+  <main class="max-w-4xl mx-auto px-4 pb-32">
+    <div class="grid gap-6">
+      {
+        papers.map((paper) => (
+          <a href={`/${lang}/papers/${paper.slug}`}>
+            <GlassCard
+              class="paper-card group"
+              padding="lg"
+              hover={true}
+              clickable={true}
+            >
+              <div class="flex flex-col md:flex-row gap-6 md:items-center text-left">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="text-xs font-mono px-2 py-1 rounded bg-white/5 border border-white/10 text-white/50">
+                      {paper.date}
+                    </span>
+                    <span class="text-xs font-bold text-[var(--color-accent)] tracking-wider uppercase">
+                      {paper.tag}
+                    </span>
                   </div>
-                </GlassCard>
-              </a>
-            ))
-          }
-        </div>
-      </main>
-    </BaseLayout>
-  </body>
-</html>
+                  <h2 class="text-2xl font-bold mb-2 group-hover:text-[var(--color-accent)] transition-colors">
+                    {paper.title}
+                  </h2>
+                  <p class="text-white/60 leading-relaxed">
+                    {paper.desc}
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-center w-12 h-12 rounded-full border border-white/10 bg-white/5 group-hover:bg-white/10 transition-all group-hover:scale-110">
+                  <Icon
+                    name="arrow_forward"
+                    size={16}
+                    class="text-white/50 group-hover:text-white"
+                  />
+                </div>
+              </div>
+            </GlassCard>
+          </a>
+        ))
+      }
+    </div>
+  </main>
+</QrLayout>
 
 <style>
   .paper-card {

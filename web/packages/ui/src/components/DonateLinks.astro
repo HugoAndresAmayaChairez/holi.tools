@@ -1,0 +1,76 @@
+---
+interface Props {
+  koFiUrl: string;
+  githubSponsorsUrl: string;
+  currentLang?: string;
+}
+
+const {
+  koFiUrl = "https://ko-fi.com/holitools",
+  githubSponsorsUrl = "https://github.com/sponsors/HugoAndresAmayaChairez",
+  currentLang = "en",
+} = Astro.props;
+import { getProductShellCopy } from "../lib/product-shell-copy";
+const copy = getProductShellCopy(currentLang);
+---
+
+<div class="support-block">
+  <h3 class="support-title">{copy.donate}</h3>
+  <p class="support-text">
+    {copy.donateBody}
+  </p>
+  <div class="support-actions">
+    <a class="support-btn" href={githubSponsorsUrl} target="_blank" rel="noopener">
+      GitHub Sponsors
+    </a>
+    <a class="support-btn support-btn--muted" href={koFiUrl} target="_blank" rel="noopener">
+      Ko-fi
+    </a>
+  </div>
+</div>
+
+<style>
+  .support-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .support-title {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.65);
+  }
+  .support-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .support-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .support-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.18);
+  }
+  .support-btn:hover {
+    filter: brightness(1.06);
+  }
+  .support-btn--muted {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+  }
+</style>

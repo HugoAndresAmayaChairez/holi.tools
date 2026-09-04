@@ -1,5 +1,6 @@
 ---
 import VaultLayout from "../../layouts/VaultLayout.astro";
+import HoliCard from "../../components/ui/HoliCard.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 import { SUPPORTED_LANGS } from "@holi/configs/i18n";
 
@@ -17,7 +18,7 @@ const strings = {
 ---
 
 <VaultLayout title={t("friend.title")}>
-  <div class="max-w-xl mx-auto space-y-8 text-center">
+  <HoliCard class="holi-center max-w-xl mx-auto space-y-8 text-center" padding="lg" rounded="lg">
     <div id="loading" class="py-12">
       <div
         class="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"
@@ -87,7 +88,7 @@ const strings = {
         >
       </div>
     </div>
-  </div>
+  </HoliCard>
 </VaultLayout>
 
 <script define:vars={{ strings }}>
@@ -96,14 +97,11 @@ const strings = {
 
 <script>
   import {
-    parseFriendInviteHash,
-    sendFriendRequestAndWaitAccept,
-  } from "../../lib/friends/invite";
-  import {
     addContactWithNostrPubkey,
     setContactDmByNostrPubkey,
   } from "../../lib/contacts/store";
   import { getPrimaryIdentity } from "../../lib/identity/manager";
+  import { isFriendCode, joinFriendRoom } from "../../lib/friends/friend-handshake";
   import {
     getLastVault,
     checkAccess,
@@ -139,28 +137,29 @@ const strings = {
       }
 
       const hash = window.location.hash.slice(1);
-      const invite = parseFriendInviteHash(hash);
-      if (!invite) throw new Error("Invalid invite link");
+      const code = decodeURIComponent(hash || "").trim();
+      if (!isFriendCode(code)) {
+        throw new Error("Invalid friend link. Ask them for a new Friend Code (holi-fr-...).");
+      }
 
       loadingEl?.classList.add("hidden");
       successEl?.classList.remove("hidden");
 
       const identity = await getPrimaryIdentity();
-      const name = identity?.alias || "Anonymous";
-
-      const { inviterPubkey, inviterName, dm } =
-        await sendFriendRequestAndWaitAccept({
-          sessionId: invite.sessionId,
-          secretKey32: invite.secretKey32,
-          name,
-        });
-
-      await addContactWithNostrPubkey(inviterName, inviterPubkey);
-      if (dm) {
-        await setContactDmByNostrPubkey(inviterPubkey, dm);
+      if (!identity || !/^[0-9a-f]{64}$/i.test(identity.id)) {
+        throw new Error("Missing identity. Open your vault first.");
       }
+      const name = identity.alias || "Anonymous";
+
+      const peerInfo = await joinFriendRoom(code, { pubkey: identity.id, name }, 60_000);
+      if (!peerInfo?.dm?.sessionId || !peerInfo?.dm?.keyB64Url) {
+        throw new Error("Handshake failed. Ask them to re-generate a new Friend Code.");
+      }
+
+      await addContactWithNostrPubkey(peerInfo.name, peerInfo.pubkey);
+      await setContactDmByNostrPubkey(peerInfo.pubkey, peerInfo.dm);
       if (successMsg)
-        successMsg.textContent = `${strings.connectedWith} ${inviterName}.`;
+        successMsg.textContent = `${strings.connectedWith} ${peerInfo.name}.`;
     } catch (e) {
       console.error("[Friend] Failed:", e);
       loadingEl?.classList.add("hidden");

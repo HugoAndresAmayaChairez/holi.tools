@@ -6,6 +6,44 @@
 
 use crate::error::QrError;
 
+/// Rasterize an SVG into an alpha mask (single channel).
+///
+/// This is used by the web preview pipeline to keep WebGL shapes 1:1 with the official SVG
+/// (Rust is the source-of-truth; WebGL only samples the mask texture).
+#[cfg(feature = "verify")]
+pub fn rasterize_svg_alpha(svg: &str, size: u32) -> Result<Vec<u8>, QrError> {
+    use resvg::usvg;
+
+    let options = usvg::Options::default();
+    let tree = usvg::Tree::from_str(svg, &options)
+        .map_err(|e| QrError::VerificationFailed(format!("SVG parse error: {}", e)))?;
+
+    let mut pixmap = tiny_skia::Pixmap::new(size, size)
+        .ok_or_else(|| QrError::VerificationFailed("Failed to create pixmap".into()))?;
+
+    // Transparent background; draw only the paths.
+    // Note: resvg renders with antialiasing; alpha values will be 0..255.
+
+    let tree_size = tree.size();
+    let scale = (size as f32 / tree_size.width()).min(size as f32 / tree_size.height());
+    let transform = tiny_skia::Transform::from_scale(scale, scale);
+    resvg::render(&tree, transform, &mut pixmap.as_mut());
+
+    let pixels = pixmap.data();
+    let mut alpha: Vec<u8> = Vec::with_capacity((size as usize) * (size as usize));
+    for chunk in pixels.chunks(4) {
+        alpha.push(chunk[3]);
+    }
+    Ok(alpha)
+}
+
+#[cfg(not(feature = "verify"))]
+pub fn rasterize_svg_alpha(_svg: &str, _size: u32) -> Result<Vec<u8>, QrError> {
+    Err(QrError::VerificationFailed(
+        "SVG rasterization not available. Enable 'verify' feature.".into(),
+    ))
+}
+
 /// Verify that an SVG QR code is scannable using rxing (ZXing port)
 ///
 /// This function renders the SVG to a bitmap and attempts to decode it.
@@ -19,39 +57,39 @@ use crate::error::QrError;
 #[cfg(feature = "verify")]
 pub fn verify_svg(svg: &str) -> Result<String, QrError> {
     use resvg::usvg;
-    use rxing::{BarcodeFormat, DecodeHintType, DecodeHintValue};
     use rxing::common::HybridBinarizer;
     use rxing::BinaryBitmap;
     use rxing::Luma8LuminanceSource;
     use rxing::MultiFormatReader;
     use rxing::Reader;
-    
+    use rxing::{BarcodeFormat, DecodeHintType, DecodeHintValue};
+
     // Parse SVG using resvg
     let options = usvg::Options::default();
     let tree = usvg::Tree::from_str(svg, &options)
         .map_err(|e| QrError::VerificationFailed(format!("SVG parse error: {}", e)))?;
-    
+
     // Render to pixmap at high resolution
     let size = 800u32;
-    
+
     let mut pixmap = tiny_skia::Pixmap::new(size, size)
         .ok_or_else(|| QrError::VerificationFailed("Failed to create pixmap".into()))?;
-    
+
     // White background (important for transparent QRs)
     pixmap.fill(tiny_skia::Color::WHITE);
-    
+
     // Calculate scale to fit
     let tree_size = tree.size();
     let scale = (size as f32 / tree_size.width()).min(size as f32 / tree_size.height());
-    
+
     let transform = tiny_skia::Transform::from_scale(scale, scale);
     resvg::render(&tree, transform, &mut pixmap.as_mut());
-    
+
     // Convert RGBA to grayscale (luma) for rxing
     let pixels = pixmap.data();
     let width = pixmap.width() as usize;
     let height = pixmap.height() as usize;
-    
+
     let mut luma: Vec<u8> = Vec::with_capacity(width * height);
     for chunk in pixels.chunks(4) {
         // RGBA -> grayscale using luminosity formula
@@ -61,27 +99,25 @@ pub fn verify_svg(svg: &str) -> Result<String, QrError> {
         let gray = ((r * 299 + g * 587 + b * 114) / 1000) as u8;
         luma.push(gray);
     }
-    
+
     // Create rxing source using Luma8 (grayscale bytes)
     let source = Luma8LuminanceSource::new(luma, width as u32, height as u32);
     let mut bitmap = BinaryBitmap::new(HybridBinarizer::new(source));
-    
+
     // Configure hints for better detection
     let mut hints = rxing::DecodingHintDictionary::new();
     hints.insert(
         DecodeHintType::POSSIBLE_FORMATS,
         DecodeHintValue::PossibleFormats(vec![BarcodeFormat::QR_CODE].into_iter().collect()),
     );
-    hints.insert(
-        DecodeHintType::TRY_HARDER,
-        DecodeHintValue::TryHarder(true),
-    );
-    
+    hints.insert(DecodeHintType::TRY_HARDER, DecodeHintValue::TryHarder(true));
+
     // Decode
     let mut reader = MultiFormatReader::default();
-    let result = reader.decode_with_hints(&mut bitmap, &hints)
-        .map_err(|e| QrError::VerificationFailed(format!("Decode error: {:?}", e)))?;;
-    
+    let result = reader
+        .decode_with_hints(&mut bitmap, &hints)
+        .map_err(|e| QrError::VerificationFailed(format!("Decode error: {:?}", e)))?;
+
     Ok(result.getText().to_string())
 }
 
@@ -98,43 +134,41 @@ pub fn verify_svg(svg: &str) -> Result<String, QrError> {
 #[cfg(feature = "verify")]
 pub fn decode_image(image_data: &[u8]) -> Result<String, QrError> {
     use image::GenericImageView;
-    use rxing::{BarcodeFormat, DecodeHintType, DecodeHintValue};
     use rxing::common::HybridBinarizer;
     use rxing::BinaryBitmap;
     use rxing::Luma8LuminanceSource;
     use rxing::MultiFormatReader;
     use rxing::Reader;
-    
+    use rxing::{BarcodeFormat, DecodeHintType, DecodeHintValue};
+
     // Load image
     let img = image::load_from_memory(image_data)
         .map_err(|e| QrError::VerificationFailed(format!("Image load error: {}", e)))?;
-    
+
     let (width, height) = img.dimensions();
-    
+
     // Convert to grayscale
     let gray = img.to_luma8();
     let luma: Vec<u8> = gray.into_raw();
-    
+
     // Create rxing source
     let source = Luma8LuminanceSource::new(luma, width, height);
     let mut bitmap = BinaryBitmap::new(HybridBinarizer::new(source));
-    
+
     // Configure hints
     let mut hints = rxing::DecodingHintDictionary::new();
     hints.insert(
         DecodeHintType::POSSIBLE_FORMATS,
         DecodeHintValue::PossibleFormats(vec![BarcodeFormat::QR_CODE].into_iter().collect()),
     );
-    hints.insert(
-        DecodeHintType::TRY_HARDER,
-        DecodeHintValue::TryHarder(true),
-    );
-    
+    hints.insert(DecodeHintType::TRY_HARDER, DecodeHintValue::TryHarder(true));
+
     // Decode
     let mut reader = MultiFormatReader::default();
-    let result = reader.decode_with_hints(&mut bitmap, &hints)
-        .map_err(|e| QrError::VerificationFailed(format!("Decode error: {:?}", e)))?;;
-    
+    let result = reader
+        .decode_with_hints(&mut bitmap, &hints)
+        .map_err(|e| QrError::VerificationFailed(format!("Decode error: {:?}", e)))?;
+
     Ok(result.getText().to_string())
 }
 
@@ -142,7 +176,7 @@ pub fn decode_image(image_data: &[u8]) -> Result<String, QrError> {
 #[cfg(not(feature = "verify"))]
 pub fn verify_svg(_svg: &str) -> Result<String, QrError> {
     Err(QrError::VerificationFailed(
-        "Verification not available. Enable 'verify' feature.".into()
+        "Verification not available. Enable 'verify' feature.".into(),
     ))
 }
 
@@ -150,7 +184,7 @@ pub fn verify_svg(_svg: &str) -> Result<String, QrError> {
 #[cfg(not(feature = "verify"))]
 pub fn decode_image(_image_data: &[u8]) -> Result<String, QrError> {
     Err(QrError::VerificationFailed(
-        "Decoding not available. Enable 'verify' feature.".into()
+        "Decoding not available. Enable 'verify' feature.".into(),
     ))
 }
 
@@ -164,7 +198,7 @@ mod tests {
         let text = "https://holi.tools";
         let qr = generate_qr(text, ErrorCorrectionLevel::Medium).unwrap();
         let svg = render_svg_styled(&qr, &StyledRenderOptions::default());
-        
+
         let decoded = verify_svg(&svg).expect("Should decode successfully");
         assert_eq!(decoded, text);
     }
@@ -172,7 +206,7 @@ mod tests {
     #[test]
     fn test_verify_with_dots_shape() {
         use crate::BodyShape;
-        
+
         let text = "test-dots";
         let qr = generate_qr(text, ErrorCorrectionLevel::High).unwrap();
         let options = StyledRenderOptions {
@@ -180,7 +214,7 @@ mod tests {
             ..Default::default()
         };
         let svg = render_svg_styled(&qr, &options);
-        
+
         let decoded = verify_svg(&svg).expect("Dots shape should be scannable");
         assert_eq!(decoded, text);
     }

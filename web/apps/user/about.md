@@ -1,125 +1,95 @@
-# holi-user — About
+# holi-user — Architecture
 
-This app is the “User / Vault” client in the Holi tools monorepo.
+Holi User is the local vault and peer-to-peer collaboration client in the Holi monorepo. It is a static Astro application: user data stays in browser storage or in a directory explicitly authorized through the File System Access API.
 
-It is built as an **offline-first** app (Astro + browser storage) with **P2P collaboration** over WebRTC. Trystero is used as the transport/signaling layer; **all application data should be treated as sensitive and must be protected at the app-protocol layer** (encryption + authorization), not only by transport.
+## Product boundaries
 
-## Goals
+- `/[lang]/` opens, restores, and manages a local vault.
+- `/[lang]/friend` completes a capability-based friend handshake.
+- `/[lang]/dm` opens the persistent encrypted conversation stored for a contact.
+- `/[lang]/private` creates or joins a link-based encrypted conversation without requiring a contact.
+- `/[lang]/vault` opens project collaboration from a project capability link.
 
-- Peer-to-peer collaboration (friends + projects) without central servers storing user data.
-- “Always encrypted”: messages/files are never sent in plaintext at the application layer.
-- Clear permission model: allowlist/blocklist; real revocation via key rotation (rekey).
-- Avoid secret leakage: no logs with secrets, room IDs, or raw signaling payloads.
+The two conversation routes intentionally share the same `DmManager` and `ChatManager`. Pages own presentation and history; protocol classes own connection, encryption, heartbeats, and file framing.
 
-## High-level architecture
-
-- **Identity**
-  - A primary identity is auto-provisioned when opening/restoring a vault.
-  - Identity is the anchor for trust decisions (allow/block) and for authenticated handshakes.
-
-- **Transport / Signaling**
-  - Trystero (nostr strategy) is used to establish WebRTC connections.
-  - Nostr relays are used for signaling/discovery only; they are not trusted for privacy.
-
-- **Application protocol (security boundary)**
-  - All chat/file payloads should be encrypted at the app layer (AEAD envelopes + framing).
-  - Room IDs / topics are treated as capabilities and must be high-entropy.
-
-- **Storage**
-  - Project/friend metadata and histories are stored locally under the user’s vault.
-  - The app should never “scan disk”; it only reads/writes inside explicitly granted handles.
-
-## Flows
-
-### 1) Friend handshake (Friend Code → DM config)
-
-Friend Code is a short-lived capability that allows two peers to exchange contact info and converge on **one shared DM config** (host authority).
-
-```mermaid
-sequenceDiagram
-  participant A as Host (Alice)
-  participant B as Joiner (Bob)
-  participant T as Trystero Room
-
-  A->>T: Host Friend Room (code)
-  B->>T: Join Friend Room (code)
-  B->>A: contact-info {pubkey,name}
-  A->>B: contact-info {pubkey,name,dm(sessionId,key)}
-  Note over A,B: Host DM config is authoritative (prevents split-brain rooms)
-```
-
-Security notes:
-- Friend Code must be **high entropy** (not short IDs). If leaked, anyone can attempt to join.
-- The joiner should not generate its own DM secret; both must store the same config.
-
-Related code:
-- `src/lib/friends/friend-handshake.ts`
-
-### 2) DM transport (Trystero DM room)
-
-DM room identity is derived from the shared secret so that discovery does not reveal the raw secret.
+## Networking layers
 
 ```mermaid
 flowchart LR
-  S[Shared Secret (dm.keyB64Url)] --> H[SHA-256]
-  H --> R[Room/Topic ID]
-  R --> TR[Trystero joinRoom]
-  TR --> DC[WebRTC DataChannel]
+  UI[DM or Private page] --> DM[DmManager lifecycle]
+  DM --> ADAPTER[p2p.ts action-channel adapter]
+  ADAPTER --> TR[Trystero]
+  TR --> N[Nostr signaling relays]
+  TR --> W[WebRTC peer connection]
+  DM --> CHAT[ChatManager binary protocol]
+  CHAT --> AEAD[Application-layer AEAD envelope]
+  AEAD --> ADAPTER
 ```
 
-Security notes:
-- Do not log: dm keys, derived room IDs, raw messages, raw signaling.
+- Trystero's Nostr strategy performs discovery and WebRTC signaling. Relays never receive chat messages or files.
+- DM signaling rooms use the shared DM key as Trystero's password.
+- `ChatManager` additionally encrypts every DM message, heartbeat, and file frame at the application layer with the 32-byte DM key.
+- Relay defaults belong to Trystero. Holi only overrides them when an environment or local diagnostic setting explicitly requests it.
 
-Related code:
-- `src/lib/friends/trystero-dm.ts`
+## Friend handshake
 
-### 3) Project “Vault” collaboration
-
-A project has a `projectId` and a secret (project master key). Peers join a vault room derived from `(projectId + secret)`.
+A friend code is a high-entropy capability. Both peers exchange contact claims and converge on one shared DM configuration; the host's configuration is authoritative so the two contacts cannot accidentally store different rooms.
 
 ```mermaid
 sequenceDiagram
-  participant Owner as Owner
-  participant Guest as Guest
-  participant L as Lobby (public room)
-  participant V as Vault Room (secret-derived)
-
-  Guest->>L: knock (pubkey,name)
-  Owner->>Guest: admit (encryptedSecret)
-  Guest->>V: join(projectId, secret)
-  Owner->>V: join(projectId, secret)
-  Note over Owner,Guest: After join, all payloads should be app-encrypted
+  participant H as Host
+  participant J as Joiner
+  participant T as Trystero room
+  H->>T: Open high-entropy friend capability
+  J->>T: Join the same capability
+  J->>H: Contact claim
+  H->>J: Accept + host contact + shared DM config
+  H->>H: Store contact and DM config
+  J->>J: Store contact and the same DM config
 ```
 
-Related code:
-- `src/lib/p2p/trystero-lobby.ts`
+The current handshake proves possession of the invitation capability; it does not cryptographically prove a human-readable alias. Users should confirm identity through another channel when that distinction matters.
+
+Related modules:
+
+- `src/lib/friends/friend-handshake.ts`
+- `src/components/vault/modals/FriendModal.astro`
+
+## Direct messages
+
+`DmManager` is the only DM connection lifecycle. It cancels stale attempts, retries with bounded exponential backoff, closes resources on navigation, and creates one encrypted `ChatManager` after a peer appears. Both `/dm` and `/private` use this path.
+
+Related modules:
+
+- `src/lib/friends/dm-manager.ts`
+- `src/lib/friends/p2p.ts`
+- `src/lib/p2p/chat.ts`
+- `src/lib/p2p/trystero-client.ts`
+
+## Project collaboration
+
+Projects use a separate multi-peer manager. A high-entropy project secret derives the room identifier and also password-protects Trystero signaling. Project messages and files travel directly over WebRTC's encrypted transport.
+
+Project actions do not yet use the DM binary AEAD envelope. Do not describe project collaboration as application-layer encrypted until that protocol is added. The capability link grants project access; rotating the project key is required for meaningful revocation.
+
+Related modules:
+
 - `src/lib/p2p/trystero-vault.ts`
 - `src/lib/vault/controller.ts`
 
-## Permissions & revocation (design rule)
+## Storage ownership
 
-- **Allowlist**: only explicitly accepted identities can join/participate.
-- **Block**: blocks future sessions; does not retroactively delete data.
-- **Real revocation requires rekey**:
-  - Generate a new project secret.
-  - Re-encrypt and distribute it only to allowed members.
-  - Stop accepting traffic under the old secret.
+- Contact data and DM history are stored under `.holi/` in an authorized vault.
+- Link-based private chat falls back to browser `localStorage` when no vault is open.
+- Project files are read and written only inside the active authorized vault.
+- `ChatManager` never writes to storage. It emits received blobs and lets the page or project controller decide whether to download or persist them.
 
-## Anti-leak policy (must-follow)
+## Security rules
 
-- Never log secrets: friend codes, dm keys, project secrets, derived room IDs, raw Nostr events.
-- If debug is needed, log only **redacted summaries** (prefixes/lengths) gated behind a debug flag.
+- Never log friend codes, DM keys, project secrets, derived room IDs, message bodies, or raw signaling events.
+- Treat URL fragments containing capabilities as secrets. They are intentionally kept out of normal HTTP requests.
+- A block prevents future local interaction; it does not erase data already shared.
+- Rotate a DM or project key when access must be revoked.
+- Keep debug output redacted and disabled in production.
 
-Recent hardening:
-- Removed raw Nostr event logging to avoid leaking encrypted payloads.
-- Removed logging of host DM config during friend handshake.
-- Increased Friend Code entropy to reduce brute-force risk.
-
-## Environment
-
-See `ENV.md` for runtime settings (e.g., relay overrides).
-
-## Debugging
-
-- Enable: `PUBLIC_HOLI_DEBUG=1`
-- Expectation: debug logs must remain redacted (no secrets, no raw events).
+See `ENV.md` for supported network diagnostics.

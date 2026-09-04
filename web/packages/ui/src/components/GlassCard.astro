@@ -24,6 +24,8 @@ interface Props {
   variant?: "default" | "active";
   clickable?: boolean;
   href?: string;
+  target?: string;
+  rel?: string;
   id?: string;
   class?: string;
   as?: string;
@@ -42,6 +44,8 @@ const {
   variant = "default",
   clickable = false,
   href,
+  target,
+  rel,
   id,
   class: className,
   as,
@@ -58,6 +62,9 @@ const {
 } = Astro.props;
 
 const Tag = as || (href ? "a" : "div");
+const resolvedTarget = href ? (target ?? "_blank") : undefined;
+const resolvedRel =
+  href && resolvedTarget === "_blank" ? (rel ?? "noopener noreferrer") : rel;
 
 // Build class list
 const classes = [
@@ -89,8 +96,8 @@ const styles = [
   id={id}
   class={classes}
   href={href}
-  target={href ? "_blank" : undefined}
-  rel={href ? "noopener noreferrer" : undefined}
+  target={resolvedTarget}
+  rel={resolvedRel}
   role={clickable && !href ? "button" : undefined}
   tabindex={clickable || toggleable ? 0 : undefined}
   style={styles || undefined}
@@ -148,8 +155,8 @@ const styles = [
   /* ========== BASE CARD ========== */
   .glass-card {
     --card-accent: var(--color-accent, #6366f1);
-    --card-bg: rgba(255, 255, 255, calc(0.03 * var(--card-opacity, 1)));
-    --card-border: rgba(255, 255, 255, calc(0.1 * var(--card-opacity, 1)));
+    --card-bg: color-mix(in srgb, var(--color-text, #18181b) calc(3% * var(--card-opacity, 1)), transparent);
+    --card-border: color-mix(in srgb, var(--color-text, #18181b) calc(11% * var(--card-opacity, 1)), transparent);
 
     display: flex;
     flex-direction: column;
@@ -204,14 +211,6 @@ const styles = [
     border-radius: 9999px;
   }
 
-  /* Dark mode override */
-  @media (prefers-color-scheme: dark) {
-    .glass-card {
-      --card-bg: rgba(255, 255, 255, calc(0.02 * var(--card-opacity, 1)));
-      --card-border: rgba(255, 255, 255, calc(0.08 * var(--card-opacity, 1)));
-    }
-  }
-
   /* ========== CLICKABLE ========== */
   .glass-card--clickable {
     cursor: pointer;
@@ -220,12 +219,6 @@ const styles = [
   .glass-card--clickable:hover {
     z-index: 10;
     border-color: var(--card-accent);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .glass-card--clickable:hover {
-      border-color: var(--card-accent);
-    }
   }
 
   /* ========== ACTIVE VARIANT ========== */

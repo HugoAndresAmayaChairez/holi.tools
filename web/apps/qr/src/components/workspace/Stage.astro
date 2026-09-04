@@ -1,0 +1,101 @@
+---
+/**
+ * Stage.astro — centre column: editorial empty state, then the live QR
+ * (WebGL preview + SVG fallback) with the preview-background controls.
+ * Ids inside #qr-output are read by the renderers; keep them stable.
+ */
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { getIconSvg } from "../../lib/icons";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const quickTypes = [
+  { id: "text", icon: "text_fields", label: t("type.text") },
+  { id: "email", icon: "email", label: t("type.email") },
+  { id: "phone", icon: "phone", label: t("type.phone") },
+  { id: "sms", icon: "sms", label: t("type.sms") },
+  { id: "vcard", icon: "contact_page", label: t("type.vcard") },
+  { id: "wifi", icon: "wifi", label: t("type.wifi") },
+  { id: "event", icon: "event", label: t("type.event") },
+];
+---
+
+<main class="qr-stage" id="qr-stage">
+  <div class="stage-toolbar" aria-label={t("ws.view")}>
+    <span class="pane-title">{t("ws.view")}</span>
+    <span class="pane-hint mono">{t("ws.preview_bg")}</span>
+    <span class="pane-spacer"></span>
+    <div class="seg" role="group" aria-label={t("ws.preview_bg")} id="preview-bg-seg">
+      <button type="button" data-preview-bg="light" aria-pressed="true"><span class="icon">light_mode</span>{t("ws.bg_light")}</button>
+      <button type="button" data-preview-bg="dark" aria-pressed="false"><span class="icon">dark_mode</span>{t("ws.bg_dark")}</button>
+      <button type="button" data-preview-bg="transparent" aria-pressed="false"><span class="icon">transparency</span>{t("ws.bg_transparent")}</button>
+    </div>
+    <div class="seg" role="group" aria-label="Zoom" id="stage-zoom">
+      <button type="button" data-zoom="-1" aria-label="Zoom −">−</button>
+      <button type="button" data-zoom="0" id="stage-zoom-value" style="width:44px;justify-content:center">100%</button>
+      <button type="button" data-zoom="1" aria-label="Zoom +">+</button>
+    </div>
+    <button class="ws-btn" type="button" id="btn-reset-style">
+      <span class="icon">restart_alt</span>{t("ws.reset_style")}
+    </button>
+  </div>
+
+  <div class="stage-body" id="stage-body" data-preview-bg="light">
+    <ProductCreature name="moth" variant="mark" class="stage-creature" />
+
+    <!-- Empty state -->
+    <section class="stage-hero" id="stage-hero" aria-labelledby="stage-hero-title">
+      <div class="eyebrow">{t("ws.hero_eyebrow")}</div>
+      <h1 id="stage-hero-title">{t("ws.hero_title_a")} <span>{t("ws.hero_title_b")}</span></h1>
+      <p>{t("ws.hero_intro")}</p>
+      <form class="hero-input" id="hero-form" autocomplete="off">
+        <label class="hero-input-type" for="hero-input">
+          <span set:html={getIconSvg("link", 14)} />
+          <span>URL</span>
+        </label>
+        <input id="hero-input" type="text" inputmode="url" placeholder={t("input.placeholder.url")} aria-label={t("type.url")} />
+        <button class="hero-input-go" type="submit" aria-label={t("toolbar.generate")} set:html={getIconSvg("arrow-right", 18)} />
+      </form>
+      <div class="hero-types">
+        <span class="section-label">{t("ws.or_choose")}</span>
+        {quickTypes.map((item) => (
+          <button class="type-option" type="button" data-type={item.id} data-icon={item.icon}>
+            <span class="icon">{item.icon}</span><span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+      <span class="local-pill"><i aria-hidden="true"></i>{t("ws.local_pill")}</span>
+    </section>
+
+    <!-- Editing, nothing generated yet -->
+    <div class="stage-placeholder" id="stage-placeholder" aria-hidden="true">
+      <span class="icon">qr_code_scanner</span>
+      <span>{t("ws.inspector_empty")}</span>
+    </div>
+
+    <!-- Result -->
+    <div class="qr-result-wrapper" id="qr-result-wrapper">
+      <div class="qr-card" id="qr-card" data-cta="off">
+        <div class="qr-frame-main" id="qr-frame">
+          <div class="qr-output" id="qr-output">
+            <div class="qr-render" id="qr-render-target">
+              <div id="qr-svg-target" class="qr-svg-target"></div>
+            </div>
+          </div>
+        </div>
+        <div class="qr-cta" id="qr-cta" aria-hidden="true"></div>
+      </div>
+      <div class="stage-caption" id="stage-caption" aria-live="polite" data-frame-label={t("ws.caption_frame")}>
+        <span id="caption-size">2048 × 2048 px</span>
+        <span>·</span>
+        <span id="caption-format">PNG</span>
+        <span>·</span>
+        <span id="caption-frame">{t("ws.caption_no_frame")}</span>
+        <span>·</span>
+        <span id="caption-verify" data-ok={t("ws.caption_verified")} data-bad={t("ws.caption_unverified")}></span>
+      </div>
+    </div>
+  </div>
+</main>

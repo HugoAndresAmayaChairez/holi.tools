@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://qr.holi.tools/sitemap.xml
+LLMs: https://qr.holi.tools/llms.txt

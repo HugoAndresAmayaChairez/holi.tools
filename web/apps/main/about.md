@@ -5,6 +5,12 @@ The **Main Hub** is the central landing page for the Holi.tools ecosystem. It se
 ## Purpose
 
 - Provide a unified user interface for tool discovery.
+- Link only to real public tools; Image, Typst, QR, Metadata, and Labs are currently available.
+- Organize discovery by user outcome (Create, Transform, Inspect, and Learn) with search and local recent shortcuts.
+- Give each public product a short editorial landing at `/tools/<product>/`
+  while keeping a direct “open tool” action in the catalog.
+- Use a restrained color-and-animal identity as a decorative recognition cue;
+  it never replaces the product name, description, or accessible iconography.
 - Manage branding and common navigation elements.
 - Serve as the primary entry point for the `holi.tools` domain.
 
@@ -12,5 +18,21 @@ The **Main Hub** is the central landing page for the Holi.tools ecosystem. It se
 
 - **Framework:** Astro (Static)
 - **Styling:** Tailwind CSS (via `@holi/configs`)
-- **Graphics Core:** Rust/WASM via `@holi/wasm-core` (WebGPU)
+- **Background:** Shared lightweight Astro/CSS presentation
 - **UI Components:** Shared via `@holi/ui`
+
+## Product identities
+
+| Surface | Accent | Sketch detail |
+| --- | --- | --- |
+| Main | Multicolor | Hummingbird |
+| Image | Rust | Chameleon |
+| Typst | Blue | Owl |
+| QR | Indigo | Moth |
+| Metadata | Green | Lynx |
+| Labs | Green | Axolotl |
+| Labs Papers | Labs accent | Origami crane |
+
+The PNG sketches have transparent backgrounds and remain low-contrast,
+decorative details. Papers uses the crane as a category symbol; it is not a
+separate product identity.

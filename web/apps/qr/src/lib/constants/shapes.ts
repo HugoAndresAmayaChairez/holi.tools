@@ -9,28 +9,30 @@
 
 /**
  * Body shape name to WebGL shader ID
- * IDs: 0=Square, 1=Dots, 2=Rounded, 3=Diamond, 4=Star, 5=Clover, 6=TinyDots, 7=Bars
+ * IDs: 0=Square, 1=Dots, 2=Rounded, 3=Diamond, 4=Star, 5=Clover, 6=TinyDots, 7=Capsule, 8=Chain, 9=Pixel, 10=Water
  */
 export const BODY_SHAPE_MAP: Record<string, number> = {
     'square': 0,
-    'rounded': 2,
     'dots': 1,
+    'rounded': 2,
     'diamond': 3,
     'star': 4,
     'clover': 5,
     'tiny-dots': 6,
+    'capsule': 7,
+    'chain': 8,
+    'pixel': 9,
+    'water': 10,
+
+    // Legacy/aliases
     'mini-square': 0,
     'blob': 1,
-    'leaf': 5,
-    'vertical-lines': 7,
-    'horizontal-lines': 7,
-    'arrow': 3,
-    'heart': 4,
-    // Note: These are intentional aliases for backwards compatibility
     'classy': 0,
     'classy-rounded': 2,
-    'mosaic': 0,
     'fluid': 1,
+    'mosaic': 9,
+    'vertical-lines': 9,
+    'horizontal-lines': 9,
 };
 
 // =============================================================================
@@ -39,21 +41,28 @@ export const BODY_SHAPE_MAP: Record<string, number> = {
 
 /**
  * Eye frame shape name to WebGL shader ID
- * IDs: 0=Square, 1=Circle, 2=Rounded, 3=Leaf, 4=Shield, 5=Diamond
+ * IDs: 0=Square, 1=Rounded, 2=Circle, 3=Diamond, 4=Cushion, 5=Leaf, 9=CloverFrame, 10=Bevel, 11=Orbit, 12=Flux
  */
 export const EYE_FRAME_MAP: Record<string, number> = {
     'square': 0,
-    'circle': 1,
-    'rounded': 2,
-    'leaf': 3,
-    'shield': 4,
-    'diamond': 5,
-    'pointed': 3,
-    'dotted': 1,
-    'cushion': 2,
-    'double': 0,
-    'fancy': 3,
-    'heavy-rounded': 2,
+    'rounded': 1,
+    'circle': 2,
+    'diamond': 3,
+    'cushion': 4,
+    'leaf': 5,
+    'clover-frame': 9,
+    'bevel': 10,
+    'orbit': 11,
+    'flux': 12,
+
+    // Legacy/aliases
+    'pointed': 5,
+    'dotted': 2,
+    'fancy': 4,
+    'dots-square': 0,
+    'shield': 1,
+    'double': 1,
+    'heavy-rounded': 1,
 };
 
 // =============================================================================
@@ -62,21 +71,26 @@ export const EYE_FRAME_MAP: Record<string, number> = {
 
 /**
  * Eye ball shape name to WebGL shader ID
- * IDs: 0=Square, 1=Circle, 2=Rounded, 3=Hexagon, 4=Star/Heart, 5=Diamond/Clover
+ * IDs: 0=Square, 1=Rounded, 2=Circle, 3=Diamond, 4=Star, 5=Heart, 6=Hexagon, 7=DotsGrid, 8=BarsH, 9=BarsV
  */
 export const EYE_BALL_MAP: Record<string, number> = {
     'square': 0,
-    'circle': 1,
-    'rounded': 2,
+    'rounded': 1,
+    'circle': 2,
+    'diamond': 3,
     'star': 4,
-    'diamond': 5,
-    'heart': 4,
-    'hexagon': 3,
-    'bars-h': 0,
-    'bars-v': 0,
-    'clover': 5,
-    'flower': 4,
-    'cushion': 2,
+    'heart': 5,
+    'hexagon': 6,
+    'dots-grid': 7,
+    'bars-h': 8,
+    'bars-v': 9,
+
+    // Legacy/aliases
+    'clover': 4,
+    'cushion': 1,
+    'octagon': 6,
+    'leaf': 3,
+    'shield': 3,
 };
 
 // =============================================================================

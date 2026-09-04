@@ -50,7 +50,7 @@ impl QrCode {
     pub fn get_modules(&self) -> Vec<u8> {
         let size = self.inner.size;
         let mut modules = Vec::with_capacity(size * size);
-        
+
         // fast_qr stores modules in .data as Vec<Module>
         // Module is a tuple struct Module(u8) where .value() returns true if dark
         for module in self.inner.data.iter() {

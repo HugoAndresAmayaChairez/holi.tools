@@ -1,27 +1,34 @@
 ---
-title: "Tiempos de Referencia"
-description: "Comparativa de rendimiento entre WASM e implementaciones nativas en JavaScript."
-tags: ["benchmark", "wasm", "prueba"]
+title: "Cómo comparar WASM y JavaScript de forma justa"
+description: "Checklist reproducible para medir inicio, transferencia, memoria y latencia visible en el navegador."
+summary: "Un benchmark útil mide el recorrido completo publicado y documenta el entorno en vez de presentar loops aislados como verdad del producto."
+tags: ["benchmark", "wasm", "rendimiento"]
+category: "Rendimiento"
+format: "experiment"
 icon: "speed"
 color: "var(--palette-paint-accent)"
 lang: es
-order: 3
+order: 30
 ---
 
-Un estudio comparativo del rendimiento entre WASM y JavaScript a través de diferentes cargas de trabajo y navegadores.
+Una implementación WASM no es automáticamente más rápida que JavaScript. El resultado depende del tamaño de la carga, conversión de datos, compilación, caché, navegador y dispositivo.
 
-## Categorías de Pruebas
+## Define la pregunta visible para el usuario
 
-- **Limitado por CPU**: Operaciones con matrices, hashing, codificación
-- **Limitado por Memoria**: Procesamiento de grandes volúmenes de datos, manipulación de imágenes
-- **Limitado por E/S**: Operaciones en IndexedDB, peticiones de red
+Mide una tarea real como “tiempo desde presionar Generar hasta mostrar un QR escaneable”. Incluye la carga y conversión que la persona realmente espera.
 
-## Resultados Preliminares
+## Registra el entorno
 
-| Operación | JavaScript | WASM (Rust) | Aceleración |
-|-----------|------------|-------------|-------------|
-| Generación QR (1000x) | 450ms | 45ms | 10x |
-| SHA-256 (1MB) | 120ms | 18ms | 6.7x |
-| Redimensionado de Imagen | 890ms | 210ms | 4.2x |
+- Navegador y versión exacta.
+- Sistema operativo y hardware.
+- Ejecuciones frías y calientes.
+- Tamaño del bundle y bytes de WASM.
+- Entradas de muestra y número de iteraciones.
 
-*Los resultados pueden variar según el navegador y el hardware.*
+## Reporta distribuciones
+
+Usa varias ejecuciones y publica la mediana junto con un percentil alto. Separa la inicialización, pero no la escondas. Si el cambio sólo aparece en un loop sintético y no en la latencia de interacción, dilo.
+
+## Decide con los costos del producto
+
+El rendimiento es sólo una entrada. Compara también complejidad, depuración, accesibilidad, despliegue, fallback de navegador y experiencia de contribución. Conserva WASM sólo cuando el balance completo siga siendo positivo.

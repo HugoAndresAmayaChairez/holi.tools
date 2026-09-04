@@ -1,0 +1,61 @@
+<script>
+  // Minimal global overlay contract used by ConfigMenu and shared overlays.
+  // If an app defines its own (e.g. holi-main), this will not override it.
+  if (!window.openOverlay) {
+    window.openOverlay = (type: string, id: string) => {
+      const el = document.getElementById(`overlay-${type}-${id}`);
+      if (!el) return;
+
+      (el as HTMLElement).style.display = "flex";
+      const drawer = el.querySelector(".log-drawer");
+      const backdrop = el.querySelector(".log-backdrop");
+
+      backdrop?.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: 240,
+        fill: "forwards",
+      });
+
+      drawer?.animate(
+        [
+          { transform: "translateX(-100%)", opacity: 0 },
+          { transform: "translateX(0)", opacity: 1 },
+        ],
+        {
+          duration: 320,
+          easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          fill: "forwards",
+        }
+      );
+    };
+  }
+
+  if (!window.closeOverlay) {
+    window.closeOverlay = (type: string, id: string) => {
+      const el = document.getElementById(`overlay-${type}-${id}`);
+      if (!el) return;
+
+      const drawer = el.querySelector(".log-drawer");
+      const backdrop = el.querySelector(".log-backdrop");
+
+      backdrop?.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 180,
+        fill: "forwards",
+      });
+
+      const anim = drawer?.animate(
+        [
+          { transform: "translateX(0)", opacity: 1 },
+          { transform: "translateX(-100%)", opacity: 0 },
+        ],
+        { duration: 240, easing: "ease-in", fill: "forwards" }
+      );
+
+      if (anim) {
+        anim.onfinish = () => ((el as HTMLElement).style.display = "none");
+      } else {
+        (el as HTMLElement).style.display = "none";
+      }
+    };
+  }
+</script>
+

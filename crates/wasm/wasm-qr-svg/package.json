@@ -1,0 +1,22 @@
+{
+  "name": "@holi/wasm-qr-svg",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Micro Rust SVG generator for QR codes (WASM)",
+  "main": "pkg/holi_qr_svg.js",
+  "types": "pkg/holi_qr_svg.d.ts",
+  "exports": {
+    ".": {
+      "types": "./pkg/holi_qr_svg.d.ts",
+      "default": "./pkg/holi_qr_svg.js"
+    }
+  },
+  "files": [
+    "pkg"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --target web --release",
+    "build:dev": "wasm-pack build --target web --dev"
+  }
+}

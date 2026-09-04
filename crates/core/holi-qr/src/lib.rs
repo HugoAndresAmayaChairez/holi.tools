@@ -22,8 +22,14 @@ mod shapes;
 mod verify;
 
 pub use error::QrError;
-pub use qr::{generate_qr, QrCode, ErrorCorrectionLevel};
-pub use render::{render_svg, render_svg_with_options, render_svg_styled, RenderOptions, StyledRenderOptions};
-pub use shapes::{BodyShape, EyeFrameShape, EyeBallShape, body_path, eye_frame_path, eye_ball_path};
-pub use verify::{verify_svg, decode_image};
-
+pub use qr::{generate_qr, ErrorCorrectionLevel, QrCode};
+pub use render::{
+    build_styled_svg_paths, render_svg, render_svg_styled, render_svg_with_options, RenderOptions,
+    StyledRenderOptions, StyledSvgPaths,
+};
+pub use shapes::{
+    body_path, body_path_with_neighbors, eye_ball_path, eye_frame_outer_path, eye_frame_path,
+    BodyShape, EyeBallShape, EyeFrameShape, Neighbors,
+};
+pub use verify::rasterize_svg_alpha;
+pub use verify::{decode_image, verify_svg};

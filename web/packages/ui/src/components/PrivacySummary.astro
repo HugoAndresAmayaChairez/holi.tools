@@ -1,0 +1,371 @@
+---
+import Icon from "./Icon.astro";
+
+export type PrivacyTone = "local" | "connected" | "warning";
+
+export interface PrivacyFact {
+  label: string;
+  value: string;
+  tone?: PrivacyTone;
+}
+
+interface Props {
+  id?: string;
+  title?: string;
+  summary: string;
+  facts: readonly PrivacyFact[];
+  detailsLabel?: string;
+  detailsHref?: string;
+  detailsLinkLabel?: string;
+  badgeLabel?: string;
+  placement?: "floating" | "inline";
+  currentLang?: string;
+}
+
+const {
+  id = "privacy-summary",
+  title,
+  summary,
+  facts,
+  detailsLabel,
+  detailsHref,
+  detailsLinkLabel,
+  badgeLabel,
+  placement = "floating",
+  currentLang = "en",
+} = Astro.props;
+import { getProductShellCopy } from "../lib/product-shell-copy";
+const copy = getProductShellCopy(currentLang);
+const localizedTitle = title ?? copy.privacySummary;
+const localizedDetailsLabel = detailsLabel ?? copy.privacyDetails;
+const localizedDetailsLinkLabel = detailsLinkLabel ?? copy.privacyDetails;
+const localizedBadgeLabel = badgeLabel ?? copy.privacy;
+---
+
+<details class="privacy-disclosure" data-placement={placement}>
+  <summary class="privacy-badge" aria-label={`${localizedTitle}, ${localizedDetailsLabel}`}>
+    <span class="privacy-badge__mark" aria-hidden="true">◇</span>
+    <span>{localizedBadgeLabel}</span>
+  </summary>
+
+  <div class="privacy-overlay" id={`overlay-privacy-${id}`}>
+    <div
+      class="log-backdrop"
+      onclick="this.closest('details')?.removeAttribute('open')"
+    ></div>
+
+    <aside class="log-drawer" aria-labelledby={`${id}-title`}>
+      <header class="privacy-header">
+        <h2 id={`${id}-title`} class="privacy-title">{localizedTitle}</h2>
+        <button
+          class="privacy-close"
+          type="button"
+          onclick="this.closest('details')?.removeAttribute('open')"
+          aria-label={copy.closePrivacy}
+        >
+          <Icon name="x" size={18} />
+        </button>
+      </header>
+
+      <div class="privacy-body">
+        <p class="privacy-lead">{summary}</p>
+
+        <dl class="privacy-facts">
+          {
+            facts.map((fact) => (
+              <div class="privacy-fact" data-tone={fact.tone ?? "local"}>
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        {
+          detailsHref && (
+            <a class="privacy-link" href={detailsHref}>
+              {localizedDetailsLinkLabel}
+            </a>
+          )
+        }
+      </div>
+    </aside>
+  </div>
+</details>
+
+<script>
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document
+      .querySelectorAll<HTMLDetailsElement>(".privacy-disclosure[open]")
+      .forEach((details) => details.removeAttribute("open"));
+  });
+</script>
+
+<style>
+  .privacy-disclosure {
+    display: contents;
+  }
+
+  .privacy-disclosure[data-placement="inline"] {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .privacy-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    color: var(--color-text, inherit);
+    opacity: 0.7;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    list-style: none;
+  }
+
+  .privacy-badge::-webkit-details-marker {
+    display: none;
+  }
+
+  .privacy-disclosure[data-placement="inline"] .privacy-badge {
+    position: relative;
+    inset: auto;
+    min-height: 26px;
+  }
+
+  .privacy-badge:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-accent, #6366f1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .privacy-badge:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--color-accent, #6366f1);
+    outline-offset: 3px;
+  }
+
+  .privacy-badge__mark {
+    color: var(--color-accent, #6366f1);
+    font-weight: 700;
+  }
+
+  .privacy-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+  }
+
+  .privacy-disclosure[open] .privacy-overlay {
+    display: flex;
+  }
+
+  .privacy-disclosure[data-placement="inline"] .privacy-overlay {
+    justify-content: flex-end;
+  }
+
+  .log-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .log-drawer {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    color: var(--color-text, inherit);
+    background: color-mix(in srgb, var(--color-bg, #ffffff) 96%, transparent);
+    backdrop-filter: blur(var(--depth-blur, 24px));
+    -webkit-backdrop-filter: blur(var(--depth-blur, 24px));
+    border-right: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    display: flex;
+    flex-direction: column;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.1);
+  }
+
+  .privacy-disclosure[data-placement="inline"] .log-backdrop {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .privacy-disclosure[data-placement="inline"] .log-drawer {
+    width: min(400px, calc(100vw - 20px));
+    max-width: none;
+    margin-left: auto;
+    border-right: 0;
+    border-left: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.24);
+    animation: privacy-drawer-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes privacy-drawer-in {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .privacy-header {
+    padding: 40px 30px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .privacy-title {
+    margin: 0;
+    color: var(--text-main, #1a1a1a);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .privacy-close {
+    margin-right: -8px;
+    padding: 8px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted, rgba(26, 26, 26, 0.5));
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .privacy-close:hover {
+    color: var(--color-accent, #6366f1);
+    background: rgba(127, 127, 127, 0.1);
+  }
+
+  .privacy-body {
+    flex: 1;
+    padding: 20px 30px 30px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .privacy-disclosure[data-placement="inline"] .privacy-body {
+    padding-bottom: 86px;
+  }
+
+  .privacy-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .privacy-lead {
+    margin: 0 0 18px;
+    color: var(--text-secondary, rgba(26, 26, 26, 0.7));
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .privacy-facts {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .privacy-fact {
+    padding: 16px;
+    border: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    border-left: 3px solid var(--color-accent, #6366f1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .privacy-fact[data-tone="connected"] {
+    border-left-color: #d59b36;
+  }
+
+  .privacy-fact[data-tone="warning"] {
+    border-left-color: #dc5a5a;
+  }
+
+  .privacy-fact dt {
+    margin-bottom: 5px;
+    color: var(--text-muted, rgba(26, 26, 26, 0.5));
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .privacy-fact dd {
+    margin: 0;
+    color: var(--text-secondary, rgba(26, 26, 26, 0.7));
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .privacy-link {
+    display: inline-block;
+    margin-top: 18px;
+    color: var(--color-accent, #6366f1);
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .privacy-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .privacy-badge {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .privacy-badge:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .log-drawer {
+      max-width: 100%;
+    }
+
+    .privacy-header,
+    .privacy-body {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .privacy-disclosure[data-placement="inline"] .log-drawer {
+      width: calc(100vw - 12px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .privacy-disclosure[data-placement="inline"] .log-drawer {
+      animation: none;
+    }
+  }
+</style>

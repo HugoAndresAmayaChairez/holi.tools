@@ -2,6 +2,7 @@
 import { getLangFromUrl, useTranslations } from "../../../i18n/utils";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const basePath = `/${lang}`;
 
 const strings = {
   new_title: t("projects.new_title"),
@@ -16,24 +17,16 @@ const strings = {
   btn_join: t("projects.btn_join"),
   manage_title: t("projects.manage_title"),
   manage_desc: t("projects.manage_desc"),
-  label_settings: t("projects.label_settings"),
-  label_auto_admit: t("projects.label_auto_admit"),
-  desc_auto_admit: t("projects.desc_auto_admit"),
-  label_offline: t("projects.label_offline"),
-  desc_offline: t("projects.desc_offline"),
-  label_collaborators: t("projects.label_collaborators"),
-  btn_add_collab: t("projects.btn_add_collab"),
-  no_collaborators: t("projects.no_collaborators"),
-  btn_remove: t("projects.btn_remove"),
-  label_owner: t("projects.label_owner"),
+  access_title: t("projects.access_title"),
+  access_desc: t("projects.access_desc"),
+  rotate_key: t("projects.rotate_key"),
+  rotate_warning: t("projects.rotate_warning"),
+  rotate_confirm: t("projects.rotate_confirm"),
+  rotate_success: t("projects.rotate_success"),
+  rotate_failed: t("projects.rotate_failed"),
+  rotate_owner_only: t("projects.rotate_owner_only"),
   msg_created: t("projects.msg_created"),
   error_invite: t("projects.error_invite"),
-  msg_settings_saved: t("projects.msg_settings_saved"),
-  msg_collab_removed: t("projects.msg_collab_removed"),
-  prompt_pubkey: t("projects.prompt_pubkey"),
-  msg_collab_added: t("projects.msg_collab_added"),
-  error_add_collab: t("projects.error_add_collab"),
-  confirm_remove: t("projects.confirm_remove"),
 };
 ---
 
@@ -139,73 +132,35 @@ const strings = {
       </button>
     </div>
 
-    <!-- Settings -->
+    <!-- Capability access -->
     <div class="space-y-3 p-4 bg-white/5 rounded-xl border border-white/5">
-      <h4 class="text-sm font-semibold text-white">{strings.label_settings}</h4>
-
-      <label class="flex items-center justify-between cursor-pointer">
-        <span class="text-sm text-zinc-300">{strings.label_auto_admit}</span>
-        <input
-          type="checkbox"
-          id="manage-project-autoadmit"
-          class="toggle-checkbox"
-        />
-      </label>
-      <p class="text-xs text-zinc-500">
-        {strings.desc_auto_admit}
-      </p>
-
-      <label class="flex items-center justify-between cursor-pointer mt-2">
-        <span class="text-sm text-zinc-300">{strings.label_offline}</span>
-        <input
-          type="checkbox"
-          id="manage-project-offline"
-          class="toggle-checkbox"
-        />
-      </label>
-      <p class="text-xs text-zinc-500">
-        {strings.desc_offline}
-      </p>
-    </div>
-
-    <!-- Collaborators -->
-    <div class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h4 class="text-sm font-semibold text-white">
-          {strings.label_collaborators}
-        </h4>
-        <button
-          type="button"
-          id="add-collaborator-btn"
-          class="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-500 rounded-lg text-white transition-colors"
-        >
-          {strings.btn_add_collab}
-        </button>
-      </div>
-
-      <div id="collaborators-list" class="space-y-2 max-h-60 overflow-y-auto">
-        <p class="text-xs text-zinc-500 italic">{strings.no_collaborators}</p>
-      </div>
+      <h4 class="text-sm font-semibold text-white">{strings.access_title}</h4>
+      <p class="text-sm text-zinc-400">{strings.access_desc}</p>
+      <p class="text-xs text-amber-300/80">{strings.rotate_warning}</p>
+      <button
+        type="button"
+        id="rotate-project-key-btn"
+        class="px-3 py-2 text-sm bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/20 rounded-lg text-amber-200 transition-colors"
+      >
+        {strings.rotate_key}
+      </button>
     </div>
   </div>
 </dialog>
 
-<script define:vars={{ strings }}>
+<script define:vars={{ strings, basePath }}>
   window.projectModalStrings = strings;
+  window.projectModalsBasePath = basePath;
 </script>
 
 <script>
   const strings = (window as any).projectModalStrings;
+  const basePath = (window as any).projectModalsBasePath || "";
   import {
     createProject,
     getProject,
-    type ProjectCollaborator,
+    rotateProjectKey,
   } from "../../../lib/projects/manager";
-  import {
-    addCollaborator,
-    removeCollaborator,
-    updateProjectSettings,
-  } from "../../../lib/projects/collaboration";
   import { toast } from "../../../lib/ui/toast";
 
   function parseVaultInvite(
@@ -290,7 +245,7 @@ const strings = {
     }
 
     // Redirect
-    window.location.href = `/vault#${parsed.projectId}.${parsed.secret}`;
+    window.location.href = `${basePath}/vault#${parsed.projectId}.${parsed.secret}`;
   });
 
   // Manage Project Logic
@@ -299,12 +254,9 @@ const strings = {
     "manage-project-dialog"
   ) as HTMLDialogElement;
   const manageTitle = document.getElementById("manage-project-title");
-  const autoAdmit = document.getElementById(
-    "manage-project-autoadmit"
-  ) as HTMLInputElement;
-  const offline = document.getElementById(
-    "manage-project-offline"
-  ) as HTMLInputElement;
+  const rotateKeyButton = document.getElementById(
+    "rotate-project-key-btn"
+  ) as HTMLButtonElement;
 
   document
     .getElementById("close-manage-project-btn")
@@ -329,102 +281,33 @@ const strings = {
 
     if (manageTitle)
       manageTitle.textContent = `${strings.manage_title}: ${project.name}`;
-
-    // Populate Settings
-    if (autoAdmit) {
-      autoAdmit.checked = !!project.settings?.autoAdmit;
-      const newEl = autoAdmit.cloneNode(true) as HTMLInputElement;
-      autoAdmit.parentNode?.replaceChild(newEl, autoAdmit);
-      newEl.onchange = async () => {
-        await updateProjectSettings(id, { autoAdmit: newEl.checked });
-        toast.success(strings.msg_settings_saved);
-      };
+    if (rotateKeyButton) {
+      rotateKeyButton.disabled = project.role !== "owner";
+      rotateKeyButton.title =
+        project.role === "owner" ? "" : strings.rotate_owner_only;
+      rotateKeyButton.classList.toggle("opacity-50", project.role !== "owner");
+      rotateKeyButton.classList.toggle(
+        "cursor-not-allowed",
+        project.role !== "owner"
+      );
     }
 
-    if (offline) {
-      offline.checked = !!project.settings?.allowOfflineEditing;
-      const newEl = offline.cloneNode(true) as HTMLInputElement;
-      offline.parentNode?.replaceChild(newEl, offline);
-      newEl.onchange = async () => {
-        await updateProjectSettings(id, { allowOfflineEditing: newEl.checked });
-        toast.success(strings.msg_settings_saved);
-      };
-    }
-
-    renderCollaborators(project.collaborators || []);
     manageDialog.showModal();
   }) as EventListener);
 
-  function renderCollaborators(collaborators: ProjectCollaborator[]) {
-    const list = document.getElementById("collaborators-list");
-    if (!list) return;
-
-    if (collaborators.length === 0) {
-      list.innerHTML = `<p class="text-xs text-zinc-500 italic">${strings.no_collaborators}</p>`;
-      return;
-    }
-
-    list.innerHTML = "";
-    collaborators.forEach((c) => {
-      const row = document.createElement("div");
-      row.className =
-        "flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/5";
-
-      const info = document.createElement("div");
-      info.innerHTML = `
-                <div class="text-sm font-medium text-white">${c.name}</div>
-                <div class="text-xs text-zinc-500 font-mono">${c.did.slice(0, 8)}... • ${c.role}</div>
-            `;
-
-      const actions = document.createElement("div");
-      if (c.role !== "owner") {
-        const rmBtn = document.createElement("button");
-        rmBtn.textContent = strings.btn_remove;
-        rmBtn.className =
-          "text-xs text-red-400 hover:text-red-300 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 rounded";
-        rmBtn.onclick = async () => {
-          if (!currentManagingProjectId) return;
-          if (confirm(strings.confirm_remove.replace("{name}", c.name))) {
-            await removeCollaborator(currentManagingProjectId, c.did);
-            const p = await getProject(currentManagingProjectId);
-            if (p) renderCollaborators(p.collaborators);
-            toast.success(strings.msg_collab_removed);
-          }
-        };
-        actions.appendChild(rmBtn);
-      } else {
-        const badge = document.createElement("span");
-        badge.className =
-          "text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded";
-        badge.textContent = strings.label_owner;
-        actions.appendChild(badge);
-      }
-
-      row.appendChild(info);
-      row.appendChild(actions);
-      list.appendChild(row);
-    });
-  }
-
   document
-    .getElementById("add-collaborator-btn")
+    .getElementById("rotate-project-key-btn")
     ?.addEventListener("click", async () => {
       if (!currentManagingProjectId) return;
-      const pubkey = prompt(strings.prompt_pubkey);
-      if (!pubkey) return;
+      if (!confirm(strings.rotate_confirm)) return;
       try {
-        await addCollaborator(currentManagingProjectId, {
-          did: pubkey,
-          role: "editor",
-          name: "Guest",
-          addedAt: Date.now(),
-        });
-        const p = await getProject(currentManagingProjectId);
-        if (p) renderCollaborators(p.collaborators);
-        toast.success(strings.msg_collab_added);
-      } catch (e) {
-        console.error(e);
-        toast.error(strings.error_add_collab);
+        await rotateProjectKey(currentManagingProjectId);
+        toast.success(strings.rotate_success);
+        manageDialog.close();
+        window.dispatchEvent(new Event("repo-changed"));
+      } catch (error) {
+        console.error(error);
+        toast.error(strings.rotate_failed);
       }
     });
 </script>

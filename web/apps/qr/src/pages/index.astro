@@ -1,70 +1,27 @@
 ---
-import { LANGUAGES } from "@holi/configs/i18n";
 import { qrAppChangelog } from "@holi/configs/changelogs";
-
-import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
-import SimpleBackground from "@holi/ui/components/SimpleBackground.astro";
-import EditorCanvas from "../components/EditorCanvas.astro";
+import QrWorkspace from "../components/QrWorkspace.astro";
+import QrLayout from "../layouts/QrLayout.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
 
 import "../styles/app.css";
-import { getLangFromUrl, useTranslations } from "../i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const history = (qrAppChangelog as any)[lang as any] || qrAppChangelog.en;
+const currentVersion = history[0]?.version || "0.0.0";
 ---
 
-<html lang={lang}>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>{t("nav.title")}</title>
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-	</head>
-	<body>
-		<BaseLayout
-			title={`${t("nav.title")} - ${t("nav.subtitle")}`}
-			lang={lang}
-			languages={LANGUAGES}
-			colorScheme="qr"
-			showCanvasGrid={false}
-			version="0.1.1"
-			changelog={history}
-		>
-			<SimpleBackground />
-			<EditorCanvas />
-		</BaseLayout>
+<QrLayout
+	title={t("seo.title")}
+	description={t("seo.description")}
+	lang={lang}
+	version={currentVersion}
+	changelog={history}
+>
+	<QrWorkspace />
 
-		<script>
-			import "../lib/icons";
-			// Import the main controller which handles all logic
-			import { qrController } from "../lib/qr-controller";
-			import { getIconSvg } from "../lib/icons";
-
-			// Prevent tree-shaking and expose for debugging
-			(window as any).qrControllerApp = qrController;
-			console.log("Main: qrController imported", qrController);
-
-			// Initialize Material Icons as SVG
-			function initAllIcons() {
-				document.querySelectorAll(".icon, .material-icons").forEach((el) => {
-					const textContent = el.textContent?.trim();
-					if (
-						textContent &&
-						!el.querySelector("svg") &&
-						textContent.match(/^[a-z_]+$/)
-					) {
-						const svg = getIconSvg(textContent, 20);
-						if (svg) (el as HTMLElement).innerHTML = svg;
-					}
-				});
-			}
-
-			if (document.readyState === "complete") {
-				initAllIcons();
-			} else {
-				window.addEventListener("load", initAllIcons);
-			}
-		</script>
-	</body>
-</html>
+	<script>
+		import "../lib/boot";
+	</script>
+</QrLayout>

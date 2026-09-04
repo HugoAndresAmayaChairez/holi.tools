@@ -1,66 +1,44 @@
 ---
-import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { getLangFromUrl } from "../i18n/utils";
+import { getEditorialCopy } from "../i18n/editorial";
 
 const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+const copy = getEditorialCopy(lang);
 ---
 
-<div id="HeroTitle" class="title-section">
-  <h1 data-i18n="hero_title">{t("hero_title")}</h1>
-  <p class="slogan" data-i18n="hero_slogan">{t("hero_slogan")}</p>
-</div>
+<section id="HeroTitle" class="editorial-hero">
+  <div class="hero-copy">
+    <p class="hero-eyebrow">{copy.eyebrow}</p>
+    <h1>
+      <span class="brand-spectrum">holi tools</span>
+      <span>{copy.heroLine}</span>
+    </h1>
+  </div>
+
+  <aside class="hero-aside">
+    <ProductCreature name="hummingbird" variant="mark" eager class="hero-creature" />
+    <p>{copy.heroIntro}</p>
+    <a href="#ToolsExplorer">{copy.explore}<span aria-hidden="true">↓</span></a>
+    <span class="local-pill"><i aria-hidden="true"></i>{copy.localLabel}</span>
+  </aside>
+</section>
 
 <style>
-  .title-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0;
-    width: 100%;
-    margin-bottom: 4rem; /* Add breathing room */
-  }
-
-  h1 {
-    font-size: clamp(
-      3rem,
-      15vw,
-      11rem
-    ); /* Slightly adjusted for better scaling */
-    font-weight: 900;
-    letter-spacing: -0.06em;
-    margin: 0;
-    line-height: 0.85;
-    text-transform: lowercase;
-    padding: 0.2rem 1.5rem; /* Large horizontal padding to avoid glyph clipping */
-    overflow: visible;
-    width: fit-content;
-
-    /* RGB Spectrum Gradient Logic */
-    color: transparent;
-    background-clip: text;
-    -webkit-background-clip: text;
-    background-image: linear-gradient(
-      135deg,
-      #ff5e5e 0%,
-      /* Red */ #ffc75e 25%,
-      /* Yellow-ish */ #5eff8f 50%,
-      /* Green-ish */ #5ebaff 75%,
-      /* Blue-ish */ #c65eff 100% /* Violet */
-    );
-    /* Alternative more subtle RGB: 
-       background-image: linear-gradient(to right, #ff0000, #00ff00, #0000ff); 
-       But spectrum looks better on dark */
-  }
-
-  .slogan {
-    font-size: clamp(0.9rem, 2.5vw, 1.25rem);
-    font-weight: 500;
-    color: var(--color-text);
-    opacity: 0.6; /* Higher contrast but still subtle */
-    margin: 1.5rem 0 0 0;
-    letter-spacing: -0.01em;
-    max-width: 600px;
-  }
+  .editorial-hero { position: relative; display: grid; grid-template-columns: minmax(0,1.85fr) minmax(17rem,.75fr); align-items: end; gap: clamp(2rem,7vw,8rem); width: min(100% - 2rem,92rem); min-height: min(48rem,82dvh); margin: 0 auto; padding: clamp(6rem,11vw,9rem) 0 clamp(3rem,7vw,6rem); border-bottom: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); }
+  .hero-copy { position: relative; z-index: 1; }
+  .hero-eyebrow { margin: 0 0 1.25rem; color: #c64e2b; font: 850 clamp(.68rem,1vw,.82rem)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .16em; text-transform: uppercase; }
+  h1 { display: flex; flex-direction: column; margin: 0; font-size: clamp(4rem,9.6vw,9.2rem); font-weight: 450; letter-spacing: -.075em; line-height: .84; }
+  h1 > span:last-child { max-width: 10ch; }
+  .brand-spectrum { width: fit-content; padding-inline-end: .08em; color: transparent; background: linear-gradient(110deg,#f45d5d 0%,#e7a927 23%,#24a86a 48%,#2b91d4 72%,#9b5fd3 100%); background-clip: text; -webkit-background-clip: text; }
+  .hero-aside { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; padding-bottom: .35rem; }
+  :global(.hero-creature) { position: absolute; right: -1.5rem; bottom: 5rem; z-index: -1; opacity: .13; transform: rotate(5deg); }
+  .hero-aside > p { margin: 0 0 1.8rem; color: color-mix(in srgb,var(--color-text) 68%,transparent); font-size: clamp(1.05rem,1.7vw,1.42rem); line-height: 1.55; }
+  .hero-aside > a { display: inline-flex; align-items: center; gap: 1rem; margin-bottom: 1.6rem; color: var(--color-text); font-size: .9rem; font-weight: 750; text-decoration: none; }
+  .hero-aside > a span { transition: transform .2s ease; }
+  .hero-aside > a:hover span { transform: translateY(3px); }
+  .local-pill { display: inline-flex; align-items: center; gap: .6rem; padding: .65rem .85rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: 999px; background: color-mix(in srgb,var(--color-bg) 92%,transparent); font-size: .76rem; font-weight: 800; }
+  .local-pill i { width: .62rem; height: .62rem; border-radius: 50%; background: #2bae70; box-shadow: 0 0 0 .27rem color-mix(in srgb,#2bae70 15%,transparent); }
+  @media (max-width:850px) { .editorial-hero { grid-template-columns: 1fr; align-items: start; min-height: auto; padding-top: 7rem; } .hero-aside { max-width: 34rem; } :global(.hero-creature) { right: 0; bottom: -1rem; } }
+  @media (max-width:520px) { .editorial-hero { width: min(100% - 1.35rem,92rem); padding-top: 5.5rem; padding-bottom: 2.5rem; } h1 { font-size: clamp(3.45rem,18vw,5.2rem); } :global(.hero-creature) { width: 9rem; opacity: .09; } }
 </style>

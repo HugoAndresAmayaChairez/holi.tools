@@ -1,0 +1,26 @@
+{
+  "name": "holi-metadata",
+  "type": "module",
+  "version": "0.5.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "astro": "catalog:",
+    "@astrojs/react": "catalog:",
+    "@astrojs/tailwind": "catalog:",
+    "@holi/ui": "workspace:*",
+    "@holi/configs": "workspace:*",
+    "tailwindcss": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  }
+}

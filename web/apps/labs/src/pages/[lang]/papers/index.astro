@@ -1,0 +1,105 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import Icon from "@holi/ui/components/Icon.astro";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import SimpleBackground from "@holi/ui/components/SimpleBackground.astro";
+import { getLangFromUrl, languages, useTranslations } from "../../../i18n/utils";
+import { getLabsChangelog, labsVersion } from "../../../release";
+import { getLabsPrivacy } from "../../../privacy";
+import "../../../styles/app.css";
+
+export function getStaticPaths() {
+  return languages.map((language) => ({ params: { lang: language.code } }));
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const papers = (await getCollection("experiments"))
+  .filter((entry) => entry.data.lang === lang && entry.data.format === "paper")
+  .sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+const site = Astro.site ?? new URL("https://labs.holi.tools");
+const baseUrl = site.toString().replace(/\/$/, "");
+const canonicalUrl = `${baseUrl}${Astro.url.pathname}`;
+const title = `${t("papers_title")} — Holi Labs`;
+---
+
+<BaseLayout
+  title={title}
+  description={t("papers_description")}
+  lang={lang}
+  languages={languages}
+  prefixDefaultLocale={true}
+  colorScheme="labs"
+  productName="Holi Labs"
+  productDescription={t("meta_description")}
+  version={labsVersion}
+  changelog={getLabsChangelog(lang)}
+  privacySummary={getLabsPrivacy(lang)}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={t("papers_description")} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:site_name" content="Holi Labs" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={t("papers_description")} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+  </slot>
+
+  <SimpleBackground />
+  <main class="papers-shell">
+    <nav class="papers-nav">
+      <a href={`/${lang}/`}><Icon name="arrow_back" size={15} />{t("back_to_library")}</a>
+      <span>Holi Labs</span>
+    </nav>
+
+    <header class="papers-hero">
+      <div>
+        <p>{t("format_paper")}</p>
+        <h1>{t("papers_title")}</h1>
+        <span>{t("papers_description")}</span>
+      </div>
+      <ProductCreature name="crane" variant="mark" eager class="papers-crane" />
+    </header>
+
+    <section class="papers-list" aria-label={t("papers_title")}>
+      {papers.map((paper, index) => (
+        <a href={`/${lang}/papers/${paper.slug.replace(/-[a-z]{2}$/, "")}`}>
+          <span class="paper-number">0{index + 1}</span>
+          <div>
+            <span class="paper-category">{paper.data.category}</span>
+            <h2>{paper.data.title}</h2>
+            <p>{paper.data.summary || paper.data.description}</p>
+          </div>
+          <Icon name="arrow_forward" size={21} />
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .papers-shell { position: relative; z-index: 1; width: min(100% - 2rem, 76rem); min-height: 100dvh; margin: 0 auto; padding: 1.25rem 0 9rem; color: var(--color-text); }
+  .papers-nav { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-border); }
+  .papers-nav a { display: inline-flex; align-items: center; gap: .55rem; color: inherit; font-size: .78rem; font-weight: 750; text-decoration: none; }
+  .papers-nav > span { color: var(--color-accent); font: 800 .72rem/1 ui-monospace, monospace; letter-spacing: .08em; }
+  .papers-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2rem; padding: clamp(5rem, 11vw, 9rem) 0 clamp(4rem, 8vw, 7rem); }
+  .papers-hero p { margin: 0 0 1rem; color: var(--color-accent); font: 850 .7rem/1 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; }
+  .papers-hero h1 { max-width: 9ch; margin: 0 0 1.3rem; font-size: clamp(4rem, 10vw, 8rem); font-weight: 480; letter-spacing: -.075em; line-height: .86; }
+  .papers-hero div > span { display: block; max-width: 42rem; color: color-mix(in srgb, var(--color-text) 64%, transparent); font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.6; }
+  :global(.papers-crane) { width: clamp(10rem, 23vw, 18rem); opacity: .2; transform: rotate(3deg); --creature-color: var(--color-accent); }
+  .papers-list { border-top: 1px solid var(--color-border); }
+  .papers-list > a { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr) auto; align-items: center; gap: clamp(1rem, 3vw, 2rem); padding: clamp(1.5rem, 4vw, 2.6rem) .3rem; border-bottom: 1px solid var(--color-border); color: inherit; text-decoration: none; transition: padding .2s ease, color .2s ease; }
+  .papers-list > a:hover { padding-inline: 1rem; color: var(--color-accent); }
+  .paper-number, .paper-category { font: 800 .68rem/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+  .paper-number { color: color-mix(in srgb, var(--color-text) 42%, transparent); }
+  .paper-category { color: var(--color-accent); }
+  .papers-list h2 { margin: .55rem 0 .65rem; color: var(--color-text); font-size: clamp(1.6rem, 3vw, 2.55rem); font-weight: 540; letter-spacing: -.045em; line-height: 1.05; }
+  .papers-list p { max-width: 50rem; margin: 0; color: color-mix(in srgb, var(--color-text) 62%, transparent); line-height: 1.55; }
+  @media (max-width: 620px) { .papers-shell { width: min(100% - 1.35rem, 76rem); } .papers-hero { grid-template-columns: 1fr; } :global(.papers-crane) { position: absolute; top: 7rem; right: -.5rem; width: 9rem; opacity: .09; } .papers-list > a { grid-template-columns: 2rem minmax(0, 1fr); } .papers-list > a > :global(svg) { display: none; } }
+</style>

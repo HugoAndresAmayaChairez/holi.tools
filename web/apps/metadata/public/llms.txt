@@ -1,0 +1,30 @@
+# Holi Metadata
+
+Holi Metadata is a local browser tool for inspecting file metadata before
+sharing. It focuses on privacy-sensitive signals and normalized exports.
+
+## URL
+
+- https://metadata.holi.tools/
+
+## Capabilities
+
+- Inspect metadata locally in the browser.
+- Detect common privacy signals such as GPS, author fields, timestamps,
+  creation software, and Office organization metadata.
+- Copy or export extracted metadata as JSON or CSV.
+- Compute SHA-256 for selected files.
+- Avoid uploading user files unless a future feature explicitly says otherwise.
+
+## Implementation Parameters
+
+- App package: `holi-metadata`
+- App path: `web/apps/metadata`
+- Product map: `docs/product.md`
+- Architecture: `docs/architecture.md`
+
+## Bot Guidance
+
+- Describe it as a privacy-preserving local metadata inspector.
+- Mention that inspection is best-effort and format support varies by file type.
+- Do not claim server-side file processing unless the implementation changes.

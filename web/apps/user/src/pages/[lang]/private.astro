@@ -1,6 +1,7 @@
 ---
 import VaultLayout from "../../layouts/VaultLayout.astro";
 import ChatPanel from "../../components/ChatPanel.astro";
+import HoliCard from "../../components/ui/HoliCard.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 import { SUPPORTED_LANGS } from "@holi/configs/i18n";
 
@@ -18,7 +19,11 @@ const strings = {
   connecting: t("private.connecting"),
   instruction: t("private.instruction"),
   connected: t("private.connected"),
+  reconnecting: t("private.reconnecting"),
   failed: t("private.failed"),
+  sentFile: t("private.sent_file"),
+  receivedFile: t("private.received_file"),
+  fileFailed: t("private.file_failed"),
 };
 ---
 
@@ -34,7 +39,7 @@ const strings = {
       </p>
     </div>
 
-    <div class="glass-card p-5 rounded-2xl space-y-3">
+    <HoliCard class="space-y-3" padding="lg" rounded="lg">
       <div class="flex flex-col sm:flex-row gap-2">
         <button
           id="create-link"
@@ -60,7 +65,7 @@ const strings = {
       />
 
       <div id="status" class="text-sm text-zinc-300"></div>
-    </div>
+    </HoliCard>
 
     <div class="text-center">
       <a href={`${basePath}/`} class="text-sm text-zinc-500 hover:text-white"
@@ -69,27 +74,27 @@ const strings = {
     </div>
 
     <div id="chat-wrap" class="hidden">
-      <ChatPanel connected={false} />
+      <ChatPanel
+        connected={false}
+        embedded={true}
+        fileSaveLabel={t("chat.file_save")}
+        incomingFileLabel={t("chat.file_incoming")}
+        acceptFileLabel={t("chat.file_accept")}
+        rejectFileLabel={t("chat.file_reject")}
+        imagePreviewLabel={t("chat.image_preview")}
+        videoPreviewLabel={t("chat.video_preview")}
+      />
     </div>
   </div>
 </VaultLayout>
 
-<style>
-  .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-  }
-</style>
-
-<script define:vars={{ strings }}>
+<script define:vars={{ strings, basePath }}>
   window.privateStrings = strings;
+  window.privateBasePath = basePath;
 </script>
 
 <script>
-  import { ChatManager } from "../../lib/p2p/chat";
-  import type { ChatEvent } from "../../lib/p2p/chat";
-  import { connectFriendDmChannel } from "../../lib/friends/p2p";
+  import { DmManager } from "../../lib/friends/dm-manager";
   import { generateDmConfig, dmKeyBytes } from "../../lib/friends/dm";
   import {
     getActiveHandle,
@@ -100,6 +105,7 @@ const strings = {
   import { listDmMessages, saveDmMessage } from "../../lib/friends/dm";
 
   const strings = (window as any).privateStrings;
+  const basePath = (window as any).privateBasePath || "";
   const btnCreate = document.getElementById(
     "create-link"
   ) as HTMLButtonElement | null;
@@ -112,19 +118,24 @@ const strings = {
   const statusEl = document.getElementById("status");
   const chatWrap = document.getElementById("chat-wrap");
 
-  let chatManager: ChatManager | null = null;
-  let current = null as null | {
-    sessionId: string;
-    keyB64Url: string;
-    isInitiator: boolean;
-  };
+  let dmManager: DmManager | null = null;
+  let activeSessionId: string | null = null;
+  const incomingFilenames = new Map<string, string>();
 
   function setStatus(text: string) {
     if (statusEl) statusEl.textContent = text;
   }
 
+  function setChatHeader(state: "awaiting" | "connecting" | "connected", label?: string) {
+    try {
+      (window as any).setChatConnectionState?.(state, label);
+    } catch {
+      // ignore
+    }
+  }
+
   function makeLink(dm: { sessionId: string; keyB64Url: string }): string {
-    return `${window.location.origin}/private#pc=${dm.sessionId}.${dm.keyB64Url}`;
+    return `${window.location.origin}${basePath}/private#pc=${dm.sessionId}.${dm.keyB64Url}`;
   }
 
   function parseLinkHash(): { sessionId: string; keyB64Url: string } | null {
@@ -133,6 +144,12 @@ const strings = {
     const rest = hash.slice(3);
     const [sessionId, keyB64Url] = rest.split(".", 2);
     if (!sessionId || !keyB64Url) return null;
+    if (!/^[A-Za-z0-9_-]{16,64}$/.test(sessionId)) return null;
+    try {
+      dmKeyBytes(keyB64Url);
+    } catch {
+      return null;
+    }
     return { sessionId, keyB64Url };
   }
 
@@ -211,58 +228,136 @@ const strings = {
     dm: { sessionId: string; keyB64Url: string },
     isInitiator: boolean
   ) {
-    if (chatManager) return;
-    current = { ...dm, isInitiator };
+    dmManager?.destroy();
+    dmManager = null;
+    activeSessionId = dm.sessionId;
     if (chatWrap) chatWrap.classList.remove("hidden");
 
-    setStatus(isInitiator ? strings.waitingText : strings.connectingText);
+    setStatus(isInitiator ? strings.waiting : strings.connecting);
+    setChatHeader("connecting");
 
     await tryRestoreVault();
     await loadHistory(dm.sessionId);
 
-    const channel = await connectFriendDmChannel({
+    const manager = new DmManager({
       dm,
       isInitiator,
-      timeoutMs: 2 * 60_000,
-    });
-
-    chatManager = new ChatManager(channel as any, `private:${dm.sessionId}`, {
-      sessionKeyBytes: dmKeyBytes(dm.keyB64Url),
       onIncomingFileOffer: async (offer) => {
-        const sizeMb = (offer.size / (1024 * 1024)).toFixed(1);
-        const ok = confirm(`Receive file "${offer.filename}" (${sizeMb} MB)?`);
-        return ok ? "accept" : { decision: "reject", reason: "User rejected" };
+        const requestFile = (window as any).requestIncomingChatFile;
+        if (typeof requestFile !== "function") {
+          return { decision: "reject", reason: "File controls unavailable" };
+        }
+        return requestFile(offer);
       },
     });
+    dmManager = manager;
 
-    setStatus(strings.connectedText);
+    manager.on((event) => {
+      if (event.type === "status_change") {
+        if (event.state === "connected") {
+          setStatus(strings.connected);
+          setChatHeader("connected", strings.connected);
+        } else if (event.state === "reconnecting") {
+          setStatus(strings.reconnecting);
+          setChatHeader("connecting");
+        } else if (event.state === "connecting") {
+          setStatus(isInitiator ? strings.waiting : strings.connecting);
+          setChatHeader("connecting");
+        } else if (event.state === "error") {
+          setStatus(`${strings.failed} ${event.message || ""}`.trim());
+          setChatHeader("awaiting");
+        }
+        return;
+      }
 
-    chatManager.on((event: ChatEvent) => {
-      if (event.type === "message") {
-        const msg = event.message as any;
-        const from = msg.senderId === "me" ? "me" : "peer";
-        const sender = from === "me" ? "own" : "peer";
-        const text = msg.content || "";
-        if (!text) return;
-        (window as any).addChatMessage?.(text, sender);
-        void persistMessage(dm.sessionId, from, text);
+      const chatEvent = event.event;
+      if (
+        chatEvent.type === "message" &&
+        chatEvent.message.type === "text" &&
+        chatEvent.message.senderId !== "me"
+      ) {
+        const message = chatEvent.message;
+        (window as any).addChatMessage?.(message.content, "peer");
+        void persistMessage(dm.sessionId, "peer", message.content);
+      } else if (
+        chatEvent.type === "message" &&
+        chatEvent.message.type === "file-start" &&
+        chatEvent.message.senderId !== "me"
+      ) {
+        incomingFilenames.set(
+          chatEvent.message.id,
+          chatEvent.message.filename
+        );
+      } else if (chatEvent.type === "file_progress") {
+        (window as any).showFileProgress?.(
+          chatEvent.progress,
+          incomingFilenames.get(chatEvent.fileId) || strings.receivedFile
+        );
+      } else if (chatEvent.type === "file_received") {
+        incomingFilenames.delete(chatEvent.fileId);
+        (window as any).addChatFilePreview?.(
+          chatEvent.blob,
+          chatEvent.filename,
+          "peer"
+        );
+      } else if (chatEvent.type === "encryption_error") {
+        setStatus(`${strings.failed} ${chatEvent.message}`);
       }
     });
 
-    const form = document.getElementById("chat-form");
-    const input = document.getElementById(
-      "msg-input"
-    ) as HTMLInputElement | null;
-    form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const text = (input?.value || "").trim();
-      if (!text || !chatManager) return;
-      chatManager.sendText(text);
-      (window as any).addChatMessage?.(text, "own");
-      void persistMessage(dm.sessionId, "me", text);
-      if (input) input.value = "";
-    });
+    await manager.start();
   }
+
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("msg-input") as HTMLInputElement | null;
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const text = (input?.value || "").trim();
+    const manager = dmManager;
+    const sessionId = activeSessionId;
+    if (!text || !manager || !sessionId) return;
+
+    try {
+      await manager.sendText(text);
+      (window as any).addChatMessage?.(text, "own");
+      void persistMessage(sessionId, "me", text);
+      if (input) input.value = "";
+    } catch (error) {
+      setStatus(`${strings.failed} ${(error as Error)?.message || String(error)}`);
+    }
+  });
+
+  async function handleFileDrop(event: Event) {
+    const file = (event as CustomEvent<{ file?: File }>).detail?.file;
+    const manager = dmManager;
+    if (!file || !manager) return;
+
+    try {
+      await manager.sendFile(file);
+      (window as any).addChatFilePreview?.(
+        file,
+        file.name,
+        "own"
+      );
+    } catch (error) {
+      setStatus(
+        `${strings.fileFailed} ${(error as Error)?.message || String(error)}`
+      );
+    }
+  }
+
+  document.addEventListener("file-drop", handleFileDrop);
+
+  function resumeConnection() {
+    if (dmManager?.state === "error") dmManager.retry();
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === "visible") resumeConnection();
+  }
+
+  window.addEventListener("online", resumeConnection);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
 
   const fromHash = parseLinkHash();
   if (fromHash) {
@@ -271,11 +366,13 @@ const strings = {
     void connect(fromHash, false).catch((e) => {
       console.error(e);
       setStatus(
-        strings.failedText + " " + ((e as Error)?.message || String(e))
+        strings.failed + " " + ((e as Error)?.message || String(e))
       );
+      setChatHeader("awaiting");
     });
   } else {
-    setStatus(strings.instructionText);
+    setStatus(strings.instruction);
+    setChatHeader("awaiting");
   }
 
   btnCreate?.addEventListener("click", async () => {
@@ -288,7 +385,7 @@ const strings = {
       await connect(dm, true);
     } catch (e) {
       console.error(e);
-      setStatus("Failed: " + ((e as Error)?.message || String(e)));
+      setStatus(strings.failed + " " + ((e as Error)?.message || String(e)));
     }
   });
 
@@ -298,10 +395,27 @@ const strings = {
     await navigator.clipboard.writeText(v);
     if (btnCopy) {
       const prev = btnCopy.textContent;
-      btnCopy.textContent = strings.copiedText;
+      btnCopy.textContent = strings.copied;
       window.setTimeout(() => {
-        btnCopy.textContent = prev || strings.copyText;
+        btnCopy.textContent = prev || strings.copy;
       }, 1200);
     }
   });
+
+  function cleanup() {
+    dmManager?.destroy();
+    dmManager = null;
+    activeSessionId = null;
+    incomingFilenames.clear();
+    document.removeEventListener("file-drop", handleFileDrop);
+    window.removeEventListener("online", resumeConnection);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.removeEventListener("astro:before-swap", cleanup);
+    window.removeEventListener("pagehide", cleanup);
+    window.removeEventListener("beforeunload", cleanup);
+  }
+
+  document.addEventListener("astro:before-swap", cleanup);
+  window.addEventListener("pagehide", cleanup);
+  window.addEventListener("beforeunload", cleanup);
 </script>

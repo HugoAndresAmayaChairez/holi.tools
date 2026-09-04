@@ -1,7 +1,7 @@
 {
   "name": "holi-main",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.8.1",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,15 +10,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/tailwind": "catalog:",
     "@holi/configs": "workspace:*",
     "@holi/ui": "workspace:*",
-    "@holi/wasm-core": "workspace:*",
-    "astro": "^4.0.0",
-    "tailwindcss": "^3.4.0"
+    "astro": "catalog:",
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.5.0"
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:"
   }
 }

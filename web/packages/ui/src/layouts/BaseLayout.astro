@@ -20,14 +20,37 @@ interface Props {
   description?: string;
   lang: string;
   languages: readonly Language[];
-  colorScheme?: "default" | "qr" | "paint" | "calculator" | "labs" | "typst";
+  hreflangLanguages?: readonly Language[];
+  defaultLang?: string;
+  prefixDefaultLocale?: boolean;
+  autoSeo?: boolean;
+  colorScheme?: "default" | "qr" | "paint" | "calculator" | "labs" | "typst" | "image" | "metadata";
 
   showCanvasGrid?: boolean;
   gridSize?: "sm" | "md" | "lg";
 
   version?: string;
+  showVersionBadge?: boolean;
+  utilityDock?: boolean;
+  showUtilityDock?: boolean;
+  productName?: string;
+  productDescription?: string;
+  showPapers?: boolean;
   changelog?: { version: string; date: string; changes: string[] }[];
-  changelogLabels?: { title?: string; current?: string; footer?: string };
+  changelogLabels?: { title?: string; current?: string; footer?: string; support?: string };
+  privacySummary?: {
+    id?: string;
+    title?: string;
+    summary: string;
+    facts: readonly {
+      label: string;
+      value: string;
+      tone?: "local" | "connected" | "warning";
+    }[];
+    detailsLabel?: string;
+    detailsHref?: string;
+    detailsLinkLabel?: string;
+  };
 }
 
 const {
@@ -35,19 +58,33 @@ const {
   description,
   lang,
   languages,
+  hreflangLanguages,
+  defaultLang = "en",
+  prefixDefaultLocale = false,
+  autoSeo = true,
   colorScheme = "default",
 
   showCanvasGrid = true,
   gridSize = "md",
 
   version,
+  showVersionBadge = true,
+  utilityDock,
+  showUtilityDock = true,
+  productName = title,
+  productDescription = description,
+  showPapers = true,
   changelog,
   changelogLabels,
+  privacySummary,
 } = Astro.props;
 
 import ConfigMenu from "../components/ConfigMenu.astro";
-import VersionBadge from "../components/VersionBadge.astro";
-import ChangelogOverlay from "../components/ChangelogOverlay.astro";
+import ProductUtilityDock from "../components/ProductUtilityDock.astro";
+import OverlayRuntime from "../components/OverlayRuntime.astro";
+import DonateOverlay from "../components/DonateOverlay.astro";
+import SupportOverlay from "../components/SupportOverlay.astro";
+import { getProductShellCopy } from "../lib/product-shell-copy";
 
 // Import styles as Astro modules
 import "../styles/design-system.css";
@@ -61,10 +98,44 @@ const bodyClasses = [
 ]
   .filter(Boolean)
   .join(" ");
+
+const homeHref =
+  prefixDefaultLocale || lang !== defaultLang ? `/${lang}/` : "/";
+
+const site = Astro.site;
+const baseUrl = site ? site.toString().replace(/\/$/, "") : "";
+
+const pathname = Astro.url.pathname;
+const trailingSlash = pathname.endsWith("/");
+const hreflangList = hreflangLanguages ?? languages;
+const languageCodes = hreflangList.map((l) => l.code);
+const pathSegments = pathname.split("/").filter(Boolean);
+const hasLangPrefix =
+  pathSegments.length > 0 && languageCodes.includes(pathSegments[0]);
+const restSegments = hasLangPrefix ? pathSegments.slice(1) : pathSegments;
+const restPath = restSegments.join("/");
+
+function buildPath(locale: string) {
+  const needsPrefix = prefixDefaultLocale || locale !== defaultLang;
+  const prefix = needsPrefix ? `/${locale}` : "";
+  const middle = restPath ? `/${restPath}` : "/";
+  const path = `${prefix}${middle}`;
+
+  if (trailingSlash && !path.endsWith("/")) return `${path}/`;
+  if (!trailingSlash && path !== "/" && path.endsWith("/")) return path.slice(0, -1);
+  return path;
+}
+
+const canonicalUrl = site ? `${baseUrl}${buildPath(lang)}` : undefined;
+const shouldRenderUtilityDock = Boolean(
+  showUtilityDock && showVersionBadge && version && changelog && privacySummary
+);
+const dockId = privacySummary?.id ?? `${colorScheme}-utility`;
+const shellCopy = getProductShellCopy(lang);
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -73,8 +144,46 @@ const bodyClasses = [
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
 
+    {
+      autoSeo && canonicalUrl && (
+        <>
+          <link rel="canonical" href={canonicalUrl} />
+          {
+            hreflangList.map((l) => (
+              <link
+                rel="alternate"
+                hreflang={l.code}
+                href={`${baseUrl}${buildPath(l.code)}`}
+              />
+            ))
+          }
+          <link
+            rel="alternate"
+            hreflang="x-default"
+            href={`${baseUrl}${buildPath(defaultLang)}`}
+          />
+        </>
+      )
+    }
 
     <slot name="head" />
+
+    <script is:inline>
+      try {
+        const savedTheme =
+          localStorage.getItem("holi:theme:v1") ||
+          localStorage.getItem("holi-typst:theme:v1");
+        const resolvedTheme =
+          savedTheme === "light" || savedTheme === "dark"
+            ? savedTheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.dataset.holiTheme = resolvedTheme;
+      } catch {
+        // The system preference remains active when local storage is unavailable.
+      }
+    </script>
 
     <style>
       /* Base styles */
@@ -89,6 +198,7 @@ const bodyClasses = [
           system-ui,
           -apple-system,
           sans-serif;
+        background-color: var(--color-bg);
         color: var(--color-text);
         overflow-x: hidden;
       }
@@ -96,28 +206,49 @@ const bodyClasses = [
   </head>
 
   <body class={bodyClasses}>
-    <!-- Language Menu (if enabled) -->
-    <!-- Floating Configuration Orb (Replaces Header) -->
-    <div class="floating-menu-container">
-      <ConfigMenu
-        currentLang={lang}
-        languages={languages}
-        homeHref="/"
-        changelogId={version && changelog ? colorScheme : undefined}
-      />
-    </div>
+    {!shouldRenderUtilityDock && (
+      <div class="floating-menu-container">
+        <ConfigMenu
+          currentLang={lang}
+          languages={languages}
+          defaultLang={defaultLang}
+          prefixDefaultLocale={prefixDefaultLocale}
+          homeHref={homeHref}
+          changelogId={version && changelog ? colorScheme : undefined}
+          showPapers={showPapers}
+        />
+      </div>
+    )}
 
     <!-- Main content slot -->
     <slot />
 
-    {version && <VersionBadge version={version} changelogId={colorScheme} />}
-    {version && changelog && (
-      <ChangelogOverlay 
-        id={colorScheme} 
-        currentVersion={version} 
+    {shouldRenderUtilityDock && version && changelog && privacySummary && (
+      <ProductUtilityDock
+        id={dockId}
+        productName={productName}
+        productDescription={productDescription}
+        version={version}
         history={changelog}
-        labels={changelogLabels}
-      />
+        privacyTitle={privacySummary.title ?? shellCopy.privacySummary}
+        privacySummary={privacySummary.summary}
+        privacyFacts={privacySummary.facts}
+        privacyHref={privacySummary.detailsHref}
+        privacyLinkLabel={privacySummary.detailsLinkLabel}
+        currentLang={lang}
+        languages={languages}
+        defaultLang={defaultLang}
+        prefixDefaultLocale={prefixDefaultLocale}
+        homeHref={homeHref}
+        showPapers={showPapers}
+      >
+        <slot name="utility-configuration" slot="configuration" />
+      </ProductUtilityDock>
     )}
+
+    <OverlayRuntime />
+
+    <DonateOverlay id="holi" currentLang={lang} />
+    <SupportOverlay id="holi" currentLang={lang} />
   </body>
 </html>

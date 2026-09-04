@@ -4,157 +4,62 @@ precision highp float;
 in vec2 vUv;
 out vec4 fragColor;
 
-uniform sampler2D uTexture;
-uniform vec3 uColor;
-uniform vec3 uColor2; // Gradient Color 2
+uniform sampler2D uTexture;        // QR matrix (R8) [uQRSize x uQRSize]
+uniform sampler2D uBodyMaskAtlas;  // Body atlas (R8) [16*tile x 16*tile]
+uniform sampler2D uEyeMask;        // Eye mask tile (R8) [tile x tile], viewBox 0..7
+
+uniform vec4 uColor;
+uniform vec4 uColor2; // Gradient Color 2
 uniform int uGradientType; // 0=None, 1=Linear, 2=Radial, 3=Conic, 4=Diamond
 uniform float uGradientAngle; // Radians
 uniform float uNoiseAmount; // 0-1 noise intensity
 uniform float uNoiseScale;  // Noise frequency
 uniform int uQRSize;
-uniform int uBodyShape;      // 0=square, 1=dot, 2=rounded, 3=diamond, 4=star, 5=clover, 6=tiny-dot, 7=h-bars
-uniform int uEyeFrameShape;  // 0=square, 1=circle, 2=rounded, 3=leaf, 4=shield, 5=diamond
-uniform int uEyeBallShape;   // 0=square, 1=circle, 2=rounded, 3=leaf, 4=shield, 5=diamond
 
 const float PI = 3.14159265359;
+const float ATLAS_TILES = 16.0;
 
-// Hash function for noise
 float hash21(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
     p += dot(p, p + 34.23);
     return fract(p.x * p.y);
 }
 
-// SDF primitives
-float sdSquare(vec2 p, float size) {
-    vec2 d = abs(p) - vec2(size);
-    return max(d.x, d.y);
+bool isInside(ivec2 m) {
+    return (m.x >= 0 && m.y >= 0 && m.x < uQRSize && m.y < uQRSize);
 }
 
-float sdCircle(vec2 p, float r) {
-    return length(p) - r;
+float sampleMatrix(ivec2 m) {
+    if (!isInside(m)) return 0.0;
+    vec2 uv = (vec2(m) + 0.5) / float(uQRSize);
+    return texture(uTexture, uv).r;
 }
 
-float sdRoundedSquare(vec2 p, float size, float r) {
-    vec2 d = abs(p) - vec2(size - r);
-    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - r;
+float isDarkAt(ivec2 m) {
+    return step(0.5, sampleMatrix(m));
 }
 
-float sdDiamond(vec2 p, float size) {
-    p = abs(p);
-    return (p.x + p.y - size) * 0.707;
-}
-
-float sdStar(vec2 p, float r, int n, float m) {
-    float an = 3.141593 / float(n);
-    float en = 3.141593 / m;
-    vec2 acs = vec2(cos(an), sin(an));
-    vec2 ecs = vec2(cos(en), sin(en));
-    float bn = mod(atan(p.x, p.y), 2.0 * an) - an;
-    p = length(p) * vec2(cos(bn), abs(sin(bn)));
-    p -= r * acs;
-    p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);
-    return length(p) * sign(p.x);
-}
-
-// Detect finder pattern regions (eyes)
-bool isEyeRegion(ivec2 m, int size) {
-    // Top-left (0,0 to 6,6)
+bool isInEyeRegion(ivec2 m) {
     if (m.x < 7 && m.y < 7) return true;
-    // Top-right
-    if (m.x >= size - 7 && m.y < 7) return true;
-    // Bottom-left  
-    if (m.x < 7 && m.y >= size - 7) return true;
+    if (m.x >= uQRSize - 7 && m.y < 7) return true;
+    if (m.x < 7 && m.y >= uQRSize - 7) return true;
     return false;
 }
 
-// Get eye component: 0=not eye, 1=frame outer, 2=frame inner, 3=ball
-int getEyeComponent(ivec2 m, int size) {
-    ivec2 local;
-    if (m.x < 7 && m.y < 7) local = m;
-    else if (m.x >= size - 7 && m.y < 7) local = ivec2(m.x - (size - 7), m.y);
-    else if (m.x < 7 && m.y >= size - 7) local = ivec2(m.x, m.y - (size - 7));
-    else return 0;
-    
-    // Ball: 2,2 to 4,4
-    if (local.x >= 2 && local.x <= 4 && local.y >= 2 && local.y <= 4) return 3;
-    // Frame inner (white ring): 1,1 to 5,5 excluding ball
-    if (local.x >= 1 && local.x <= 5 && local.y >= 1 && local.y <= 5) return 2;
-    // Frame outer: 0,0 to 6,6 excluding inner
-    return 1;
+ivec2 eyeOriginFor(ivec2 m) {
+    if (m.x < 7 && m.y < 7) return ivec2(0, 0);
+    if (m.x >= uQRSize - 7 && m.y < 7) return ivec2(uQRSize - 7, 0);
+    return ivec2(0, uQRSize - 7);
 }
 
-// Render shape based on ID
-float renderShape(vec2 p, int shapeId, float size) {
-    if (shapeId == 0) return sdSquare(p, size * 0.5);           // Square
-    if (shapeId == 1) return sdCircle(p, size * 0.45);           // Dot/Circle
-    if (shapeId == 2) return sdRoundedSquare(p, size * 0.5, size * 0.15); // Rounded
-    if (shapeId == 3) return sdDiamond(p, size * 0.5);           // Diamond
-    if (shapeId == 4) return sdStar(p, size * 0.5, 4, 2.5);      // Star (4-point)
-    if (shapeId == 5) return sdCircle(p, size * 0.35);           // Clover (smaller dots)
-    if (shapeId == 6) return sdCircle(p, size * 0.25);           // Tiny-dots
-    if (shapeId == 7) return sdSquare(p, vec2(size * 0.5, size * 0.3).x); // H-bars approx
-    return sdSquare(p, size * 0.5);
-}
+vec4 applyColoring(float alpha) {
+    if (alpha <= 0.001) return vec4(0.0);
 
-void main() {
-    // Map UV to QR module coordinates with PADDING (Quiet Zone)
-    // Standard QR padding is 4 modules. WASM likely uses this.
-    // Map UV (0.0 - 1.0) to (-4.0 to size + 4.0)
-    float padding = 4.0;
-    float totalSize = float(uQRSize) + (padding * 2.0);
-    
-    vec2 qrCoord = (vUv * totalSize) - padding;
-    ivec2 module = ivec2(floor(qrCoord));
-    vec2 localPos = fract(qrCoord) - 0.5; // -0.5 to 0.5 within module
-    
-    // Bounds check
-    if (module.x < 0 || module.x >= uQRSize || module.y < 0 || module.y >= uQRSize) {
-        fragColor = vec4(0.0);
-        return;
-    }
-    
-    // Sample matrix (is this module dark?)
-    vec2 sampleUv = (vec2(module) + 0.5) / float(uQRSize);
-    float isDark = texture(uTexture, sampleUv).r;
-    
-    // DEBUG: Visualize matrix sampling
-    // fragColor = vec4(1.0, 0.0, 0.0, isDark * 0.5); return;
-    
-    if (isDark < 0.5) {
-        fragColor = vec4(0.0);
-        return;
-    }
-    
-    // Determine which shape to use
-    int eyeComp = getEyeComponent(module, uQRSize);
-    float sdf;
-    
-    if (eyeComp == 3) {
-        // Eye ball
-        sdf = renderShape(localPos, uEyeBallShape, 1.0);
-    } else if (eyeComp == 1) {
-        // Eye frame
-        sdf = renderShape(localPos, uEyeFrameShape, 1.0);
-    } else if (eyeComp == 2) {
-        // Eye frame inner (should be white/empty)
-        fragColor = vec4(0.0);
-        return;
-    } else {
-        // Body module
-        sdf = renderShape(localPos, uBodyShape, 1.0);
-    }
-    
-    // Sharp threshold - no antialiasing to prevent gaps between adjacent modules
-    // SDF < 0 = inside shape (opaque), SDF >= 0 = outside (transparent)
-    float alpha = step(sdf, 0.0);
-    
-    // Gradient Logic (same as GOOEY_SHADER)
-    vec3 finalColor = uColor;
+    vec4 finalColor = uColor;
     if (uGradientType > 0) {
         float t = 0.0;
         vec2 centered = vUv - 0.5;
-        
+
         if (uGradientType == 1) { // Linear
             float s = sin(uGradientAngle);
             float c = cos(uGradientAngle);
@@ -163,29 +68,85 @@ void main() {
                 centered.x * s + centered.y * c
             );
             t = rotated.x + 0.5;
-        } 
-        else if (uGradientType == 2) { // Radial
+        } else if (uGradientType == 2) { // Radial
             t = length(centered) * 2.0;
-        } 
-        else if (uGradientType == 3) { // Conic (Sweep)
-            float angle = atan(centered.y, centered.x); // -PI to PI
-            angle += uGradientAngle; // Apply rotation offset
-            t = (angle / (2.0 * PI)) + 0.5; // Map to 0-1
-        } 
-        else if (uGradientType == 4) { // Diamond
+        } else if (uGradientType == 3) { // Conic (Sweep)
+            float angle = atan(centered.y, centered.x);
+            float sweep = fract((angle + uGradientAngle) / (2.0 * PI) + 0.5);
+            t = 1.0 - abs(sweep * 2.0 - 1.0);
+        } else if (uGradientType == 4) { // Diamond
             t = (abs(centered.x) + abs(centered.y)) * 1.5;
         }
-        
+
         t = clamp(t, 0.0, 1.0);
         finalColor = mix(uColor, uColor2, t);
     }
-    
-    // Apply Noise Effect
+
     if (uNoiseAmount > 0.0) {
         float noise = hash21(vUv * uNoiseScale);
-        noise = (noise - 0.5) * 2.0; // Map to -1 to 1
-        finalColor += noise * uNoiseAmount * 0.5; // More visible grain (was 0.15)
+        noise = (noise - 0.5) * 2.0;
+        finalColor.rgb += noise * uNoiseAmount * 0.5;
     }
-    
-    fragColor = vec4(finalColor, alpha);
+
+    return vec4(finalColor.rgb, alpha * finalColor.a);
+}
+
+void main() {
+    // Map UV to QR module coordinates with PADDING (Quiet Zone)
+    float padding = 4.0;
+    float totalSize = float(uQRSize) + (padding * 2.0);
+
+    vec2 qrCoord = (vUv * totalSize) - padding;
+    ivec2 module = ivec2(floor(qrCoord));
+
+    // Bounds check
+    if (module.x < 0 || module.x >= uQRSize || module.y < 0 || module.y >= uQRSize) {
+        fragColor = vec4(0.0);
+        return;
+    }
+
+    // Eyes: sample a single 7x7 mask tile (Rust-generated).
+    if (isInEyeRegion(module)) {
+        ivec2 origin = eyeOriginFor(module);
+        vec2 eyeCoord = qrCoord - vec2(origin); // 0..7 (continuous)
+        vec2 uvEye = clamp(eyeCoord / 7.0, 0.0, 1.0);
+        float alpha = texture(uEyeMask, uvEye).r;
+        fragColor = applyColoring(alpha);
+        return;
+    }
+
+    // Light modules: transparent
+    if (isDarkAt(module) < 0.5) {
+        fragColor = vec4(0.0);
+        return;
+    }
+
+    // Body: sample atlas tile based on an 8-neighbor bitmask (Rust-generated variants).
+    float l  = isDarkAt(module + ivec2(-1,  0));
+    float r  = isDarkAt(module + ivec2( 1,  0));
+    float u  = isDarkAt(module + ivec2( 0, -1));
+    float d  = isDarkAt(module + ivec2( 0,  1));
+    float lu = isDarkAt(module + ivec2(-1, -1));
+    float ru = isDarkAt(module + ivec2( 1, -1));
+    float ld = isDarkAt(module + ivec2(-1,  1));
+    float rd = isDarkAt(module + ivec2( 1,  1));
+
+    float mask =
+        l
+      + r  * 2.0
+      + u  * 4.0
+      + d  * 8.0
+      + lu * 16.0
+      + ru * 32.0
+      + ld * 64.0
+      + rd * 128.0;
+
+    float tileX = mod(mask, ATLAS_TILES);
+    float tileY = floor(mask / ATLAS_TILES);
+
+    vec2 localUv = fract(qrCoord); // 0..1 within module
+    vec2 uvAtlas = (vec2(tileX, tileY) + localUv) / ATLAS_TILES;
+
+    float alpha = texture(uBodyMaskAtlas, uvAtlas).r;
+    fragColor = applyColoring(alpha);
 }`;

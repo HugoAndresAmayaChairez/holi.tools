@@ -7,10 +7,13 @@ out vec4 fragColor;
 uniform sampler2D uLogo;
 uniform float uBgEnabled;
 uniform vec3 uBgColor;
+uniform float uOpacity;
 uniform float uLogoRotation; // Degrees
 uniform float uLogoScale;    // 1.0 = 100%
 uniform float uLogoOffsetX;  // -1 to 1
 uniform float uLogoOffsetY;  // -1 to 1
+uniform float uLogoAspect;   // image width / height
+uniform int uLogoFitMode;    // 0=Cover, 1=Contain, 2=Fill
 uniform int uShape;          // 0=Square, 1=Circle, 2=Rounded
 uniform float uCornerRadius; // 0.0 to 0.5
 uniform float uPadding;      // 0.0 to 0.5
@@ -36,6 +39,31 @@ vec2 rotateUV(vec2 uv, float rotation) {
         cosAngle * (uv.x - mid) + sinAngle * (uv.y - mid) + mid,
         cosAngle * (uv.y - mid) - sinAngle * (uv.x - mid) + mid
     );
+}
+
+vec2 fitUv(vec2 uv, float imgAspect, int fitMode) {
+    if (fitMode == 2) {
+        return uv; // Fill
+    }
+
+    float rw = 1.0;
+    float rh = 1.0;
+
+    if (fitMode == 0) { // Cover into a square logo box
+        if (imgAspect > 1.0) {
+            rw = imgAspect;
+        } else {
+            rh = 1.0 / imgAspect;
+        }
+    } else { // Contain
+        if (imgAspect > 1.0) {
+            rh = 1.0 / imgAspect;
+        } else {
+            rw = imgAspect;
+        }
+    }
+
+    return (uv - 0.5) * vec2(1.0 / rw, 1.0 / rh) + 0.5;
 }
 
 void main() {
@@ -102,12 +130,19 @@ void main() {
     
     float pad = uPadding;
     vec2 paddedUV = (finalTexUV - pad) / (1.0 - 2.0 * pad);
+    paddedUV = fitUv(paddedUV, max(uLogoAspect, 0.001), uLogoFitMode);
     
     if (paddedUV.x >= 0.0 && paddedUV.x <= 1.0 && paddedUV.y >= 0.0 && paddedUV.y <= 1.0) {
         vec4 texColor = texture(uLogo, paddedUV);
         
         // Mask texture by shape alpha
         texColor.a *= bgAlpha; 
+
+        float logoLum = dot(texColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+        float bgLum = dot(uBgColor, vec3(0.2126, 0.7152, 0.0722));
+        if (logoLum < 0.18 && (uBgEnabled < 0.5 || bgLum < 0.35)) {
+            texColor.rgb = vec3(1.0);
+        }
         
         // Blend texture over background
         // Normal Blend: Src + Dst * (1 - SrcA)
@@ -130,5 +165,5 @@ void main() {
     // Actually, if we use a separate "Hole Punch" pass, we draw just the shape.
     // This shader handles Color/Texture pass.
     
-    fragColor = finalColor;
+    fragColor = vec4(finalColor.rgb, finalColor.a * uOpacity);
 }`;

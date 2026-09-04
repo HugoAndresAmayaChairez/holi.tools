@@ -11,10 +11,7 @@ use alloc::format;
 use wasm_bindgen::prelude::*;
 use qrcodegen::{QrCode, QrCodeEcc, QrSegment, Version, Mask};
 
-// Use wee_alloc as the global allocator.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
+// Using standard allocator now
 fn get_ecc(c: &str) -> QrCodeEcc {
     match c {
         "L" => QrCodeEcc::Low,
@@ -78,8 +75,14 @@ pub fn generate_svg(text: &str, shape: u8, ecc: &str, mask: i32) -> String {
     
     let size = qr.size();
     
-    // Reserve capacity (approximate) - Dots need more space than squares
-    let mut svg = String::with_capacity(100 + (size as usize * size as usize) * 20);
+    // Optimize capacity allocation based on shape (assumes ~50% dark modules)
+    let chars_per_module = match shape {
+        1 => 24, // Circle: ~47 chars * 0.5
+        2 => 32, // Rounded: ~64 chars * 0.5
+        3 => 22, // Liquid: ~44 chars * 0.5
+        _ => 8,  // Square: ~14 chars * 0.5
+    };
+    let mut svg = String::with_capacity(200 + (size as usize * size as usize) * chars_per_module);
 
     svg.push_str("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ");
     push_usize(&mut svg, size as usize);

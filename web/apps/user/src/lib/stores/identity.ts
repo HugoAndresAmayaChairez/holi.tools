@@ -1,5 +1,4 @@
 import { getPrimaryIdentity, type Identity } from '../identity/manager';
-import { getNostrPublicKey } from '../p2p/nostr';
 import { debugWarn } from '../debug';
 
 type Subscriber = (val: IdentityState) => void;
@@ -45,12 +44,9 @@ export const identityStore = {
         state.loading = true;
         notify();
         try {
-            const [id, pk] = await Promise.all([
-                getPrimaryIdentity(),
-                getNostrPublicKey()
-            ]);
+            const id = await getPrimaryIdentity();
             state.identity = id;
-            state.pubkey = pk;
+            state.pubkey = id && /^[0-9a-f]{64}$/i.test(id.id) ? id.id : null;
         } catch (e) {
             debugWarn('Store init failed', e);
         } finally {
@@ -63,12 +59,9 @@ export const identityStore = {
         state.loading = true;
         notify();
         try {
-            const [id, pk] = await Promise.all([
-                getPrimaryIdentity(),
-                getNostrPublicKey()
-            ]);
+            const id = await getPrimaryIdentity();
             state.identity = id;
-            state.pubkey = pk;
+            state.pubkey = id && /^[0-9a-f]{64}$/i.test(id.id) ? id.id : null;
         } finally {
             state.loading = false;
             notify();

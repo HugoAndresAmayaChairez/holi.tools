@@ -16,7 +16,7 @@ pub enum QrError {
     /// Internal QR generation error
     #[error("QR generation failed: {0}")]
     GenerationFailed(String),
-    
+
     /// QR verification failed
     #[error("Verification failed: {0}")]
     VerificationFailed(String),

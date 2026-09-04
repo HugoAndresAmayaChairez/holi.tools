@@ -1,5 +1,6 @@
 import { ui, type TranslationKey } from "./ui";
 import { DEFAULT_LANG } from "@holi/configs/i18n";
+import { LANGUAGES } from "@holi/configs/i18n";
 
 export function getLangFromUrl(url: URL) {
     const [, lang] = url.pathname.split("/");
@@ -13,7 +14,4 @@ export function useTranslations(lang: keyof typeof ui) {
     };
 }
 
-export const languages = [
-    { code: "en", name: "English" },
-    { code: "es", name: "Español" },
-] as const;
+export const languages = LANGUAGES;

@@ -1,0 +1,648 @@
+---
+import { getTypstCopy } from "../i18n/translations";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+
+interface Props { lang?: string; }
+const { lang = "en" } = Astro.props;
+const copy = getTypstCopy(lang);
+const clientCopy = JSON.stringify(copy);
+---
+
+<div id="typst-root" data-explorer-open="true" data-typst-copy={clientCopy} class="h-screen w-full overflow-hidden">
+  <div id="explorer-backdrop" class="explorer-backdrop" hidden></div>
+
+  <aside id="explorer" data-open="true" class="file-explorer" aria-label={copy.files}>
+    <ProductCreature name="owl" variant="background" class="explorer-creature" />
+    <button
+      id="toggle-explorer"
+      class="explorer-rail-toggle"
+      type="button"
+      title={copy.openFiles}
+      aria-label={copy.openFiles}
+      aria-controls="explorer-panel"
+      aria-expanded="true"
+    >
+      <span class="explorer-rail-label">{copy.files}</span>
+      <span class="explorer-rail-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <div id="explorer-panel" class="explorer-panel">
+      <div class="explorer-heading">
+        <div class="workspace-brand">Holi <span>Typst</span></div>
+        <button
+          id="close-explorer"
+          class="explorer-collapse-button"
+          type="button"
+          title={copy.collapseFiles}
+          aria-label={copy.collapseFiles}
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+      </div>
+
+      <div class="explorer-tools-heading">
+        <div>
+          <div class="explorer-eyebrow">{copy.workspace}</div>
+          <div class="explorer-title">{copy.files}</div>
+        </div>
+        <button
+          id="explorer-add-image"
+          class="explorer-image-button"
+          type="button"
+          title={copy.addImage}
+          aria-label={copy.addImage}
+        >
+          <span aria-hidden="true">▧</span>
+          {copy.image}
+        </button>
+      </div>
+
+      <div class="explorer-icon-actions" aria-label={copy.workspaceActions}>
+        <button id="explorer-new" class="explorer-icon-button" type="button" title={copy.newFile} aria-label={copy.newFile}>+</button>
+        <button id="explorer-new-project" class="explorer-icon-button" type="button" title={copy.newProject} aria-label={copy.newProject}>◇</button>
+        <button id="explorer-connect" class="explorer-icon-button" type="button" title={copy.connectFolder} aria-label={copy.connectFolder}>⌂</button>
+        <button id="explorer-refresh" class="explorer-icon-button" type="button" title={copy.refreshFolder} aria-label={copy.refreshFolder} hidden>↻</button>
+      </div>
+      <input id="explorer-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" class="hidden" />
+
+      <div class="workspace-location-row">
+        <span class="workspace-location-dot" aria-hidden="true"></span>
+        <span id="workspace-location">{copy.browserWorkspace}</span>
+      </div>
+      <div class="explorer-file-actions">
+        <button id="explorer-rename" class="explorer-text-button" type="button">{copy.rename}</button>
+        <button id="explorer-delete" class="explorer-text-button explorer-text-button--danger" type="button">{copy.delete}</button>
+      </div>
+      <div class="explorer-section-label">{copy.projects}</div>
+      <div id="file-tree" class="flex-1 overflow-auto px-2 pb-4"></div>
+    </div>
+  </aside>
+
+  <section class="workspace-main">
+    <header class="workspace-toolbar w-full px-2 flex items-center gap-2 overflow-x-auto whitespace-nowrap">
+      <button
+        id="toggle-view"
+        class="toolbar-button shrink-0 md:hidden"
+        type="button"
+        title={copy.toggleView}
+      >
+        {copy.preview}
+      </button>
+      <div class="active-file-label truncate" id="active-file-name"></div>
+      <div class="save-state shrink-0" id="save-status">{copy.saved}</div>
+    </header>
+
+    <div id="split-root" class="relative flex flex-1 min-h-0 overflow-hidden">
+      <div id="workbench-root" class="flex flex-1 overflow-hidden">
+      <div
+        id="editor-container"
+        class="editor-pane h-full flex flex-col overflow-hidden"
+        style="width: 50%;"
+      >
+        <div class="pane-toolbar" aria-label={copy.codeControls}>
+          <span class="pane-toolbar-title">{copy.code}</span>
+          <span class="pane-toolbar-spacer"></span>
+          <button id="toggle-wrap" class="pane-action" type="button" title={copy.toggleWrap}>{copy.wrapOff}</button>
+          <a class="pane-action" href="https://typst.app/docs/" target="_blank" rel="noreferrer">{copy.docs}</a>
+          <button id="download-typ" class="pane-action" type="button">{copy.downloadTyp}</button>
+        </div>
+        <div id="editor-mount" class="editor-mount flex-1 min-h-0">
+          <div class="p-4 text-sm opacity-70">{copy.loadingEditor}</div>
+        </div>
+      </div>
+
+      <div
+        id="splitter"
+        class="workspace-splitter w-2 h-full cursor-col-resize"
+        role="separator"
+        aria-orientation="vertical"
+        tabindex="0"
+        title={copy.dragResize}
+      >
+      </div>
+
+      <div
+        id="preview-container"
+        class="preview-pane flex flex-col flex-1 h-full min-w-0 overflow-hidden"
+      >
+        <div class="pane-toolbar" aria-label={copy.pdfControls}>
+          <span class="pane-toolbar-title">PDF</span>
+          <span id="preview-status" class="preview-inline-status">{copy.idle}</span>
+          <span class="pane-toolbar-spacer"></span>
+          <div class="preview-zoom-controls" role="group" aria-label={copy.previewZoom}>
+            <button id="zoom-out" class="pane-action pane-action--square" type="button" title={copy.zoomOut} aria-label={copy.zoomOut}>−</button>
+            <output id="zoom-level" class="preview-zoom-level" aria-live="polite">100%</output>
+            <button id="zoom-in" class="pane-action pane-action--square" type="button" title={copy.zoomIn} aria-label={copy.zoomIn}>+</button>
+          </div>
+          <button id="reset-zoom" class="pane-action" type="button" title={copy.resetZoom}>1:1</button>
+          <button id="download-pdf" class="pane-action pane-action--primary" type="button">{copy.downloadPdf}</button>
+        </div>
+        <div id="preview-scroll" class="preview-scroll relative flex-1 min-h-0 overflow-auto">
+          <div
+            id="preview-errors"
+            class="absolute top-3 right-3 z-[3] max-w-[min(520px,calc(100%-24px))]"
+          >
+          </div>
+          <div id="preview-stage" class="preview-stage min-h-full flex justify-center">
+            <div id="preview-content" class="preview-document">
+              <div class="p-6 text-sm text-gray-500">{copy.loadingPreview}</div>
+            </div>
+          </div>
+          <div id="source-jump-notice" class="source-jump-notice" role="status" aria-live="polite">
+            {copy.locateInstruction}
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { createEditor } from "../lib/editor/setup";
+  import { initCompiler, compileSvg, compilePdf } from "../lib/compiler/typst";
+  import {
+    isMobile,
+    suggestedFilename,
+    downloadTextFile,
+    downloadBlob,
+  } from "../lib/utils";
+  import { safeGetItem, safeSetItem } from "../lib/storage/idb";
+  import { FileStore } from "../lib/storage/files";
+  import { createPreviewManager } from "../lib/editor/preview";
+  import { wireSplitter, restoreSplit } from "../lib/editor/splitter";
+  import {
+    renderFileTree,
+    syncExplorerWorkspace,
+    wireExplorer,
+  } from "../lib/editor/explorer";
+  import type { EditorController } from "../lib/editor/setup";
+  import type { ExplorerRefs } from "../lib/editor/explorer";
+  import type { TypstCopy } from "../i18n/translations";
+
+  // ── DOM refs ──────────────────────────────────────────────────────
+
+  const editorContainer = document.getElementById("editor-container");
+  const editorMount = document.getElementById("editor-mount");
+  const previewContent = document.getElementById("preview-content");
+  const previewErrors = document.getElementById("preview-errors");
+  const previewStatus = document.getElementById("preview-status");
+  const previewContainer = document.getElementById("preview-container");
+  const previewScroll = document.getElementById("preview-scroll");
+  const previewStage = document.getElementById("preview-stage");
+  const splitterEl = document.getElementById("splitter");
+  const workbenchRoot = document.getElementById("workbench-root");
+  const typstRoot = document.getElementById("typst-root");
+  const copy = JSON.parse(typstRoot?.dataset.typstCopy || "{}") as TypstCopy;
+
+  const explorerEl = document.getElementById("explorer");
+  const explorerBackdrop = document.getElementById("explorer-backdrop");
+  const toggleExplorerButton = document.getElementById("toggle-explorer");
+  const closeExplorerButton = document.getElementById("close-explorer");
+  const toggleViewButton = document.getElementById("toggle-view");
+  const toggleWrapButton = document.getElementById("toggle-wrap");
+  const activeFileNameEl = document.getElementById("active-file-name");
+
+  const saveStatusEl = document.getElementById("save-status");
+  const downloadTypButton = document.getElementById("download-typ");
+  const downloadPdfButton = document.getElementById(
+    "download-pdf"
+  ) as HTMLButtonElement | null;
+  const resetZoomButton = document.getElementById("reset-zoom");
+  const zoomInButton = document.getElementById("zoom-in");
+  const zoomOutButton = document.getElementById("zoom-out");
+  const zoomLevelOutput = document.getElementById("zoom-level");
+  const sourceJumpNotice = document.getElementById("source-jump-notice");
+
+  // ── Constants ─────────────────────────────────────────────────────
+
+  const WRAP_KEY = "holi-typst:ui:wrap:v1";
+  const MOBILE_VIEW_KEY = "holi-typst:ui:mobileView:v1";
+  const DESKTOP_EXPLORER_OPEN_KEY = "holi-typst:ui:explorerOpen:v1";
+
+  const DEFAULT_CODE = `
+= Welcome to Holi Typst
+
+#align(center)[
+  #image("images/holi-mark.svg", width: 22mm)
+]
+
+This project works from browser storage or a folder you connect. The editor uses the same flat workspace structure either way.
+
+- Keep each project in its own top-level folder.
+- Put project images in its \`images/\` folder.
+- Create another project from the compact button in Files.
+
+== A live Typst example
+#let as-decimal(x) = calc.round(x * 1000000) / 1000000
+
+2/324 as decimal: #as-decimal(2 / 324)
+
+== Math
+Inline: $a^2 + b^2 = c^2$.
+
+Display:
+$
+sum_(k=1)^n k = n(n + 1) / 2
+$
+
+Matrix:
+$
+mat(
+  1, 0;
+  0, 1
+)
+$
+
+Everything compiles on this device with WebAssembly.
+  `.trim();
+
+  // ── Local UI state ────────────────────────────────────────────────
+
+  let editor: EditorController | undefined;
+  let isProgrammaticChange = false;
+  let wrapEnabled = false;
+  let mobileView: "editor" | "preview" = "editor";
+  let explorerOpen = true;
+  let saveState: "saved" | "dirty" | "saving" | "error" = "saved";
+
+  // ── Modules ───────────────────────────────────────────────────────
+
+  const preview = createPreviewManager(
+    {
+      previewContent,
+      previewErrors,
+      previewStatus,
+      previewContainer: previewScroll,
+      previewStage,
+      editorContainer,
+      zoomOutput: zoomLevelOutput,
+    },
+    {
+      compileSvg: async (source) =>
+        compileSvg(
+          source,
+          await fileStore.getCompilerFiles(),
+          fileStore.activeEntry?.path
+        ),
+      onSourceJump: (ratio) => goToApproximateSource(ratio),
+      copy,
+    }
+  );
+
+  const explorerRefs: ExplorerRefs = {
+    fileTree: document.getElementById("file-tree"),
+    workspaceLocation: document.getElementById("workspace-location"),
+    explorerNewButton: document.getElementById("explorer-new"),
+    explorerNewProjectButton: document.getElementById("explorer-new-project"),
+    explorerAddImageButton: document.getElementById("explorer-add-image"),
+    explorerImageInput: document.getElementById("explorer-image-input") as HTMLInputElement | null,
+    explorerConnectButton: document.getElementById("explorer-connect"),
+    explorerRefreshButton: document.getElementById("explorer-refresh"),
+    explorerRenameButton: document.getElementById("explorer-rename"),
+    explorerDeleteButton: document.getElementById("explorer-delete"),
+  };
+
+  const splitterRefs = { workbenchRoot, splitter: splitterEl, editorContainer };
+
+  // ── Save status helpers ───────────────────────────────────────────
+
+  function setSaveStatus(text: string) {
+    if (saveStatusEl) saveStatusEl.textContent = text;
+  }
+
+  function markUnsaved() {
+    if (saveState !== "dirty") {
+      saveState = "dirty";
+      setSaveStatus(copy.unsaved);
+    }
+  }
+  function markSaved() {
+    saveState = "saved";
+    setSaveStatus(copy.saved);
+  }
+  function markSaving() {
+    if (saveState !== "saving") {
+      saveState = "saving";
+      setSaveStatus(copy.saving);
+    }
+  }
+  function markSaveError() {
+    saveState = "error";
+    setSaveStatus(copy.saveFailed);
+  }
+
+  // ── FileStore ─────────────────────────────────────────────────────
+
+  const fileStore = new FileStore({
+    renderFileTree: () =>
+      renderFileTree(explorerRefs, fileStore.fileIndex, fileStore.activeFileId, copy),
+    updateActiveFileLabel: () => {
+      if (!activeFileNameEl) return;
+      const entry = fileStore.activeFileId
+        ? fileStore.fileIndex.find((f) => f.id === fileStore.activeFileId)
+        : null;
+      activeFileNameEl.textContent = entry ? entry.path : "";
+    },
+    updateWorkspace: (info) => {
+      syncExplorerWorkspace(explorerRefs, fileStore, copy);
+      document.dispatchEvent(
+        new CustomEvent("holi:workspace-change", {
+          detail: { ...info, count: fileStore.fileIndex.length },
+        })
+      );
+    },
+    markSaved,
+    markSaving,
+    markSaveError,
+    clearErrors: () => preview.clearErrors(),
+    schedulePreviewUpdate: (text) => preview.schedulePreviewUpdate(text),
+    setEditorDoc: (text) => {
+      if (!editor?.view) return;
+      const currentLen = editor.view.state.doc.length;
+      isProgrammaticChange = true;
+      editor.view.dispatch({
+        changes: { from: 0, to: currentLen, insert: text },
+      });
+      isProgrammaticChange = false;
+    },
+  });
+
+  // ── Responsive layout ─────────────────────────────────────────────
+
+  function setExplorerOpen(open: boolean) {
+    explorerOpen = Boolean(open);
+    if (!isMobile())
+      safeSetItem(DESKTOP_EXPLORER_OPEN_KEY, explorerOpen ? "1" : "0");
+    applyExplorerState();
+  }
+
+  function applyExplorerState() {
+    if (!explorerEl || !typstRoot) return;
+    explorerEl.dataset.open = explorerOpen ? "true" : "false";
+    typstRoot.dataset.explorerOpen = explorerOpen ? "true" : "false";
+    toggleExplorerButton?.setAttribute("aria-expanded", String(explorerOpen));
+    if (toggleExplorerButton) {
+      toggleExplorerButton.title = explorerOpen ? copy.filesOpen : copy.openFiles;
+    }
+    if (explorerBackdrop) {
+      explorerBackdrop.hidden = !(isMobile() && explorerOpen);
+    }
+  }
+
+  function applyResponsiveLayout() {
+    if (toggleViewButton) {
+      toggleViewButton.textContent =
+        mobileView === "editor" ? copy.preview : copy.editor;
+    }
+    applyExplorerState();
+
+    if (!editorContainer || !previewContainer || !splitterEl) return;
+    const mobile = isMobile();
+    if (!mobile) {
+      splitterEl.classList.remove("hidden");
+      previewContainer.classList.remove("hidden");
+      editorContainer.classList.remove("hidden");
+      previewContainer.style.removeProperty("display");
+      editorContainer.style.removeProperty("display");
+      restoreSplit(splitterRefs);
+      if (
+        !editorContainer.style.width ||
+        !editorContainer.style.width.endsWith("%")
+      ) {
+        editorContainer.style.width = "50%";
+      }
+      return;
+    }
+
+    splitterEl.classList.add("hidden");
+    if (mobileView === "editor") {
+      editorContainer.classList.remove("hidden");
+      previewContainer.classList.add("hidden");
+      editorContainer.style.width = "100%";
+    } else {
+      previewContainer.classList.remove("hidden");
+      editorContainer.classList.add("hidden");
+      if (previewScroll) {
+        previewScroll.scrollTop = 0;
+        previewScroll.scrollLeft = 0;
+      }
+      preview.fitPreviewToWidth();
+    }
+  }
+
+  // ── Start ─────────────────────────────────────────────────────────
+
+  async function start() {
+    // Restore UI preferences
+    wrapEnabled = safeGetItem(WRAP_KEY) === "1";
+    mobileView = (safeGetItem(MOBILE_VIEW_KEY) || "editor") as
+      | "editor"
+      | "preview";
+    explorerOpen = isMobile()
+      ? false
+      : safeGetItem(DESKTOP_EXPLORER_OPEN_KEY) !== "0";
+
+    if (!isMobile()) restoreSplit(splitterRefs);
+    applyResponsiveLayout();
+    if (toggleWrapButton)
+      toggleWrapButton.textContent = wrapEnabled ? copy.wrapOn : copy.wrapOff;
+
+    // File system
+    const { initialDoc } = await fileStore.init(DEFAULT_CODE);
+    renderFileTree(explorerRefs, fileStore.fileIndex, fileStore.activeFileId, copy);
+    syncExplorerWorkspace(explorerRefs, fileStore, copy);
+    document.dispatchEvent(
+      new CustomEvent("holi:workspace-change", {
+        detail: { ...fileStore.workspace, count: fileStore.fileIndex.length },
+      })
+    );
+    // Update active file label
+    const activeEntry = fileStore.activeFileId
+      ? fileStore.fileIndex.find((f) => f.id === fileStore.activeFileId)
+      : null;
+    if (activeFileNameEl)
+      activeFileNameEl.textContent = activeEntry ? activeEntry.path : "";
+
+    // Editor
+    if (editorMount) {
+      editorMount.innerHTML = "";
+      editor = createEditor(
+        editorMount,
+        initialDoc,
+        (newDoc) => {
+          if (isProgrammaticChange) return;
+          markUnsaved();
+          fileStore.scheduleSave(newDoc, fileStore.activeFileId);
+          preview.schedulePreviewUpdate(newDoc);
+        },
+        { wrap: wrapEnabled }
+      );
+    }
+
+    // Wire UI
+    wireToolbar();
+    wireGlobalUi();
+    wireExplorer(explorerRefs, fileStore, { setExplorerOpen }, copy);
+    if (!isMobile()) wireSplitter(splitterRefs);
+    preview.wirePreviewGestures();
+
+    // Measure page dimensions for zoom
+    requestAnimationFrame(() => preview.measureBasePage());
+
+    // Init compiler
+    try {
+      console.log("Initializing Typst Compiler...");
+      await initCompiler();
+      console.log("Compiler Initialized");
+    } catch (e) {
+      console.error("Failed to init compiler", e);
+      if (previewContent) {
+        previewContent.textContent = "";
+        const errorEl = document.createElement("div");
+        errorEl.className = "text-red-500 p-4";
+        errorEl.textContent = `Error initializing compiler: ${String(e)}`;
+        previewContent.appendChild(errorEl);
+      }
+      return;
+    }
+
+    // Initial render
+    preview.schedulePreviewUpdate(initialDoc);
+  }
+
+  // ── Toolbar ───────────────────────────────────────────────────────
+
+  function wireToolbar() {
+    if (downloadTypButton) {
+      downloadTypButton.addEventListener("click", () => {
+        const source = editor?.view?.state?.doc?.toString() ?? "";
+        downloadTextFile(source, suggestedFilename(source, "typ"));
+      });
+    }
+
+    if (downloadPdfButton) {
+      downloadPdfButton.addEventListener("click", async () => {
+        const source = editor?.view?.state?.doc?.toString() ?? "";
+        downloadPdfButton!.disabled = true;
+        const prevText = downloadPdfButton!.textContent;
+        downloadPdfButton!.textContent = copy.building;
+        preview.setStatus("pdf…");
+
+        try {
+          const pdfBytes = await compilePdf(
+            source,
+            await fileStore.getCompilerFiles(),
+            fileStore.activeEntry?.path
+          );
+          const blob = new Blob([pdfBytes], { type: "application/pdf" });
+          downloadBlob(blob, suggestedFilename(source, "pdf"));
+          preview.setStatus(copy.pdfReady);
+        } catch (e: any) {
+          console.error("PDF generation error:", e);
+          const msg = typeof e?.message === "string" ? e.message : String(e);
+          preview.showDiagnostics(Array.isArray(e) ? e : undefined, msg);
+          preview.setStatus(copy.error);
+        } finally {
+          downloadPdfButton!.disabled = false;
+          downloadPdfButton!.textContent = prevText;
+        }
+      });
+    }
+
+    if (resetZoomButton) {
+      resetZoomButton.addEventListener("click", () => preview.resetZoom());
+    }
+    zoomInButton?.addEventListener("click", () => preview.zoomIn());
+    zoomOutButton?.addEventListener("click", () => preview.zoomOut());
+  }
+
+  // ── Global UI events ──────────────────────────────────────────────
+
+  function wireGlobalUi() {
+    document.addEventListener("holi:workspace-action", async (event) => {
+      const action = (event as CustomEvent<{ action?: string }>).detail?.action;
+      try {
+        if (action === "folder") await fileStore.connectFolder();
+        if (action === "browser") await fileStore.useBrowserWorkspace();
+        if (action === "refresh") await fileStore.refreshWorkspace();
+        syncExplorerWorkspace(explorerRefs, fileStore, copy);
+      } catch (error) {
+        console.error("Workspace action failed", error);
+        markSaveError();
+      }
+    });
+
+    if (toggleWrapButton) {
+      toggleWrapButton.addEventListener("click", () => {
+        wrapEnabled = !wrapEnabled;
+        safeSetItem(WRAP_KEY, wrapEnabled ? "1" : "0");
+        toggleWrapButton!.textContent = wrapEnabled ? copy.wrapOn : copy.wrapOff;
+        editor?.setWrap?.(wrapEnabled);
+      });
+    }
+
+    if (toggleExplorerButton) {
+      toggleExplorerButton.addEventListener("click", () => setExplorerOpen(true));
+    }
+    closeExplorerButton?.addEventListener("click", () => setExplorerOpen(false));
+
+    document.addEventListener("holi:open-files", () => setExplorerOpen(true));
+
+    if (explorerBackdrop) {
+      explorerBackdrop.addEventListener("click", () => setExplorerOpen(false));
+    }
+
+    explorerEl?.addEventListener("transitionend", (event) => {
+      if (event.propertyName === "width") preview.fitPreviewToWidth();
+    });
+
+    if (toggleViewButton) {
+      toggleViewButton.addEventListener("click", () => {
+        mobileView = mobileView === "editor" ? "preview" : "editor";
+        safeSetItem(MOBILE_VIEW_KEY, mobileView);
+        applyResponsiveLayout();
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isMobile() && explorerOpen)
+        setExplorerOpen(false);
+    });
+
+    const mql = window.matchMedia("(max-width: 900px)");
+    const onChange = () => {
+      explorerOpen = isMobile()
+        ? false
+        : safeGetItem(DESKTOP_EXPLORER_OPEN_KEY) !== "0";
+      applyResponsiveLayout();
+      if (toggleWrapButton)
+        toggleWrapButton.textContent = wrapEnabled ? copy.wrapOn : copy.wrapOff;
+    };
+    if ("addEventListener" in mql) mql.addEventListener("change", onChange);
+    else (mql as any).addListener(onChange);
+  }
+
+  function goToApproximateSource(ratio: number) {
+    const source = editor?.view.state.doc.toString() ?? "";
+    if (!source || !editor) return;
+    const lines = source.split(/\r?\n/);
+    const candidates = lines
+      .map((text, index) => ({ text, line: index + 1 }))
+      .filter(({ text }) => text.trim().length > 0);
+    const pool = candidates.length > 0 ? candidates : lines.map((text, index) => ({ text, line: index + 1 }));
+    const targetIndex = Math.round(Math.max(0, Math.min(1, ratio)) * Math.max(0, pool.length - 1));
+    const targetLine = pool[targetIndex]?.line ?? 1;
+    editor.revealLine(targetLine);
+    if (sourceJumpNotice) {
+      sourceJumpNotice.textContent = `${copy.nearestSource} · ${copy.line} ${targetLine}`;
+      sourceJumpNotice.dataset.active = "true";
+      window.setTimeout(() => {
+        sourceJumpNotice.dataset.active = "false";
+        sourceJumpNotice.textContent = copy.locateInstruction;
+      }, 2600);
+    }
+  }
+
+  start();
+</script>

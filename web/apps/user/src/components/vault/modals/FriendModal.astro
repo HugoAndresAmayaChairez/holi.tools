@@ -96,7 +96,6 @@ const strings = {
     renameContact,
     setContactDmByNostrPubkey,
   } from "../../../lib/contacts/store";
-  import { getNostrPublicKey } from "../../../lib/p2p/nostr";
   import { getPrimaryIdentity } from "../../../lib/identity/manager";
   import { toast } from "../../../lib/ui/toast";
   import {
@@ -120,6 +119,12 @@ const strings = {
   const submitBtn = form?.querySelector(
     'button[type="submit"]'
   ) as HTMLButtonElement;
+
+  function extractFriendCode(raw: string): string {
+    const t = (raw || "").trim();
+    const idx = t.indexOf("holi-fr-");
+    return idx >= 0 ? t.slice(idx).trim() : t;
+  }
 
   // Open Handler
   window.addEventListener("open-friend-modal", ((e: CustomEvent) => {
@@ -168,7 +173,7 @@ const strings = {
     e.preventDefault();
     const id = idInput.value.trim();
     let alias = aliasInput.value.trim();
-    const code = (pkInput?.value || "").trim();
+    const code = extractFriendCode((pkInput?.value || "").trim());
 
     try {
       if (!id) {
@@ -182,7 +187,10 @@ const strings = {
             toast.info(strings.msg_connecting);
 
             const myself = await getPrimaryIdentity();
-            const myPk = await getNostrPublicKey();
+            const myPk = myself?.id || "";
+            if (!/^[0-9a-f]{64}$/i.test(myPk)) {
+              throw new Error("Missing identity. Open your vault first.");
+            }
 
             const myInfo: ContactInfo = {
               pubkey: myPk,

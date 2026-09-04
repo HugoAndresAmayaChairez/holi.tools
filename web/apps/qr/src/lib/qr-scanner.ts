@@ -3,7 +3,7 @@
  * Handles image upload, drag & drop, and WASM-based QR decoding
  */
 
-import { decodeQRImage } from './qr-engine';
+import { decodeQRImage, decodeQRImageViaWasm } from './qr-engine';
 import { getIconSvg } from './icons';
 
 class QRScanner {
@@ -123,18 +123,72 @@ class QRScanner {
         this.showLoading();
 
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            const imageData = new Uint8Array(arrayBuffer);
+            // Decode from pixels (bounded to 1024px for speed/consistency)
+            const imageData = await this.fileToImageData(file, 1024);
 
-            // Decode using WASM
-            const decoded = decodeQRImage(imageData);
+            // Prefer ZXing-like Rust/WASM decoder; fall back to jsQR.
+            const decoded = (await decodeQRImageViaWasm(imageData)) ?? (await decodeQRImage(imageData));
+
+            if (!decoded) {
+                this.showError('Could not decode QR code. Make sure the image contains a valid QR code.');
+                return;
+            }
+
             this.lastDecodedContent = decoded;
-            this.showResult(decoded);
+
+            const previewUrl = URL.createObjectURL(file);
+            this.showResult(decoded, previewUrl);
 
         } catch (error: any) {
             console.error('QR Scan failed:', error);
             this.showError('Could not decode QR code. Make sure the image contains a valid QR code.');
         }
+    }
+
+    private async fileToImageData(file: File, maxSize: number): Promise<ImageData> {
+        // Prefer createImageBitmap when available (faster, avoids <img> decode races).
+        if (typeof createImageBitmap === 'function') {
+            const bitmap = await createImageBitmap(file);
+            const { width, height } = this.constrainSize(bitmap.width, bitmap.height, maxSize);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas context not available');
+
+            ctx.drawImage(bitmap, 0, 0, width, height);
+            return ctx.getImageData(0, 0, width, height);
+        }
+
+        // Fallback: <img> decode path.
+        const url = URL.createObjectURL(file);
+        try {
+            const img = new Image();
+            await new Promise<void>((resolve, reject) => {
+                img.onload = () => resolve();
+                img.onerror = () => reject(new Error('Image load failed'));
+                img.src = url;
+            });
+
+            const { width, height } = this.constrainSize(img.naturalWidth || img.width, img.naturalHeight || img.height, maxSize);
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas context not available');
+
+            ctx.drawImage(img, 0, 0, width, height);
+            return ctx.getImageData(0, 0, width, height);
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    private constrainSize(width: number, height: number, maxSize: number): { width: number; height: number } {
+        if (!width || !height) return { width: maxSize, height: maxSize };
+        const scale = Math.min(1, maxSize / Math.max(width, height));
+        return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
     }
 
     private showLoading() {
@@ -149,9 +203,24 @@ class QRScanner {
         }
     }
 
-    private showResult(content: string) {
+    private showResult(content: string, previewUrl?: string) {
         if (this.resultContent) {
             this.resultContent.textContent = content;
+        }
+
+        const previewContainer = document.getElementById('scan-preview-container');
+        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement;
+
+        if (previewContainer && previewImg) {
+            if (previewUrl) {
+                if (previewImg.src && previewImg.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(previewImg.src);
+                }
+                previewImg.src = previewUrl;
+                previewContainer.style.display = 'flex';
+            } else {
+                previewContainer.style.display = 'none';
+            }
         }
 
         // Hide upload area, show result
@@ -187,6 +256,16 @@ class QRScanner {
 
     private reset() {
         this.lastDecodedContent = '';
+
+        const previewContainer = document.getElementById('scan-preview-container');
+        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement;
+        if (previewContainer && previewImg) {
+            if (previewImg.src && previewImg.src.startsWith('blob:')) {
+                URL.revokeObjectURL(previewImg.src);
+            }
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+        }
 
         // Reset file input
         if (this.fileInput) {

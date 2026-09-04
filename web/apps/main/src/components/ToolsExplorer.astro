@@ -1,226 +1,153 @@
 ---
-import GlassCard from "@holi/ui/components/GlassCard.astro";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { getEditorialCopy, toolIdentity, toolSlugs } from "../i18n/editorial";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-// Tools data with updated aesthetic metadata
-const tools = [
-  {
-    id: "paint",
-    name: t.tool1_name || "paint",
-    desc: t.tool1_desc || "High-performance drawing with WebGPU.",
-    href: "https://paint.holi.tools",
-    color: "#ef4444", // Red/Warm
-    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 19l7-7 3 3-7 7-3-3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2l7.586 7.586" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    comingSoon: true,
-  },
-  {
-    id: "labs",
-    name: t.tool2_name || "labs",
-    desc: t.tool2_desc || "Experimentation space and technical papers.",
-    href: "https://labs.holi.tools",
-    color: "#ec4899", // Pink/Cyber
-    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2v7.31" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2v7.31" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  },
-  {
-    id: "typst",
-    name: t.tool3_name || "typst",
-    desc: t.tool3_desc || "Advanced scientific-technical document editor.",
-    href: "https://typst.holi.tools",
-    color: "#0ea5e9", // Sky/Academic
-    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    comingSoon: true,
-  },
-  {
-    id: "calc",
-    name: t.tool4_name || "calculator",
-    desc: t.tool4_desc || "Complex calculations and instant visualization.",
-    href: "https://calc.holi.tools",
-    color: "#10b981", // Emerald/Tech
-    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="16" height="20" rx="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="8" y1="6" x2="16" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="14" x2="16" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 14h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 18h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    comingSoon: true,
-  },
-  {
-    id: "qr",
-    name: t.tool_qr_name || "qr",
-    desc: t.tool_qr_desc || "Instant, private, and secure QR code generation.",
-    href: "https://qr.holi.tools",
-    color: "#8b5cf6", // Violet/Purple
-    icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3h6v6H3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 3h6v6h-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15h6v6H3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 14h1v1h-1z" fill="currentColor"/><path d="M17 17h1v1h-1z" fill="currentColor"/><path d="M14 17h1v1h-1z" fill="currentColor"/><path d="M17 14h1v1h-1z" fill="currentColor"/><path d="M14 14h3v3h-3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 14h1v6h-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 20h3v1h-3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  },
-];
+const editorial = getEditorialCopy(lang);
+const explorerCopy = {
+  en: { eyebrow: "Tool library", title: "Choose the job, not a maze.", intro: "Search by what you want to create, transform, inspect, or learn.", search: "Search tools and operations", shortcut: "Quick open", all: "All", create: "Create", transform: "Transform", inspect: "Inspect", learn: "Learn", recent: "Recent", noResults: "No tool matches that search.", available: "Available" },
+  es: { eyebrow: "Biblioteca de herramientas", title: "Elige el trabajo, no un laberinto.", intro: "Busca por lo que quieres crear, transformar, inspeccionar o aprender.", search: "Buscar herramientas y operaciones", shortcut: "Apertura rápida", all: "Todas", create: "Crear", transform: "Transformar", inspect: "Inspeccionar", learn: "Aprender", recent: "Recientes", noResults: "Ninguna herramienta coincide.", available: "Disponible" },
+  zh: { eyebrow: "工具库", title: "选择任务，不走迷宫。", intro: "按创建、转换、检查或学习目标搜索。", search: "搜索工具和操作", shortcut: "快速打开", all: "全部", create: "创建", transform: "转换", inspect: "检查", learn: "学习", recent: "最近", noResults: "没有匹配的工具。", available: "可用" },
+  hi: { eyebrow: "टूल लाइब्रेरी", title: "काम चुनें, भूलभुलैया नहीं।", intro: "बनाने, बदलने, जाँचने या सीखने के लक्ष्य से खोजें।", search: "टूल और काम खोजें", shortcut: "जल्दी खोलें", all: "सभी", create: "बनाएँ", transform: "बदलें", inspect: "जाँचें", learn: "सीखें", recent: "हाल के", noResults: "कोई टूल नहीं मिला।", available: "उपलब्ध" },
+  ar: { eyebrow: "مكتبة الأدوات", title: "اختر المهمة، لا المتاهة.", intro: "ابحث حسب ما تريد إنشاءه أو تحويله أو فحصه أو تعلمه.", search: "ابحث عن الأدوات والعمليات", shortcut: "فتح سريع", all: "الكل", create: "إنشاء", transform: "تحويل", inspect: "فحص", learn: "تعلم", recent: "الأخيرة", noResults: "لا توجد أداة مطابقة.", available: "متاحة" },
+  bn: { eyebrow: "টুল লাইব্রেরি", title: "কাজ বাছুন, গোলকধাঁধা নয়।", intro: "তৈরি, বদল, পরীক্ষা বা শেখার লক্ষ্য দিয়ে খুঁজুন।", search: "টুল ও কাজ খুঁজুন", shortcut: "দ্রুত খুলুন", all: "সব", create: "তৈরি", transform: "রূপান্তর", inspect: "পরীক্ষা", learn: "শিখুন", recent: "সাম্প্রতিক", noResults: "কোনো টুল মেলেনি।", available: "উপলভ্য" },
+  pt: { eyebrow: "Biblioteca de ferramentas", title: "Escolha o trabalho, não um labirinto.", intro: "Busque pelo que quer criar, transformar, inspecionar ou aprender.", search: "Buscar ferramentas e operações", shortcut: "Abertura rápida", all: "Todas", create: "Criar", transform: "Transformar", inspect: "Inspecionar", learn: "Aprender", recent: "Recentes", noResults: "Nenhuma ferramenta corresponde.", available: "Disponível" },
+} as const;
+const c = explorerCopy[lang as keyof typeof explorerCopy] ?? explorerCopy.en;
+const names = { image: "Holi Image", typst: t("tool3_name"), qr: t("tool_qr_name"), metadata: t("tool_metadata_name"), labs: t("tool2_name") };
+const filters = [["all", c.all], ["create", c.create], ["transform", c.transform], ["inspect", c.inspect], ["learn", c.learn]] as const;
+const tools = toolSlugs.map((id) => {
+  const identity = toolIdentity[id];
+  return { id, ...identity, name: names[id], desc: editorial.tools[id].intro, featured: id === "image", guideHref: lang === "en" ? `/tools/${id}/` : `/${lang}/tools/${id}/` };
+});
 ---
 
-<main id="ToolsExplorer" class="tools-menu-section">
-  <h2 class="sr-only">Applications</h2>
-  <div class="tools-grid">
-    {
-      tools.map((tool) => (
-        <GlassCard
-          clickable
-          href={tool.href}
-          intensity={0.4}
-          padding="lg"
-          rounded="lg"
-          class="tool-card group relative overflow-hidden"
-          target="_blank"
-          style={{ "--tool-color": tool.color }}
-        >
-          {/* Subtle Color Glow Background */}
-          <div class="absolute inset-0 bg-[var(--tool-color)] opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 pointer-events-none" />
+<main id="ToolsExplorer" class="tools-explorer">
+  <header class="explorer-heading">
+    <div><p>{c.eyebrow}</p><h2>{c.title}</h2><span>{c.intro}</span></div>
+    <button id="command-open" type="button"><span>{c.shortcut}</span><kbd>Ctrl K</kbd></button>
+  </header>
 
-          {tool.comingSoon && (
-            <div class="absolute top-3 right-3 z-20">
-              <span class="px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-white bg-[var(--tool-color)] rounded-md opacity-80 backdrop-blur-sm">
-                {t.status_coming_soon || "Coming Soon"}
-              </span>
-            </div>
-          )}
-
-          <div class="tool-layout">
-            <div class="tool-icon-box">
-              <div class="tool-icon" set:html={tool.icon} />
-            </div>
-
-            <div class="tool-content">
-              <h3 class="tool-name">
-                {tool.name}
-                <span class="external-arrow">↗</span>
-              </h3>
-              <p class="tool-desc">{tool.desc}</p>
-            </div>
-          </div>
-        </GlassCard>
-      ))
-    }
+  <div class="explorer-controls">
+    <label class="search-field">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg>
+      <span class="sr-only">{c.search}</span><input id="tool-search" type="search" placeholder={c.search} autocomplete="off" />
+    </label>
+    <div class="category-filters" role="group" aria-label={c.eyebrow}>{filters.map(([id, label], index) => <button type="button" data-filter={id} aria-pressed={index === 0 ? "true" : "false"}>{label}</button>)}</div>
   </div>
+
+  <section id="recent-section" class="recent-section" hidden aria-labelledby="recent-heading">
+    <h3 id="recent-heading">{c.recent}</h3>
+    <div id="recent-list"></div>
+  </section>
+  <div class="tools-grid">
+    {tools.map((tool) => (
+      <article
+        class:list={["tool-card", tool.featured && "is-featured"]}
+        data-tool-id={tool.id}
+        data-tool-name={tool.name}
+        data-tool-href={tool.href}
+        data-category={tool.category}
+        data-search={`${tool.name} ${tool.desc} ${editorial.tools[tool.id].headline}`}
+        style={`--tool-color:${tool.color};--creature-color:${tool.color}`}
+      >
+        <ProductCreature name={tool.creature} variant="icon" class="tool-creature" />
+        <div class="tool-copy">
+          <span class="tool-kicker">{tool.featured ? c.available : filters.find(([id]) => id === tool.category)?.[1]}</span>
+          <h3>{tool.name}</h3>
+          <p>{tool.desc}</p>
+          <div class="tool-actions">
+            <a href={tool.href} data-open-tool>{editorial.openTool}<span aria-hidden="true">↗</span></a>
+            <a href={tool.guideHref}>{editorial.learnMore}<span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+  <p id="no-results" class="no-results" hidden>{c.noResults}</p>
+
+  <dialog id="command-dialog" class="command-dialog">
+    <div class="command-box">
+      <label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg><span class="sr-only">{c.search}</span><input id="command-search" type="search" placeholder={c.search} autocomplete="off" /></label>
+      <div id="command-results" class="command-results">{tools.map((tool) => <a href={tool.href} data-command-search={`${tool.name} ${tool.desc}`}><ProductCreature name={tool.creature} variant="icon" class="mini-creature" /><span><strong>{tool.name}</strong><small>{tool.desc}</small></span><kbd>↵</kbd></a>)}</div>
+      <button id="command-close" class="command-close" type="button">Esc</button>
+    </div>
+  </dialog>
 </main>
 
+<script>
+  const explorer = document.querySelector<HTMLElement>("#ToolsExplorer");
+  if (!explorer) throw new Error("Tool explorer is missing");
+  const cards = [...explorer.querySelectorAll<HTMLElement>("[data-tool-id]")];
+  const search = document.querySelector<HTMLInputElement>("#tool-search")!;
+  const noResults = document.querySelector<HTMLElement>("#no-results")!;
+  let filter = "all";
+  const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  function updateCards() { const query = normalize(search.value.trim()); let visible = 0; cards.forEach((card) => { const matchesFilter = filter === "all" || card.dataset.category === filter; const matchesSearch = !query || normalize(card.dataset.search || "").includes(query); card.hidden = !(matchesFilter && matchesSearch); if (!card.hidden) visible++; }); noResults.hidden = visible > 0; }
+  search.addEventListener("input", updateCards);
+  explorer.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => button.addEventListener("click", () => { filter = button.dataset.filter || "all"; explorer.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button))); updateCards(); }));
+
+  const recentKey = "holi:recent-tools:v1";
+  function recentIds() { try { return JSON.parse(localStorage.getItem(recentKey) || "[]") as string[]; } catch { return []; } }
+  function renderRecent() { const section = document.querySelector<HTMLElement>("#recent-section")!; const list = document.querySelector<HTMLElement>("#recent-list")!; list.replaceChildren(); const recent = recentIds().map((id) => cards.find((card) => card.dataset.toolId === id)).filter(Boolean) as HTMLElement[]; section.hidden = recent.length === 0; recent.forEach((card) => { const link = document.createElement("a"); const label = document.createElement("span"); const arrow = document.createElement("span"); link.href = card.dataset.toolHref || "#"; link.dataset.recentTool = card.dataset.toolId || ""; label.textContent = card.dataset.toolName || card.dataset.toolId || ""; arrow.textContent = "\u2197"; arrow.setAttribute("aria-hidden", "true"); link.append(label, arrow); list.append(link); }); }
+  cards.forEach((card) => card.querySelector("[data-open-tool]")?.addEventListener("click", () => { try { const id = card.dataset.toolId || ""; localStorage.setItem(recentKey, JSON.stringify([id, ...recentIds().filter((item) => item !== id)].slice(0, 3))); } catch {} }));
+  renderRecent();
+
+  const dialog = document.querySelector<HTMLDialogElement>("#command-dialog")!; const commandSearch = document.querySelector<HTMLInputElement>("#command-search")!; const commandItems = [...dialog.querySelectorAll<HTMLAnchorElement>("[data-command-search]")];
+  function openCommand() { dialog.showModal(); commandSearch.value = ""; commandItems.forEach((item) => item.hidden = false); requestAnimationFrame(() => commandSearch.focus()); }
+  document.querySelector("#command-open")?.addEventListener("click", openCommand); document.querySelector("#command-close")?.addEventListener("click", () => dialog.close()); dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }); document.addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openCommand(); } }); commandSearch.addEventListener("input", () => { const query = normalize(commandSearch.value); commandItems.forEach((item) => item.hidden = Boolean(query) && !normalize(item.dataset.commandSearch || "").includes(query)); });
+</script>
+
 <style>
-  .tools-menu-section {
-    width: 100%;
-    padding: 0 1rem 8rem 1rem;
-    display: flex;
-    justify-content: center;
-  }
-
-  .tools-grid {
-    display: grid;
-    /* CHANGE: 2 Columns for Bento Look */
-    grid-template-columns: repeat(2, 1fr);
-    width: 100%;
-    max-width: 900px;
-    gap: 1.5rem; /* Increased gap */
-  }
-
-  /* Core Card Styles */
-  :global(.tool-card) {
-    height: auto; /* Let content dictate height */
-    min-height: 0;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: flex-start !important;
-    text-align: left !important;
-    padding: 1.25rem !important; /* Significantly reduced padding */
-    border: 1px solid transparent;
-  }
-
-  /* Hover States - Pure Color Change only */
-  :global(.tool-card:hover) {
-    border-color: var(--tool-color, var(--color-accent)) !important;
-    background: rgba(255, 255, 255, 0.03) !important;
-  }
-
-  .tool-layout {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem; /* Tighter gap */
-    width: 100%;
-    z-index: 10;
-  }
-
-  /* Icon Box - Static */
-  .tool-icon-box {
-    width: 3rem; /* Smaller icon box 4rem -> 3rem */
-    height: 3rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px; /* Adjusted radius */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: var(--color-text);
-    opacity: 0.8;
-  }
-
-  :global(.tool-card:hover) .tool-icon-box {
-    opacity: 1;
-    color: var(--tool-color);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--tool-color);
-  }
-
-  .tool-icon {
-    width: 1.5rem; /* Smaller icon 2rem -> 1.5rem */
-    height: 1.5rem;
-  }
-
-  .tool-icon :global(svg) {
-    width: 100%;
-    height: 100%;
-    stroke-width: 1.5;
-  }
-
-  .tool-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem; /* Tighter text gap */
-    flex: 1;
-    min-width: 0; /* Prevent flex overflow */
-  }
-
-  .tool-name {
-    font-size: 1.1rem; /* Smaller title 1.5rem -> 1.1rem */
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--color-text);
-    margin: 0;
-    text-transform: lowercase;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    opacity: 1; /* Force full opacity */
-  }
-
-  .external-arrow {
-    display: none;
-  }
-
-  .tool-desc {
-    font-size: 0.85rem; /* Smaller desc */
-    line-height: 1.3;
-    color: var(--color-text);
-    opacity: 1; /* Force full opacity for Lighthouse */
-    font-weight: 500;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limit to 2 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  @media (max-width: 768px) {
-    .tools-grid {
-      grid-template-columns: 1fr; /* Stack on mobile/tablet portrait */
-      gap: 0.75rem;
-    }
-  }
+  .tools-explorer { width: min(100% - 2rem,92rem); margin: 0 auto; padding: clamp(4rem,8vw,8rem) 0 10rem; }
+  .explorer-heading { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2rem; }
+  .explorer-heading p { margin: 0 0 .55rem; color: #c64e2b; font: 850 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .14em; text-transform: uppercase; }
+  .explorer-heading h2 { max-width: 12ch; margin: 0; font-size: clamp(2.8rem,6.5vw,6.3rem); font-weight: 450; line-height: .9; letter-spacing: -.07em; }
+  .explorer-heading div > span { display: block; max-width: 42rem; margin-top: 1rem; color: color-mix(in srgb,var(--color-text) 64%,transparent); }
+  #command-open { display: flex; align-items: center; gap: 1.2rem; padding: .72rem .82rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .75rem; background: color-mix(in srgb,var(--color-bg) 92%,var(--color-text) 8%); color: var(--color-text); cursor: pointer; }
+  kbd { padding: .2rem .4rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .35rem; color: color-mix(in srgb,var(--color-text) 62%,transparent); font: 650 .67rem ui-monospace,monospace; }
+  .explorer-controls { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.2rem; }
+  .search-field { display: flex; flex: 1; min-width: 12rem; align-items: center; gap: .6rem; padding: .1rem .8rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .8rem; background: color-mix(in srgb,var(--color-bg) 94%,var(--color-text) 6%); }
+  .search-field svg { width: 1.1rem; fill: none; stroke: currentColor; stroke-width: 1.7; opacity: .55; }
+  .search-field input { width: 100%; padding: .78rem 0; border: 0; outline: 0; background: transparent; color: var(--color-text); }
+  .category-filters { display: flex; gap: .35rem; overflow-x: auto; padding: .2rem; }
+  .category-filters button { padding: .58rem .78rem; border: 1px solid transparent; border-radius: 999px; background: transparent; color: color-mix(in srgb,var(--color-text) 66%,transparent); font-size: .76rem; font-weight: 800; cursor: pointer; }
+  .category-filters button[aria-pressed="true"] { border-color: color-mix(in srgb,var(--color-text) 14%,transparent); background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); color: var(--color-text); }
+  .recent-section { display: flex; align-items: center; gap: 1rem; min-height: 3.75rem; margin: .2rem 0 1rem; padding: .65rem .15rem; border-top: 1px solid color-mix(in srgb,var(--color-text) 11%,transparent); border-bottom: 1px solid color-mix(in srgb,var(--color-text) 11%,transparent); }
+  .recent-section h3 { margin: 0; color: color-mix(in srgb,var(--color-text) 52%,transparent); font: 750 .66rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .08em; text-transform: uppercase; }
+  #recent-list { display: flex; min-width: 0; flex-wrap: wrap; gap: .45rem; }
+  :global(#recent-list a) { display: inline-flex; align-items: center; gap: .65rem; min-height: 2.15rem; padding: .42rem .65rem .42rem .75rem; border: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); border-radius: .6rem; background: color-mix(in srgb,var(--color-bg) 93%,var(--color-text) 7%); color: var(--color-text); font-size: .73rem; font-weight: 700; text-decoration: none; }
+  :global(#recent-list a span:last-child) { color: color-mix(in srgb,var(--color-text) 50%,transparent); font-size: .85rem; }
+  :global(#recent-list a:hover), :global(#recent-list a:focus-visible) { border-color: color-mix(in srgb,var(--color-text) 30%,transparent); background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); opacity: 1; }
+  .tools-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+  .tool-card { position: relative; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 1.15rem; min-height: 13rem; padding: clamp(1.25rem,2.5vw,2rem); overflow: hidden; border: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); border-radius: 1.2rem; background: color-mix(in srgb,var(--color-bg) 95%,var(--color-text) 5%); transition: border-color .2s,transform .2s,background .2s; }
+  .tool-card:hover { border-color: color-mix(in srgb,var(--tool-color) 58%,transparent); transform: translateY(-2px); background: color-mix(in srgb,var(--color-bg) 94%,var(--tool-color) 6%); }
+  .tool-card.is-featured { grid-column: 1/-1; min-height: 14rem; }
+  :global(.tool-creature) { width: 3.35rem; height: 3.35rem; color: var(--tool-color); }
+  .tool-card::after { position: absolute; inset-inline-end: -3rem; bottom: -4rem; width: 16rem; height: 16rem; border-radius: 50%; background: color-mix(in srgb,var(--tool-color) 8%,transparent); content: ""; pointer-events: none; }
+  .tool-copy { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; }
+  .tool-kicker { color: var(--tool-color); font-size: .65rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+  .tool-copy h3 { margin: .55rem 0 .5rem; font-size: clamp(1.7rem,3vw,2.8rem); font-weight: 520; letter-spacing: -.045em; }
+  .tool-copy p { max-width: 42rem; margin: 0; color: color-mix(in srgb,var(--color-text) 66%,transparent); font-size: .92rem; line-height: 1.55; }
+  .tool-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: auto; padding-top: 1.5rem; }
+  .tool-actions a { display: inline-flex; align-items: center; gap: .65rem; min-height: 2.35rem; padding: .58rem .75rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .65rem; color: var(--color-text); font-size: .75rem; font-weight: 800; text-decoration: none; }
+  .tool-actions a:first-child { border-color: var(--tool-color); background: var(--tool-color); color: white; }
+  .tool-actions a:hover { transform: translateY(-1px); }
+  .no-results { padding: 3rem; color: color-mix(in srgb,var(--color-text) 62%,transparent); text-align: center; }
+  .command-dialog { width: min(100% - 2rem,42rem); max-height: min(38rem,80dvh); padding: 0; border: 1px solid color-mix(in srgb,var(--color-text) 16%,transparent); border-radius: 1.1rem; background: var(--color-bg); color: var(--color-text); box-shadow: 0 30px 100px rgba(0,0,0,.3); }
+  .command-dialog::backdrop { background: rgba(0,0,0,.48); backdrop-filter: blur(5px); }
+  .command-box { position: relative; padding: .8rem; }
+  .command-results { display: grid; gap: .3rem; max-height: 28rem; margin-top: .7rem; overflow-y: auto; }
+  .command-results a { display: flex; align-items: center; gap: .8rem; padding: .6rem; border-radius: .7rem; color: inherit; text-decoration: none; }
+  .command-results a:hover,.command-results a:focus { background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); }
+  .command-results a > span:nth-child(2) { display: flex; flex: 1; min-width: 0; flex-direction: column; }
+  .command-results small { overflow: hidden; color: color-mix(in srgb,var(--color-text) 62%,transparent); text-overflow: ellipsis; white-space: nowrap; }
+  :global(.mini-creature) { width: 2.4rem; height: 2.4rem; }
+  .command-close { position: absolute; top: 1.3rem; inset-inline-end: 1.3rem; border: 0; background: transparent; color: transparent; pointer-events: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; border: 0; clip: rect(0,0,0,0); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  @media (max-width:760px) { .tools-explorer { width: min(100% - 1.35rem,92rem); } .explorer-heading { align-items: start; flex-direction: column; } #command-open { align-self: stretch; justify-content: space-between; } .explorer-controls { align-items: stretch; flex-direction: column; } .category-filters { width: 100%; } .recent-section { align-items: flex-start; flex-direction: column; gap: .55rem; } .tools-grid { grid-template-columns: 1fr; } .tool-card.is-featured { grid-column: auto; } }
+  @media (max-width:480px) { .tool-card { grid-template-columns: 1fr; min-height: 17rem; } :global(.tool-creature) { width: 3rem; height: 3rem; } }
 </style>

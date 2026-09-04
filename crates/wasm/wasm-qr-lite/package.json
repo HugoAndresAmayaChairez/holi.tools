@@ -1,0 +1,17 @@
+{
+    "name": "@holi/wasm-qr-lite",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "description": "Minimal QR code generator (WASM)",
+    "main": "pkg/holi_wasm_qr_lite.js",
+    "types": "pkg/holi_wasm_qr_lite.d.ts",
+    "scripts": {
+        "build": "wasm-pack build --target web --release",
+        "build:dev": "wasm-pack build --target web --dev"
+    },
+    "files": [
+        "pkg"
+    ],
+    "license": "AGPL-3.0"
+}

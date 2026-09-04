@@ -112,7 +112,9 @@ export function loadTexture(
     }
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (!url.startsWith('data:')) {
+        img.crossOrigin = 'anonymous';
+    }
 
     return new Promise((resolve) => {
         img.onload = () => {

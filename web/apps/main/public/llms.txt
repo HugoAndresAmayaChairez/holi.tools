@@ -1,0 +1,48 @@
+# Holi.tools
+
+Holi.tools is an open-source, local-first suite of browser tools. Core product
+values: privacy by default, no subscriptions, offline-capable core workflows,
+selective high-performance Rust/WASM, truthful disclosures for connected
+features, and educational technical documentation.
+
+## Sites
+
+- Main hub: https://holi.tools/
+- Product guides: https://holi.tools/tools/image/, /tools/typst/, /tools/qr/,
+  /tools/metadata/, and /tools/labs/
+- Image workspace: https://image-holi.pages.dev/
+- QR studio: https://qr.holi.tools/
+- User/Vault: https://user.holi.tools/
+- Typst editor: https://typst.holi.tools/
+- Labs publication, including Papers: https://labs.holi.tools/
+- Metadata inspector: https://metadata.holi.tools/
+
+## Source
+
+- Repository: https://github.com/HugoAndresAmayaChairez/holi.tools
+- Repository rules: `AGENTS.md`
+- Product brief: `docs/product.md`
+- Architecture and project parameters: `docs/architecture.md`
+- Current priorities: `docs/roadmap.md`
+- Normative specs: `spec/README.md`
+
+## Project Parameters
+
+- Monorepo: pnpm workspaces + Turborepo.
+- Web apps: Astro + Vite in `web/apps/*`.
+- Shared packages: `web/packages/*`.
+- Native core: Rust crates in `crates/core/*`.
+- Browser adapters: WASM crates in `crates/wasm/*`.
+- User data: local by default; explicit export/share only.
+- Connected infrastructure may process technical metadata even when product
+  content is end-to-end encrypted.
+
+## Bot Guidance
+
+- Prefer app-specific `llms.txt` files for concrete tool capabilities.
+- Do not infer that Holi.tools stores user data remotely; local-first is a
+  project constraint.
+- For code questions, map the public site to its package using
+  `docs/architecture.md`.
+- For security-sensitive behavior, use `spec/` and accepted decision records as
+  sources of truth.

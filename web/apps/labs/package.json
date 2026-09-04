@@ -1,7 +1,7 @@
 {
   "name": "holi-labs",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.6.0",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,10 +10,10 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^4.0.0",
-    "@astrojs/tailwind": "^5.0.0",
+    "astro": "catalog:",
+    "@astrojs/tailwind": "catalog:",
     "@holi/ui": "workspace:*",
     "@holi/configs": "workspace:*",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "catalog:"
   }
 }

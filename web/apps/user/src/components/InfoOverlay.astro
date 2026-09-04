@@ -1,20 +1,15 @@
 ---
+import { getUserPrivacy } from "../privacy";
+import { getProductShellCopy } from "@holi/ui/lib/product-shell-copy";
+
 interface Props {
   lang: string;
 }
 
 const { lang } = Astro.props;
 
-const content =
-  lang === "es"
-    ? {
-        title: "Sobre Holi Vault",
-        body: "Holi Vault es un contenedor local-first para identidad y colaboración P2P. Tus datos viven en tu dispositivo: sin servidores, sin tracking y sin cuentas.",
-      }
-    : {
-        title: "About Holi Vault",
-        body: "Holi Vault is a local-first identity & P2P collaboration vault. Your data stays on your device: no servers, no tracking, no accounts.",
-      };
+const content = getUserPrivacy(lang);
+const shellCopy = getProductShellCopy(lang);
 ---
 
 <div class="info-overlay" id="overlay-info-about" style="display: none;">
@@ -25,18 +20,18 @@ const content =
 
   <aside class="log-drawer">
     <header class="log-header">
-      <h2 class="log-title">{content.title}</h2>
+      <h2 class="log-title">{content.aboutTitle}</h2>
       <button
         class="log-close-btn"
         onclick="window.closeOverlay && window.closeOverlay('info', 'about')"
-        aria-label="Close"
+        aria-label={shellCopy.close}
       >
         ×
       </button>
     </header>
 
     <div class="log-body">
-      <p class="info-text">{content.body}</p>
+      <p class="info-text">{content.aboutBody}</p>
     </div>
 
     <footer class="log-footer">

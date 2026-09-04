@@ -1,13 +1,11 @@
 /**
- * input-area-logic.ts — Client-side logic for QRInputArea
- *
- * Extracted from QRInputArea.astro inline <script> to keep the
- * Astro component focused on template and CSS.
+ * input-area-logic.ts — content-type selection for the workspace.
  *
  * Handles:
- *  - WASM prefetch when inputs receive focus
- *  - Content-type switcher (dropdown open/close, icon rendering)
- *  - setContentType global helper
+ *  - WASM prefetch when a content field receives focus
+ *  - `.type-option[data-type]` buttons (rail, hero chips) and the matching
+ *    `.input-template` forms
+ *  - the `setContentType` global helper + `qr-type-changed` event
  */
 
 // ─── WASM Prefetch ─────────────────────────────────────────────
@@ -73,7 +71,7 @@ export function initInputArea(): void {
     document.addEventListener('focusin', (e) => {
         const t = e.target as HTMLElement | null;
         if (!t?.closest) return;
-        if (t.closest('.shared-input-container')) scheduleWasmPrefetchOnce();
+        if (t.closest('.input-templates, .hero-input')) scheduleWasmPrefetchOnce();
     }, { passive: true });
 
     // Init icons

@@ -1,13 +1,20 @@
-# Holi Labs v0.1.1
+# Holi Labs
 
-The experimental playground for bleeding-edge web technologies.
+Holi Labs is the public learning library for the Holi.tools ecosystem. It is
+not a product backlog or a separate experimental architecture.
 
-## Purpose
-- Validating **WebGPU** compute shaders.
-- Benchmarking performace of new WASM modules.
-- Testing experimental UI/UX patterns.
+## Editorial formats
 
-## Experiments
-- **QR Core Logic**: Testing the raw performance of the QR engine.
-- **WebGPU Shaders**: Real-time graphics experiments.
-- **Performance Benchmarks**: Comparative analysis of JS vs WASM.
+- **Tutorials** teach a repeatable workflow.
+- **Field notes** capture a short practical lesson or decision.
+- **Experiments** document work that is still being measured or tested.
+- **Papers** provide longer, stable, reviewed technical explanations.
+
+The same library, search, privacy shell, version log, and seven-locale routes
+serve every format. “Holi Papers” is not an independent application.
+
+## Stack
+
+- Astro content collections
+- Tailwind CSS through `@holi/configs`
+- Shared product shell through `@holi/ui`

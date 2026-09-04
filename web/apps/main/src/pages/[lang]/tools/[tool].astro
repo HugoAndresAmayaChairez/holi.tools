@@ -1,0 +1,15 @@
+---
+import ToolLanding from "../../../components/ToolLanding.astro";
+import { languages } from "../../../i18n/utils";
+import { toolSlugs, type ToolSlug } from "../../../i18n/editorial";
+
+export function getStaticPaths() {
+  return languages
+    .filter((language) => language.code !== "en")
+    .flatMap((language) => toolSlugs.map((tool) => ({ params: { lang: language.code, tool }, props: { lang: language.code, tool } })));
+}
+
+const { lang, tool } = Astro.props as { lang: string; tool: ToolSlug };
+---
+
+<ToolLanding lang={lang} tool={tool} />

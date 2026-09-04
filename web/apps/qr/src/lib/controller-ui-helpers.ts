@@ -58,13 +58,20 @@ export function registerLayersAPI(ctrl: QRController): void {
         setBg: (patch: Partial<QRLayersConfig['bg']>) => {
             const l = ctrl.getLayers();
             Object.assign(l.bg, patch);
+            const hasImagePatch = typeof patch.image === 'string' && patch.image.length > 0;
+            const hasColorPatch = typeof patch.color === 'string' && patch.color !== 'transparent';
+            if (hasImagePatch || hasColorPatch) l.bg.enabled = true;
+            if (l.bg.enabled && (l.bg.opacity ?? 1) <= 0.001) l.bg.opacity = 1;
             ctrl.syncLayers(l);
             (window as any).updateQR?.();
         },
         setPaper: (patch: Partial<QRLayersConfig['paper']>) => {
             const l = ctrl.getLayers();
             Object.assign(l.paper, patch);
-            if (typeof patch.image === 'string' && patch.image.length > 0) l.paper.enabled = true;
+            const hasImagePatch = typeof patch.image === 'string' && patch.image.length > 0;
+            const hasColorPatch = typeof patch.color === 'string' && patch.color !== 'transparent';
+            if (hasImagePatch || hasColorPatch) l.paper.enabled = true;
+            if (l.paper.enabled && (l.paper.opacity ?? 1) <= 0.001) l.paper.opacity = 1;
             ctrl.syncLayers(l);
             (window as any).updateQR?.();
         },
@@ -114,6 +121,7 @@ export function registerLayersAPI(ctrl: QRController): void {
             const l = ctrl.getLayers();
             l.logo.image = image;
             l.logo.enabled = !!image;
+            l.logo.fit ??= 'contain';
             if (l.logo.enabled && (l.logo.opacity ?? 1) <= 0.001) l.logo.opacity = 1;
             ctrl.syncLayers(l);
             (window as any).updateQR?.();

@@ -1,0 +1,7 @@
+name = "typst-holi"
+compatibility_date = "2026-01-30"
+pages_build_output_dir = "dist"
+
+[[r2_buckets]]
+binding = "HOLI_WASM"
+bucket_name = "holi-wasm"

@@ -1,0 +1,291 @@
+---
+/**
+ * ContentForms.astro — one form template per content type.
+ * The controller maps every field by id (see qr-controller initElements),
+ * so ids here are a contract; only the markup around them changes.
+ */
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<!-- Input Templates Container -->
+<div class="input-templates">
+  <!-- URL Template (Default) -->
+  <div class="input-template active" id="template-url">
+    <input
+      type="text"
+      id="input-url"
+      class="input-field"
+      placeholder={t("input.placeholder.url")}
+    />
+  </div>
+
+  <!-- Text Template -->
+  <div class="input-template" id="template-text">
+    <textarea
+      id="input-text"
+      class="input-field textarea"
+      placeholder={t("input.placeholder.text")}
+      rows="3"></textarea>
+  </div>
+
+  <!-- WiFi Template -->
+  <div class="input-template" id="template-wifi">
+    <div class="input-group">
+      <input
+        type="text"
+        id="input-wifi-ssid"
+        class="input-field"
+        placeholder={t("input.placeholder.wifi_ssid")}
+      />
+      <input
+        type="password"
+        id="input-wifi-pass"
+        class="input-field"
+        placeholder={t("input.placeholder.wifi_pass")}
+      />
+      <select id="input-wifi-enc" class="input-field select">
+        <option value="WPA">{t("input.wifi.wpa")}</option>
+        <option value="WEP">{t("input.wifi.wep")}</option>
+        <option value="nopass">{t("input.wifi.nopass")}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- vCard Template -->
+  <div class="input-template" id="template-vcard">
+    <div class="input-group">
+      <input
+        type="text"
+        id="input-vcard-name"
+        class="input-field"
+        placeholder={t("input.placeholder.name")}
+      />
+      <input
+        type="tel"
+        id="input-vcard-phone"
+        class="input-field"
+        placeholder={t("input.placeholder.phone")}
+      />
+      <input
+        type="email"
+        id="input-vcard-email"
+        class="input-field"
+        placeholder={t("input.placeholder.email")}
+      />
+      <input
+        type="text"
+        id="input-vcard-company"
+        class="input-field"
+        placeholder={t("input.placeholder.company")}
+      />
+    </div>
+  </div>
+  <!-- Email Template -->
+  <div class="input-template" id="template-email">
+    <div class="input-group">
+      <input
+        type="email"
+        id="input-email-addr"
+        class="input-field"
+        placeholder={t("input.placeholder.email")}
+      />
+      <input
+        type="text"
+        id="input-email-sub"
+        class="input-field"
+        placeholder={t("input.placeholder.subject")}
+      />
+      <textarea
+        id="input-email-body"
+        class="input-field textarea"
+        rows="2"
+        placeholder={t("input.placeholder.message")}></textarea>
+    </div>
+  </div>
+
+  <!-- Phone Template -->
+  <div class="input-template" id="template-phone">
+    <input
+      type="tel"
+      id="input-phone"
+      class="input-field"
+      placeholder={t("input.placeholder.phone")}
+    />
+  </div>
+
+  <!-- SMS Template -->
+  <div class="input-template" id="template-sms">
+    <div class="input-group">
+      <input
+        type="tel"
+        id="input-sms-phone"
+        class="input-field"
+        placeholder={t("input.placeholder.phone")}
+      />
+      <textarea
+        id="input-sms-msg"
+        class="input-field textarea"
+        rows="2"
+        placeholder={t("input.placeholder.message")}></textarea>
+    </div>
+  </div>
+
+  <!-- Location Template -->
+  <div class="input-template" id="template-location">
+    <div class="input-group">
+      <input
+        type="text"
+        id="input-loc-lat"
+        class="input-field"
+        placeholder={t("input.placeholder.lat")}
+      />
+      <input
+        type="text"
+        id="input-loc-long"
+        class="input-field"
+        placeholder={t("input.placeholder.long")}
+      />
+    </div>
+  </div>
+
+  <!-- Event Template -->
+  <div class="input-template" id="template-event">
+    <div class="input-group">
+      <input
+        type="text"
+        id="input-event-title"
+        class="input-field"
+        placeholder={t("input.placeholder.event_title")}
+      />
+      <input
+        type="datetime-local"
+        id="input-event-start"
+        class="input-field"
+      />
+      <input
+        type="datetime-local"
+        id="input-event-end"
+        class="input-field"
+      />
+      <input
+        type="text"
+        id="input-event-loc"
+        class="input-field"
+        placeholder={t("input.placeholder.location")}
+      />
+    </div>
+  </div>
+
+  <!-- Bitcoin Template -->
+  <div class="input-template" id="template-bitcoin">
+    <div class="input-group">
+      <input
+        type="text"
+        id="input-btc-addr"
+        class="input-field"
+        placeholder={t("input.placeholder.btc_addr")}
+      />
+      <input
+        type="text"
+        id="input-btc-amount"
+        class="input-field"
+        placeholder={t("input.placeholder.btc_amount")}
+      />
+    </div>
+  </div>
+
+  <!-- App Store Template -->
+  <div class="input-template" id="template-appstore">
+    <input
+      type="text"
+      id="input-appstore"
+      class="input-field"
+      placeholder={t("input.placeholder.appstore")}
+    />
+  </div>
+
+  <!-- Play Store Template -->
+  <div class="input-template" id="template-playstore">
+    <input
+      type="text"
+      id="input-playstore"
+      class="input-field"
+      placeholder={t("input.placeholder.playstore")}
+    />
+  </div>
+
+  <!-- Socials/Generic URL Wrapper (Facebook, Twitter, Youtube, etc) -->
+  <!-- We reuse the URL template logic but with placeholders handled by JS? No, separate IDs for clarity -->
+  <div class="input-template" id="template-facebook">
+    <input
+      type="text"
+      id="input-fb"
+      class="input-field"
+      placeholder={t("input.placeholder.fb")}
+    />
+  </div>
+  <div class="input-template" id="template-twitter">
+    <input
+      type="text"
+      id="input-twitter"
+      class="input-field"
+      placeholder={t("input.placeholder.twitter")}
+    />
+  </div>
+  <div class="input-template" id="template-youtube">
+    <input
+      type="text"
+      id="input-yt"
+      class="input-field"
+      placeholder={t("input.placeholder.yt")}
+    />
+  </div>
+
+  <!-- Scan QR Template -->
+  <div class="input-template" id="template-scan">
+    <div class="scan-upload-area" id="scan-drop-zone">
+      <input type="file" id="scan-file-input" accept="image/*" hidden />
+      <div class="scan-upload-content">
+        <span class="scan-icon icon">qr_code_scanner</span>
+        <span class="scan-text">{t("input.scan.drop")}</span>
+        <span class="scan-hint">{t("input.scan.hint")}</span>
+      </div>
+    </div>
+    <div class="scan-result" id="scan-result" style="display: none;">
+      <div class="scan-result-header">
+        <span class="scan-result-icon icon">check_circle</span>
+        <span class="scan-result-label">{t("input.scan.decoded")}</span>
+      </div>
+      <div class="scan-result-preview-container" style="display: none;" id="scan-preview-container">
+        <img id="scan-preview-img" alt="Scanned QR Preview" class="scan-preview-img" />
+      </div>
+      <div class="scan-result-content" id="scan-result-content"></div>
+      <div class="scan-result-actions">
+        <button
+          class="scan-action-btn"
+          id="scan-copy-btn"
+          title={t("toolbar.copy")}
+        >
+          <span class="icon">content_copy</span>
+        </button>
+        <button
+          class="scan-action-btn"
+          id="scan-open-btn"
+          title={t("input.scan.open")}
+        >
+          <span class="icon">open_in_new</span>
+        </button>
+        <button
+          class="scan-action-btn"
+          id="scan-reset-btn"
+          title={t("toolbar.reset")}
+        >
+          <span class="icon">refresh</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

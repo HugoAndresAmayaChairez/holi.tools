@@ -20,6 +20,7 @@ interface ChangelogLabels {
   title?: string;
   current?: string;
   footer?: string;
+  support?: string;
 }
 
 interface Props {
@@ -27,14 +28,22 @@ interface Props {
   currentVersion: string;
   history: VersionInfo[];
   labels?: ChangelogLabels;
+  supportEmail?: string;
 }
 
-const { id, currentVersion, history, labels = {} } = Astro.props;
+const {
+  id,
+  currentVersion,
+  history,
+  labels = {},
+  supportEmail = "holi@holi.tools",
+} = Astro.props;
 
 const t = {
   title: labels.title || "Version Log",
   current: labels.current || "Current",
-  footer: labels.footer || "Unified Sovereign Suite"
+  footer: labels.footer || "Unified Sovereign Suite",
+  support: labels.support || "Errors / suggestions:",
 };
 ---
 
@@ -75,7 +84,12 @@ const t = {
     </div>
 
     <footer class="log-footer">
-      <p>{t.footer}</p>
+      <p class="log-footer-brand">{t.footer}</p>
+      <div class="log-support">
+        <Icon name="mail" size={12} />
+        <span class="log-support-label">{t.support}</span>
+        <a class="log-support-link" href={`mailto:${supportEmail}`}>{supportEmail}</a>
+      </div>
     </footer>
   </aside>
 </div>
@@ -284,15 +298,42 @@ const t = {
     padding: 20px 30px 30px;
     text-align: center;
     border-top: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
 
-  .log-footer p {
+  .log-footer-brand {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.2em;
     color: var(--text-muted, rgba(26, 26, 26, 0.3));
     margin: 0;
     font-weight: 700;
+  }
+
+  .log-support {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted, rgba(26, 26, 26, 0.6));
+  }
+
+  .log-support-label {
+    white-space: nowrap;
+  }
+
+  .log-support-link {
+    color: var(--color-accent, #6366f1);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .log-support-link:hover {
+    text-decoration: underline;
   }
 
   /* Dark mode specific tweak for cards */

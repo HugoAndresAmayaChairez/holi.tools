@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "High-performance QR code generation library"
 license = "AGPL-3.0"
-repository = "https://github.com/EasyModeLife/holi.tools"
+repository = "https://github.com/HugoAndresAmayaChairez/holi.tools"
 keywords = ["qr", "qrcode", "svg", "generator"]
 categories = ["encoding", "graphics"]
 
@@ -26,4 +26,3 @@ image = { version = "0.25", optional = true, default-features = false, features 
 
 [dev-dependencies]
 # For testing
-

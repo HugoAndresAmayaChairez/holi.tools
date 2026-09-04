@@ -1,0 +1,22 @@
+@import "@fontsource-variable/noto-sans/wght.css";
+@import "@fontsource-variable/noto-sans-arabic/wght.css";
+@import "@fontsource-variable/noto-sans-bengali/wght.css";
+@import "@fontsource-variable/noto-sans-devanagari/wght.css";
+@import "@fontsource-variable/noto-sans-sc/wght.css";
+
+:root {
+  --holi-font-sans: "Noto Sans Variable", system-ui, sans-serif;
+}
+
+html[lang^="ar"] { --holi-font-sans: "Noto Sans Arabic Variable", "Noto Sans Variable", sans-serif; }
+html[lang^="bn"] { --holi-font-sans: "Noto Sans Bengali Variable", "Noto Sans Variable", sans-serif; }
+html[lang^="hi"] { --holi-font-sans: "Noto Sans Devanagari Variable", "Noto Sans Variable", sans-serif; }
+html[lang^="zh"] { --holi-font-sans: "Noto Sans SC Variable", "Noto Sans Variable", sans-serif; }
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--holi-font-sans);
+}

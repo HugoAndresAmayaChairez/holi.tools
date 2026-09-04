@@ -1,0 +1,139 @@
+---
+import hummingbird from "../assets/creatures/hummingbird.png";
+import chameleon from "../assets/creatures/chameleon.png";
+import owl from "../assets/creatures/owl.png";
+import moth from "../assets/creatures/moth.png";
+import lynx from "../assets/creatures/lynx.png";
+import axolotl from "../assets/creatures/axolotl.png";
+import crane from "../assets/creatures/crane.png";
+
+type ProductCreatureName =
+  | "hummingbird"
+  | "chameleon"
+  | "owl"
+  | "moth"
+  | "lynx"
+  | "axolotl"
+  | "crane";
+
+interface Props {
+  name: ProductCreatureName;
+  variant?: "icon" | "mark" | "background";
+  label?: string;
+  decorative?: boolean;
+  eager?: boolean;
+  class?: string;
+}
+
+const {
+  name,
+  variant = "mark",
+  label,
+  decorative = true,
+  eager = false,
+  class: className,
+} = Astro.props;
+
+const creatures = { hummingbird, chameleon, owl, moth, lynx, axolotl, crane } as const;
+const image = creatures[name];
+const alt = decorative ? "" : (label ?? name);
+---
+
+<span
+  class:list={["product-creature", `is-${variant}`, className]}
+  data-creature={name}
+  aria-hidden={decorative ? "true" : undefined}
+>
+  <img
+    src={image.src}
+    width={image.width}
+    height={image.height}
+    alt={alt}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+  />
+</span>
+
+<style>
+  .product-creature {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--creature-color, var(--color-accent));
+    isolation: isolate;
+  }
+
+  .product-creature::before {
+    position: absolute;
+    z-index: -1;
+    width: 72%;
+    height: 72%;
+    border-radius: 50%;
+    background: color-mix(in srgb, currentColor 16%, transparent);
+    content: "";
+    filter: blur(24px);
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: grayscale(1) contrast(1.08);
+    mix-blend-mode: multiply;
+  }
+
+  .is-icon {
+    width: 3rem;
+    height: 3rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, currentColor 36%, transparent);
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, currentColor 9%, var(--color-bg));
+  }
+
+  .is-icon::before {
+    width: 100%;
+    height: 100%;
+    filter: blur(12px);
+  }
+
+  .is-icon img {
+    width: 92%;
+    height: 92%;
+  }
+
+  .is-mark {
+    width: clamp(8rem, 18vw, 14rem);
+    aspect-ratio: 1;
+  }
+
+  .is-background {
+    position: absolute;
+    z-index: 0;
+    width: clamp(13rem, 28vw, 23rem);
+    aspect-ratio: 1;
+    opacity: var(--creature-opacity, 0.1);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  :global(:root[data-holi-theme="dark"]) img {
+    filter: grayscale(1) invert(1) contrast(1.08);
+    mix-blend-mode: screen;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-holi-theme])) img {
+      filter: grayscale(1) invert(1) contrast(1.08);
+      mix-blend-mode: screen;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-creature {
+      animation: none !important;
+    }
+  }
+</style>

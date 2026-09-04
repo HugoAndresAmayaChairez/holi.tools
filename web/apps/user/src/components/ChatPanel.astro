@@ -1,15 +1,66 @@
 ---
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const chatCopy = {
+  en: { minimize: "Minimize", empty: "Messages will appear here", transferring: "Transferring…", drop: "Drop to send", encrypted: "Encrypted", plaintext: "Plaintext" },
+  es: { minimize: "Minimizar", empty: "Los mensajes aparecerán aquí", transferring: "Transfiriendo…", drop: "Suelta para enviar", encrypted: "Cifrado", plaintext: "Texto sin cifrar" },
+  zh: { minimize: "最小化", empty: "消息将显示在这里", transferring: "传输中…", drop: "松开以发送", encrypted: "已加密", plaintext: "未加密文本" },
+  hi: { minimize: "छोटा करें", empty: "संदेश यहाँ दिखाई देंगे", transferring: "स्थानांतरित हो रहा है…", drop: "भेजने के लिए छोड़ें", encrypted: "एन्क्रिप्टेड", plaintext: "सादा पाठ" },
+  ar: { minimize: "تصغير", empty: "ستظهر الرسائل هنا", transferring: "جارٍ النقل…", drop: "أفلت للإرسال", encrypted: "مشفر", plaintext: "نص غير مشفر" },
+  bn: { minimize: "ছোট করুন", empty: "বার্তা এখানে দেখা যাবে", transferring: "স্থানান্তর হচ্ছে…", drop: "পাঠাতে ছেড়ে দিন", encrypted: "এনক্রিপ্ট করা", plaintext: "এনক্রিপ্ট না করা লেখা" },
+  pt: { minimize: "Minimizar", empty: "As mensagens aparecerão aqui", transferring: "Transferindo…", drop: "Solte para enviar", encrypted: "Criptografado", plaintext: "Texto sem criptografia" },
+} as const;
+const chat = chatCopy[lang] ?? chatCopy.en;
+
 interface Props {
   connected?: boolean;
   embedded?: boolean;
+  fileSaveLabel?: string;
+  incomingFileLabel?: string;
+  acceptFileLabel?: string;
+  rejectFileLabel?: string;
+  imagePreviewLabel?: string;
+  videoPreviewLabel?: string;
 }
 
-const { connected = false, embedded = false } = Astro.props;
+const {
+  connected = false,
+  embedded = false,
+  fileSaveLabel = t("chat.file_save"),
+  incomingFileLabel = t("chat.file_incoming"),
+  acceptFileLabel = t("chat.file_accept"),
+  rejectFileLabel = t("chat.file_reject"),
+  imagePreviewLabel = t("chat.image_preview"),
+  videoPreviewLabel = t("chat.video_preview"),
+} = Astro.props;
+
+const panelClass = embedded
+  ? "w-full h-[65vh] min-h-[520px]"
+  : "fixed bottom-4 right-4 w-80 max-h-[500px]";
+
+// In embedded mode we want the message list to actually fill the available height.
+// The non-embedded widget keeps a tighter max height.
+const messagesClass = embedded
+  ? "flex flex-col flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin"
+  : "flex flex-col flex-1 overflow-y-auto p-3 space-y-2 min-h-[200px] max-h-[350px] scrollbar-thin";
 ---
 
 <div
   id="chat-panel"
-  class={`${embedded ? "w-full h-[520px]" : "fixed bottom-4 right-4 w-80 max-h-[500px]"} flex flex-col bg-zinc-900/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300`}
+  data-file-save-label={fileSaveLabel}
+  data-incoming-file-label={incomingFileLabel}
+  data-accept-file-label={acceptFileLabel}
+  data-reject-file-label={rejectFileLabel}
+  data-image-preview-label={imagePreviewLabel}
+  data-video-preview-label={videoPreviewLabel}
+  data-connected-label={t("dm.connected")}
+  data-awaiting-label={t("private.waiting")}
+  data-connecting-label={t("dm.connecting")}
+  data-encrypted-label={chat.encrypted}
+  data-plaintext-label={chat.plaintext}
+  class={`${panelClass} flex flex-col bg-zinc-900/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300`}
 >
   <!-- Header -->
   <div
@@ -22,7 +73,7 @@ const { connected = false, embedded = false } = Astro.props;
       >
       </div>
       <span class="font-semibold text-sm text-white" id="chat-status">
-        {connected ? "Connected" : "Awaiting Connection"}
+        {connected ? t("dm.connected") : t("private.waiting")}
       </span>
       <span
         id="encryption-status"
@@ -34,16 +85,16 @@ const { connected = false, embedded = false } = Astro.props;
         id="retry-connection-btn"
         type="button"
         class="px-2 py-1 text-[11px] text-zinc-200 bg-white/10 hover:bg-white/20 rounded-md transition-all"
-        title="Retry connection"
+        title={t("dm.retry")}
       >
-        Retry
+        {t("dm.retry")}
       </button>
 
       <button
         id="minimize-btn"
         type="button"
         class="p-1 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-        title="Minimize"
+        title={chat.minimize}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +115,7 @@ const { connected = false, embedded = false } = Astro.props;
   <!-- Messages Area -->
   <div
     id="messages-list"
-    class="flex flex-col flex-1 overflow-y-auto p-3 space-y-2 min-h-[200px] max-h-[350px] scrollbar-thin"
+    class={messagesClass}
   >
     <div class="text-center py-8 text-zinc-500">
       <svg
@@ -81,7 +132,7 @@ const { connected = false, embedded = false } = Astro.props;
         ><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
         ></path></svg
       >
-      <p class="text-xs">Messages will appear here</p>
+      <p class="text-xs">{chat.empty}</p>
     </div>
   </div>
 
@@ -106,7 +157,7 @@ const { connected = false, embedded = false } = Astro.props;
           d="M12 2a10 10 0 0 1 10 10"
           stroke="currentColor"></path></svg
       >
-      <span id="progress-text">Transferring...</span>
+      <span id="progress-text">{chat.transferring}</span>
     </div>
     <div class="mt-1 h-1 bg-white/10 rounded-full overflow-hidden">
       <div
@@ -138,7 +189,7 @@ const { connected = false, embedded = false } = Astro.props;
         points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"
       ></line></svg
     >
-    <span class="text-white font-semibold">Drop to Send</span>
+    <span class="text-white font-semibold">{chat.drop}</span>
   </div>
 
   <!-- Input Area -->
@@ -146,7 +197,7 @@ const { connected = false, embedded = false } = Astro.props;
     <form id="chat-form" class="flex gap-2 items-center">
       <label
         class="p-2 text-zinc-400 hover:text-purple-400 hover:bg-white/5 rounded-lg cursor-pointer transition-all"
-        title="Attach File"
+        title={t("dm.attach")}
       >
         <input type="file" id="file-input" class="hidden" />
         <svg
@@ -168,13 +219,13 @@ const { connected = false, embedded = false } = Astro.props;
         type="text"
         id="msg-input"
         class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all"
-        placeholder="Message..."
+        placeholder={t("dm.placeholder")}
         autocomplete="off"
       />
       <button
         type="submit"
         class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white p-2 rounded-lg transition-all"
-        title="Send"
+        title={t("dm.send")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -209,27 +260,35 @@ const { connected = false, embedded = false } = Astro.props;
   /* Message Bubbles - Scoped to chat panel manually */
   #chat-panel .msg {
     max-width: 85%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 1rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 1.25rem;
     font-size: 0.8125rem;
-    line-height: 1.4;
+    line-height: 1.5;
     word-break: break-word;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease-out;
+  }
+
+  #chat-panel .msg:hover {
+    transform: translateY(-1px);
   }
 
   #chat-panel .msg-own {
-    background: linear-gradient(135deg, #9333ea, #7c3aed);
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
     color: white;
     align-self: flex-end;
-    border-bottom-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.35rem;
     margin-left: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   #chat-panel .msg-peer {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e4e4e7;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    color: #f4f4f5;
     align-self: flex-start;
-    border-bottom-left-radius: 0.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom-left-radius: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-right: auto;
   }
 
@@ -238,17 +297,18 @@ const { connected = false, embedded = false } = Astro.props;
     align-self: center;
     font-size: 0.7rem;
     color: #a1a1aa;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.5rem;
+    background: transparent;
+    padding: 0.2rem 0.75rem;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
+    border: none;
+    box-shadow: none;
   }
 
   #chat-panel .msg-file {
-    background: rgba(147, 51, 234, 0.15);
-    border: 1px solid rgba(147, 51, 234, 0.3);
+    background: rgba(147, 51, 234, 0.1);
+    border: 1px solid rgba(147, 51, 234, 0.4);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -259,14 +319,33 @@ const { connected = false, embedded = false } = Astro.props;
 </style>
 
 <script>
+  import {
+    appendChatFilePreview,
+    requestIncomingChatFile,
+  } from "../lib/ui/chat-file-preview";
+
   // UI Logic
   const messagesList = document.getElementById("messages-list")!;
   const progressBar = document.getElementById("file-progress-bar")!;
   const progressFill = document.getElementById("progress-fill")!;
   const progressText = document.getElementById("progress-text")!;
   const encryptionStatus = document.getElementById("encryption-status");
+  const chatPanel = document.getElementById("chat-panel") as HTMLElement;
+  const uiLabels = {
+    connected: chatPanel.dataset.connectedLabel || "Connected",
+    awaiting: chatPanel.dataset.awaitingLabel || "Awaiting connection",
+    connecting: chatPanel.dataset.connectingLabel || "Connecting…",
+    encrypted: chatPanel.dataset.encryptedLabel || "Encrypted",
+    plaintext: chatPanel.dataset.plaintextLabel || "Plaintext",
+  };
 
   let hasMessages = false;
+
+  function prepareMessagesList() {
+    if (hasMessages) return;
+    messagesList.innerHTML = "";
+    hasMessages = true;
+  }
 
   // Safety: never let the chat form submit navigate/reload.
   // Pages can attach their own submit handler for sending.
@@ -280,15 +359,13 @@ const { connected = false, embedded = false } = Astro.props;
     type: "own" | "peer" | "system" = "system",
     colorStyle: string = "",
     senderName: string = "",
-    avatarUrl: string = "" // [New] Avatar URL
+    avatarUrl: string = "", // [New] Avatar URL
+    trustedHtml: boolean = false
   ) => {
     const safeText = typeof text === "string" ? text : String(text ?? "");
 
     // Clear placeholder on first message
-    if (!hasMessages) {
-      messagesList.innerHTML = "";
-      hasMessages = true;
-    }
+    prepareMessagesList();
 
     const el = document.createElement("div");
     el.className = `msg msg-${type}`;
@@ -298,55 +375,108 @@ const { connected = false, embedded = false } = Astro.props;
       el.style.borderLeft = `3px solid ${colorStyle}`;
     }
 
-    let contentHtml = "";
-
-    // Header for peer
     if (type === "peer" && senderName) {
-      const avatarHtml = avatarUrl
-        ? `<div class="w-4 h-4 rounded-full bg-cover bg-center shrink-0" style="background-image: url(${avatarUrl})"></div>`
-        : ``;
+      const header = document.createElement("div");
+      header.className = "flex items-center gap-1.5 mb-1 opacity-70";
 
-      contentHtml += `
-        <div class="flex items-center gap-1.5 mb-1 opacity-70">
-            ${avatarHtml}
-            <span class="text-[10px] font-bold" style="color: ${colorStyle}">${senderName}</span>
-        </div>`;
+      if (/^(https?:|data:image\/|blob:)/i.test(avatarUrl)) {
+        const avatar = document.createElement("div");
+        avatar.className =
+          "w-4 h-4 rounded-full bg-cover bg-center shrink-0";
+        avatar.style.backgroundImage = `url("${avatarUrl.replace(/"/g, "%22")}")`;
+        header.appendChild(avatar);
+      }
+
+      const name = document.createElement("span");
+      name.className = "text-[10px] font-bold";
+      if (/^#[0-9a-f]{6}$/i.test(colorStyle)) name.style.color = colorStyle;
+      name.textContent = senderName;
+      header.appendChild(name);
+      el.appendChild(header);
     }
 
-    // Check if it's a file message or HTML link
-    if (
+    if (trustedHtml && type === "system") {
+      const content = document.createElement("div");
+      content.innerHTML = safeText;
+      el.appendChild(content);
+    } else if (
       safeText.includes("Receiving") ||
       safeText.includes("Sent") ||
-      safeText.includes("Sending") ||
-      safeText.includes("<a ") ||
-      safeText.includes("<button") ||
-      safeText.includes("data-holi-action=")
+      safeText.includes("Sending")
     ) {
-      // If it contains HTML tag, treat as HTML
-      if (
-        safeText.includes("<a ") ||
-        safeText.includes("<button") ||
-        safeText.includes("data-holi-action=")
-      ) {
-        el.innerHTML = safeText; // Trusted content from Controller
-      } else {
-        el.classList.add("msg-file");
-        contentHtml += `
-            <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-            <span>${safeText}</span>
-            </div>
-          `;
-        el.innerHTML = contentHtml;
-      }
+      el.classList.add("msg-file");
+      const row = document.createElement("div");
+      row.className = "flex items-center gap-2";
+      const icon = document.createElement("span");
+      icon.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>';
+      const label = document.createElement("span");
+      label.textContent = safeText;
+      row.append(icon, label);
+      el.appendChild(row);
     } else {
-      el.innerHTML =
-        contentHtml + `<div class="whitespace-pre-wrap">${safeText}</div>`;
+      const body = document.createElement("div");
+      body.className = "whitespace-pre-wrap";
+      body.textContent = safeText;
+      el.appendChild(body);
     }
 
     messagesList.appendChild(el);
     messagesList.scrollTop = messagesList.scrollHeight;
   };
+
+  const fileLabels = {
+    save: chatPanel.dataset.fileSaveLabel || "Save",
+    incoming: chatPanel.dataset.incomingFileLabel || "Incoming file",
+    accept: chatPanel.dataset.acceptFileLabel || "Accept",
+    reject: chatPanel.dataset.rejectFileLabel || "Reject",
+    imagePreview: chatPanel.dataset.imagePreviewLabel || "Image preview:",
+    videoPreview: chatPanel.dataset.videoPreviewLabel || "Video preview:",
+  };
+  const filePreviewDisposers = new Set<() => void>();
+  const fileOfferController = new AbortController();
+
+  (window as any).addChatFilePreview = (
+    blob: Blob,
+    filename: string,
+    type: "own" | "peer" = "peer"
+  ) => {
+    prepareMessagesList();
+    const dispose = appendChatFilePreview({
+      host: messagesList,
+      blob,
+      filename,
+      side: type === "own" ? "me" : "peer",
+      labels: fileLabels,
+    });
+    filePreviewDisposers.add(dispose);
+  };
+
+  (window as any).requestIncomingChatFile = (offer: {
+    id: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+  }) => {
+    prepareMessagesList();
+    return requestIncomingChatFile({
+      host: messagesList,
+      offer,
+      labels: fileLabels,
+      signal: fileOfferController.signal,
+    });
+  };
+
+  function cleanupChatFileUi() {
+    fileOfferController.abort();
+    for (const dispose of filePreviewDisposers) dispose();
+    filePreviewDisposers.clear();
+  }
+
+  document.addEventListener("astro:before-swap", cleanupChatFileUi, {
+    once: true,
+  });
+  window.addEventListener("pagehide", cleanupChatFileUi, { once: true });
 
   // Public: Show file progress
   (window as any).showFileProgress = (progress: number, filename: string) => {
@@ -381,15 +511,41 @@ const { connected = false, embedded = false } = Astro.props;
         "text-emerald-300",
         "border-emerald-500/20"
       );
-      encryptionStatus.textContent = "Encrypted";
+      encryptionStatus.textContent = uiLabels.encrypted;
     } else {
       encryptionStatus.classList.add(
         "bg-zinc-500/10",
         "text-zinc-300",
         "border-white/10"
       );
-      encryptionStatus.textContent = "Plaintext";
+      encryptionStatus.textContent = uiLabels.plaintext;
     }
+  };
+
+  // Public: Update header connection state (used by embedded private chat flow).
+  (window as any).setChatConnectionState = (
+    state: "awaiting" | "connecting" | "connected" = "awaiting",
+    label?: string
+  ) => {
+    const dot = document.getElementById("status-dot");
+    const status = document.getElementById("chat-status");
+
+    const isConnected = state === "connected";
+    const dotCls = isConnected
+      ? "bg-green-400"
+      : state === "connecting"
+        ? "bg-yellow-500 animate-pulse"
+        : "bg-yellow-500 animate-pulse";
+
+    if (dot)
+      dot.className = `w-2 h-2 rounded-full ${dotCls}`;
+    if (status)
+      status.textContent =
+        state === "connected"
+          ? label || uiLabels.connected
+          : state === "connecting"
+            ? uiLabels.connecting
+            : uiLabels.awaiting;
   };
 
   // Drag and Drop
@@ -430,7 +586,8 @@ const { connected = false, embedded = false } = Astro.props;
   });
 
   document.getElementById("file-input")?.addEventListener("change", (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) {
       panel.dispatchEvent(
         new CustomEvent("file-drop", {
@@ -440,6 +597,7 @@ const { connected = false, embedded = false } = Astro.props;
         })
       );
     }
+    input.value = "";
   });
 
   // Minimize toggle

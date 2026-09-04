@@ -9,6 +9,6 @@ export function getLangFromUrl(url: URL) {
 
 export function useTranslations(lang: keyof typeof ui) {
     return function t(key: TranslationKey) {
-        return ui[lang][key] || ui[DEFAULT_LANG][key];
+        return ui[lang][key] || ui[DEFAULT_LANG][key] || key;
     };
 }

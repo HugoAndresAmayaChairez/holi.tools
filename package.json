@@ -5,31 +5,45 @@
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
-    "deploy:main": "turbo run build --filter=holi-main && wrangler pages deploy ./apps/main/dist --project-name holi",
-    "deploy:typst": "turbo run build --filter=holi-typst && wrangler pages deploy ./apps/typst/dist --project-name typst-holi",
-    "deploy:paint": "turbo run build --filter=holi-paint && wrangler pages deploy ./apps/paint/dist --project-name paint-holi",
+    "build": "turbo run build --filter=holi-main --filter=holi-typst --filter=holi-qr --filter=holi-metadata --filter=holi-user --filter=holi-labs --filter=holi-image",
+    "install:all": "pnpm -r install",
+    "deploy:main": "turbo run build --filter=holi-main && wrangler pages deploy ./web/apps/main/dist --project-name holi --commit-dirty=true",
+    "deploy:typst": "turbo run build --filter=holi-typst && wrangler pages deploy ./dist --project-name typst-holi --cwd ./web/apps/typst --commit-dirty=true",
     "create-app": "node scripts/create-app.cjs",
-    "deploy:calculator": "turbo run build --filter=holi-calculator && wrangler pages deploy ./apps/calculator/dist --project-name calculator-holi",
-    "deploy:user": "turbo run build --filter=holi-user && wrangler pages deploy ./apps/user/dist --project-name user-holi",
-    "deploy:test": "turbo run build --filter=holi-test && wrangler pages deploy ./apps/test/dist --project-name test-holi",
+    "deploy:user": "turbo run build --filter=holi-user && wrangler pages deploy ./web/apps/user/dist --project-name user-holi --commit-dirty=true",
+    "deploy:production": "pnpm deploy:main && pnpm deploy:typst && pnpm deploy:qr && pnpm deploy:metadata && pnpm deploy:user && pnpm deploy:labs && pnpm deploy:image",
+    "test:generator": "node --test scripts/create-app.test.cjs",
+    "test:apps": "pnpm --filter holi-qr test && pnpm --filter holi-metadata test && pnpm --filter holi-user test && pnpm --filter holi-image test && pnpm --filter holi-test test",
+    "test": "pnpm test:generator && pnpm test:apps",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --config eslint.strict.config.js --max-warnings 0",
     "format": "prettier --write .",
-    "deploy:labs": "turbo run build --filter=holi-labs && wrangler pages deploy ./apps/labs/dist --project-name labs-holi",
-    "deploy:qr": "turbo run build --filter=holi-qr && wrangler pages deploy ./apps/qr/dist --project-name qr-holi",
-    "build:wasm": "cd packages/wasm-qr-svg && wasm-pack build --target web --release"
+    "format:check": "prettier --check .",
+    "deploy:labs": "turbo run build --filter=holi-labs && wrangler pages deploy ./web/apps/labs/dist --project-name labs-holi --commit-dirty=true",
+    "deploy:qr": "turbo run build --filter=holi-qr && wrangler pages deploy ./web/apps/qr/dist --project-name qr-holi --commit-dirty=true",
+    "deploy:metadata": "turbo run build --filter=holi-metadata && wrangler pages deploy ./web/apps/metadata/dist --project-name metadata-holi --commit-dirty=true",
+    "deploy:image": "turbo run build --filter=holi-image && wrangler pages deploy ./web/apps/image/dist --project-name image-holi --commit-dirty=true"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@webgpu/types": "^0.1.68",
     "eslint": "^9.39.2",
-    "pnpm": "^9.15.0",
+    "pnpm": "10.28.2",
     "prettier": "^3.7.4",
     "turbo": "^2.3.3",
     "typescript-eslint": "^8.50.0",
-    "wrangler": "^3.19.0"
+    "wrangler": "^4.128.0"
   },
-  "packageManager": "pnpm@9.15.0"
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "@swc/core",
+      "esbuild",
+      "protobufjs",
+      "sharp",
+      "workerd"
+    ]
+  },
+  "packageManager": "pnpm@10.28.2"
 }

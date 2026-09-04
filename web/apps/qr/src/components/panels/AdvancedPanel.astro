@@ -15,7 +15,7 @@ const t = useTranslations(lang);
 
 <div class="option-row">
   <label>{t("advanced.ecc")}</label>
-  <select onchange="window.setEcc && window.setEcc(this.value)">
+  <select id="ecc-select" onchange="window.setEcc && window.setEcc(this.value)">
     <option value="L">{t("advanced.ecc.low")}</option>
     <option value="M" selected>{t("advanced.ecc.medium")}</option>
     <option value="Q">{t("advanced.ecc.quartile")}</option>
@@ -28,15 +28,15 @@ const t = useTranslations(lang);
     id="mask-select"
     onchange="window.setMaskPattern && window.setMaskPattern(this.value)"
   >
-    <option value="auto" selected>{t("advanced.mask.auto")}</option>
-    <option value="0">(i+j) mod 2 = 0</option>
-    <option value="1">i mod 2 = 0</option>
-    <option value="2">j mod 3 = 0</option>
-    <option value="3">(i+j) mod 3 = 0</option>
-    <option value="4">(i÷2 + j÷3) mod 2 = 0</option>
-    <option value="5">(i×j) mod 2 + (i×j) mod 3 = 0</option>
-    <option value="6">((i×j) mod 2 + (i×j) mod 3) mod 2 = 0</option>
-    <option value="7">((i+j) mod 2 + (i×j) mod 3) mod 2 = 0</option>
+    <option value="auto" selected>{t("advanced.mask.auto")} (Auto)</option>
+    <option value="0">0 - Checkerboard (Ajedrez)</option>
+    <option value="1">1 - Horizontal Stripes (Rayas Horizontales)</option>
+    <option value="2">2 - Vertical Stripes (Rayas Verticales)</option>
+    <option value="3">3 - Diagonal Stripes (Líneas Diagonales)</option>
+    <option value="4">4 - Large Checkerboard (Ajedrez Ancho)</option>
+    <option value="5">5 - Diamond Grid (Romboides)</option>
+    <option value="6">6 - Complex Cross (Cruces)</option>
+    <option value="7">7 - Dense Cross (Cruces Densas)</option>
   </select>
 </div>
 
@@ -50,36 +50,24 @@ const t = useTranslations(lang);
 
   .option-row > label:first-child {
     font-size: 12px;
-    color: var(--text-muted, rgba(255, 255, 255, 0.6));
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .option-row > label:first-child {
-      color: rgba(255, 255, 255, 0.6);
-    }
-  }
-
   .option-row select {
     padding: 10px 12px;
-    background: rgba(127, 127, 127, 0.1);
-    border: 1px solid rgba(127, 127, 127, 0.2);
+    background: var(--surface-soft);
+    border: 1px solid var(--control-border);
     border-radius: 8px;
-    color: var(--text-main, white);
+    color: var(--text-main);
     font-size: 14px;
     cursor: pointer;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .option-row select {
-      color: white;
-    }
-  }
-
   .option-row select option {
-    background: var(--bg-card, #2a2a2f);
-    color: var(--text-main, white);
+    background: var(--bg-card);
+    color: var(--text-main);
     padding: 8px;
   }
 </style>

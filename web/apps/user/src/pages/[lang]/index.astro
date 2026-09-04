@@ -1,6 +1,7 @@
 ---
 import VaultLayout from "../../layouts/VaultLayout.astro";
 import VaultDashboard from "../../components/VaultDashboard.astro";
+import HoliCard from "../../components/ui/HoliCard.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 import { SUPPORTED_LANGS } from "@holi/configs/i18n";
 
@@ -10,55 +11,57 @@ export function getStaticPaths() {
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const basePath = lang === "en" ? "/en" : `/${lang}`;
+const basePath = `/${lang}`;
 ---
 
-<VaultLayout title={t("vault.title")}>
-  <div class="flex flex-col items-center justify-center space-y-6">
-    <div class="text-center mb-8">
-      <div
-        class="p-4 rounded-full bg-purple-500/10 text-purple-400 inline-block mb-4"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-shield-check"
-          ><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path
-            d="m9 12 2 2 4-4"></path></svg
+<VaultLayout title={t("vault.title")} description={t("vault.subtitle")}>
+  <div class="space-y-6 sm:space-y-8">
+    <header class="pr-14 sm:pr-16" aria-labelledby="holi-user-title">
+      <div class="max-w-3xl">
+        <span class="holi-kicker">{t("vault.eyebrow")}</span>
+        <h1
+          id="holi-user-title"
+          class="mt-3 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl"
         >
+          {t("vault.title")}
+        </h1>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
+          {t("vault.subtitle")}
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2" aria-label={t("vault.local_first")}>
+          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300">
+            <svg aria-hidden="true" class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+            {t("vault.local_first")}
+          </span>
+          <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300">
+            <svg aria-hidden="true" class="h-3.5 w-3.5 text-violet-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/><path d="m19 8 2 2 3-3"/></svg>
+            {t("vault.no_account")}
+          </span>
+        </div>
       </div>
+    </header>
 
-      <h1
-        class="text-4xl font-bold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
-      >
-        {t("vault.title")}
-      </h1>
+    <VaultDashboard />
 
-      <p class="max-w-xl text-lg text-zinc-400 mt-2">
-        {t("vault.subtitle")}
-      </p>
-    </div>
-
-    <div class="w-full max-w-4xl">
-      <VaultDashboard />
-    </div>
-
-    <div class="w-full max-w-4xl">
-      <div class="mt-4 flex justify-center">
-        <a
-          href={`${basePath}/private`}
-          class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-colors text-zinc-200"
-        >
-          {t("vault.private_chat_button")}
-        </a>
+    <HoliCard
+      as="a"
+      href={`${basePath}/private`}
+      target="_self"
+      clickable
+      class="group hover:border-violet-400/40"
+      padding="md"
+      rounded="lg"
+    >
+      <div class="flex items-center gap-4 sm:gap-5">
+        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-violet-300/15 bg-violet-400/10 text-violet-300">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-bold text-white">{t("vault.private_chat_button")}</p>
+          <p class="mt-0.5 text-sm text-zinc-500">{t("private.desc")}</p>
+        </div>
+        <svg aria-hidden="true" class="h-5 w-5 shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-violet-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
       </div>
-    </div>
+    </HoliCard>
   </div>
 </VaultLayout>

@@ -1,0 +1,84 @@
+---
+/**
+ * WorkspaceToolbar.astro — 36px top bar: brand, active content, scan status,
+ * and the export actions (copy, style link, download menu).
+ */
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+import { DEFAULT_LANG } from "@holi/configs/i18n";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const homeHref = lang === DEFAULT_LANG ? "/" : `/${lang}/`;
+---
+
+<header class="qr-toolbar" id="qr-toolbar">
+  <a class="qr-brand" href={homeHref} aria-label="Holi QR">Holi <span>QR</span></a>
+  <span class="qr-toolbar-sep" aria-hidden="true"></span>
+
+  <div class="qr-toolbar-meta">
+    <span id="qr-toolbar-content" class="mono" data-idle={t("ws.status_idle")}>{t("ws.status_idle")}</span>
+    <button
+      class="qr-status"
+      id="btn-verify"
+      type="button"
+      title={t("toolbar.verify")}
+      data-title={t("toolbar.verify")}
+      data-verify-status="none"
+      data-l-valid={t("ws.status_scannable")}
+      data-l-invalid={t("ws.status_unreadable")}
+      data-l-checking={t("ws.status_checking")}
+    >
+      <i aria-hidden="true"></i>
+      <span id="qr-status-text"></span>
+      <span id="verify-icon" class="sr-only"></span>
+    </button>
+  </div>
+
+  <span class="qr-toolbar-spacer"></span>
+
+  <div class="qr-toolbar-actions">
+    <button class="ws-btn needs-qr" id="btn-copy" type="button" title={t("toolbar.copy")}>
+      <span class="icon">content_copy</span><span class="btn-text">{t("ws.copy")}</span>
+      <span class="kbd btn-text" aria-hidden="true">⇧⌘C</span>
+    </button>
+    <button class="ws-btn needs-qr" id="btn-share-style" type="button" title={t("ws.share_title")} data-l-copied={t("ws.share_copied")} data-l-failed={t("ws.share_failed")} data-l-applied={t("ws.share_applied")}>
+      <span class="icon">share</span><span class="btn-text">{t("ws.share_style")}</span>
+    </button>
+    <button class="ws-btn ghost needs-qr" id="btn-reset" type="button" title={t("toolbar.reset")} aria-label={t("toolbar.reset")}>
+      <span class="icon">refresh</span>
+    </button>
+
+    <div class="download-wrapper">
+      <button
+        class="ws-btn primary needs-qr"
+        id="btn-download"
+        type="button"
+        title={t("toolbar.download")}
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="download-menu"
+        data-title={t("toolbar.download")}
+      >
+        <span class="icon">download</span>
+        <span class="btn-text">{t("ws.download")} <span id="download-label" class="mono">PNG · 2048</span></span>
+        <span class="icon">chevron_down</span>
+      </button>
+      <div class="download-menu" id="download-menu" role="menu" aria-hidden="true">
+        <div class="download-size">
+          <div class="download-size-label">{t("image.export_size")}</div>
+          <div class="download-size-options">
+            <button class="size-btn" type="button" data-export-size="512">512</button>
+            <button class="size-btn" type="button" data-export-size="1024">1024</button>
+            <button class="size-btn" type="button" data-export-size="2048">2048</button>
+            <button class="size-btn" type="button" data-export-size="4096">4096</button>
+          </div>
+        </div>
+        <button type="button" role="menuitem" data-export-format="png"><span class="icon">image</span> PNG</button>
+        <button type="button" role="menuitem" data-export-format="jpeg"><span class="icon">photo</span> JPG</button>
+        <button type="button" role="menuitem" data-export-format="webp"><span class="icon">image</span> WebP</button>
+        <button type="button" role="menuitem" data-export-format="svg"><span class="icon">code</span> SVG</button>
+        <button type="button" role="menuitem" data-export-format="pdf"><span class="icon">picture_as_pdf</span> PDF</button>
+      </div>
+    </div>
+  </div>
+</header>

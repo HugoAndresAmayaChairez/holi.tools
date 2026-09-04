@@ -16,18 +16,71 @@ interface Language {
 interface Props {
   currentLang: string;
   languages: readonly Language[];
+  defaultLang?: string;
+  prefixDefaultLocale?: boolean;
   homeHref?: string;
   changelogId?: string;
+  showPapers?: boolean;
+  placement?: "floating" | "dock";
+  triggerLabel?: string;
+  labels?: Partial<{
+    menu: string;
+    navigation: string;
+    home: string;
+    moreTools: string;
+    holiTools: string;
+    papers: string;
+    about: string;
+    donate: string;
+    support: string;
+    language: string;
+  }>;
 }
 
-const { currentLang, languages, homeHref = "/", changelogId } = Astro.props;
+const {
+  currentLang,
+  languages,
+  defaultLang = "en",
+  prefixDefaultLocale = false,
+  homeHref = "/",
+  changelogId,
+  showPapers = true,
+  placement = "floating",
+  triggerLabel,
+  labels: customLabels = {},
+} = Astro.props;
+
+import { getProductShellCopy } from "../lib/product-shell-copy";
+const shellCopy = getProductShellCopy(currentLang);
+const localizedTriggerLabel = triggerLabel ?? shellCopy.configuration;
+
+const labels = {
+  menu: shellCopy.menu,
+  navigation: shellCopy.navigation,
+  home: shellCopy.home,
+  moreTools: shellCopy.moreTools,
+  holiTools: "Holi.tools",
+  papers: shellCopy.papers,
+  about: shellCopy.about,
+  donate: shellCopy.donate,
+  support: shellCopy.supportSuggestions,
+  language: shellCopy.language,
+  ...customLabels,
+};
 
 import GlassCard from "./GlassCard.astro";
 import Icon from "./Icon.astro";
 ---
 
 <!-- Orb Container (Draggable) -->
-<div class="orb-container" data-draggable="true" data-persist-id="main-orb">
+<div
+  class="orb-container"
+  data-placement={placement}
+  data-draggable={placement === "floating" ? "true" : undefined}
+  data-persist-id="main-orb"
+  data-default-lang={defaultLang}
+  data-prefix-default-locale={prefixDefaultLocale ? "true" : "false"}
+>
   <!-- Orb Button -->
   <GlassCard
     as="button"
@@ -37,23 +90,26 @@ import Icon from "./Icon.astro";
     shadow={false}
     toggleable={true}
     toggleId="main-menu"
-    aria-label="Menu"
+    aria-label={labels.menu}
+    aria-haspopup="menu"
+    aria-expanded="false"
   >
     <Icon name="settings" class="settings-icon" />
+    {placement === "dock" && <span class="orb-label">{localizedTriggerLabel}</span>}
   </GlassCard>
 
   <!-- Dropdown Menu -->
-  <nav class="orb-menu" aria-label="Main Menu">
+  <nav class="orb-menu" aria-label={labels.menu}>
     <!-- Navigation -->
     <section class="menu-section">
-      <h3 class="menu-label">Navigation</h3>
+      <h3 class="menu-label">{labels.navigation}</h3>
       <a href={homeHref} class="menu-item">
         <Icon name="home" size={16} />
-        <span>Home</span>
+        <span>{labels.home}</span>
       </a>
       <a href="https://holi.tools" class="menu-item">
         <Icon name="apps" size={16} />
-        <span>More Tools</span>
+        <span>{labels.moreTools}</span>
       </a>
     </section>
 
@@ -61,59 +117,67 @@ import Icon from "./Icon.astro";
 
     <!-- Actions -->
     <section class="menu-section">
-      <h3 class="menu-label">Holi.tools</h3>
-      <a href={`/${currentLang}/papers`} class="menu-item">
-        <Icon name="article" size={16} />
-        <span>Papers</span>
-      </a>
+      <h3 class="menu-label">{labels.holiTools}</h3>
+      {
+        showPapers && (
+          <a
+            href={
+              prefixDefaultLocale || currentLang !== defaultLang
+                ? `/${currentLang}/papers`
+                : "/papers"
+            }
+            class="menu-item"
+          >
+            <Icon name="article" size={16} />
+            <span>{labels.papers}</span>
+          </a>
+        )
+      }
       {
         changelogId && (
-          <button
-            class="menu-item"
-            onclick={`window.openOverlay && window.openOverlay('changelog', '${changelogId}')`}
-          >
-            <Icon name="history" size={16} />
-            <span>Versions</span>
-          </button>
+          <></>
         )
       }
       <button
+        type="button"
         class="menu-item"
         onclick="window.openOverlay && window.openOverlay('info', 'about')"
       >
         <Icon name="info" size={16} />
-        <span>About</span>
+        <span>{labels.about}</span>
       </button>
-      <a
-        href="https://github.com/sponsors/EasyModeLife"
-        target="_blank"
-        rel="noopener"
+      <button
+        type="button"
         class="menu-item"
+        onclick="window.openOverlay && window.openOverlay('donate', 'holi')"
       >
         <Icon name="favorite" size={16} />
-        <span>Support / Donate</span>
-      </a>
-      <a
-        href="https://github.com/EasyModeLife/holi.tools"
-        target="_blank"
-        rel="noopener"
+        <span>{labels.donate}</span>
+      </button>
+      <button
+        type="button"
         class="menu-item"
+        onclick="window.openOverlay && window.openOverlay('support', 'holi')"
       >
-        <Icon name="code" size={16} />
-        <span>Source Code</span>
-      </a>
+        <Icon name="message-square" size={16} />
+        <span>{labels.support}</span>
+      </button>
     </section>
 
     <hr class="menu-divider" />
 
     <!-- Languages -->
     <section class="menu-section">
-      <h3 class="menu-label">Language</h3>
+      <h3 class="menu-label">{labels.language}</h3>
       <div class="lang-grid">
         {
           languages.map((l: Language) => (
             <a
-              href={l.code === "en" ? "/" : `/${l.code}/`}
+              href={
+                prefixDefaultLocale || l.code !== defaultLang
+                  ? `/${l.code}/`
+                  : "/"
+              }
               class={`lang-chip ${l.code === currentLang ? "active" : ""}`}
               data-lang={l.code}
               title={l.name}
@@ -143,11 +207,22 @@ import Icon from "./Icon.astro";
     ) {
       orbBtn.dataset.toggled = "false";
       orbBtn.classList.remove("glass-card--toggled");
+      orbBtn.setAttribute("aria-expanded", "false");
     }
+  });
+
+  document.addEventListener("card-toggled", (event) => {
+    const detail = (event as CustomEvent).detail;
+    if (detail?.id !== "main-menu") return;
+    detail.card?.setAttribute("aria-expanded", String(Boolean(detail.toggled)));
   });
 
   // Save language preference and handle path-aware routing
   document.addEventListener("click", (e) => {
+    const container = document.querySelector(".orb-container") as HTMLElement | null;
+    const defaultLang = container?.dataset.defaultLang || "en";
+    const prefixDefaultLocale = container?.dataset.prefixDefaultLocale === "true";
+
     const chip = (e.target as HTMLElement).closest(
       ".lang-chip"
     ) as HTMLAnchorElement | null;
@@ -165,16 +240,23 @@ import Icon from "./Icon.astro";
         const chips = document.querySelectorAll(".lang-chip");
         const supported = Array.from(chips)
           .map((c) => c.getAttribute("data-lang"))
-          .filter(Boolean);
+          .filter(Boolean) as string[];
 
-        let newPath = "";
+        const hasLangPrefix =
+          segments.length > 0 && supported.includes(segments[0]);
+        const newSegments = [...segments];
 
-        // If the first segment is a supported language, replace it. Otherwise prepend.
-        if (segments.length > 0 && supported.includes(segments[0])) {
-          segments[0] = lang;
-          newPath = "/" + segments.join("/");
+        // Default locale uses root URLs unless the app prefixes default locale too.
+        if (!prefixDefaultLocale && lang === defaultLang) {
+          if (hasLangPrefix) newSegments.shift();
         } else {
-          newPath = "/" + lang + currentPath;
+          if (hasLangPrefix) newSegments[0] = lang;
+          else newSegments.unshift(lang);
+        }
+
+        let newPath = "/" + newSegments.join("/");
+        if (newPath === "/") {
+          // keep root as-is
         }
 
         // Preserve trailing slash if present
@@ -207,11 +289,48 @@ import Icon from "./Icon.astro";
     cursor: grabbing;
   }
 
+  .orb-container[data-placement="dock"] {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    cursor: default;
+    touch-action: auto;
+  }
+
   /* ========== ORB BUTTON ========== */
   :global(.orb-btn) {
     width: 48px !important;
     height: 48px !important;
     min-height: 0 !important;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn) {
+    width: auto !important;
+    height: 26px !important;
+    padding: 4px 8px !important;
+    flex-direction: row;
+    gap: 5px;
+    border-radius: 6px;
+    color: var(--color-text, inherit);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.76;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn:hover),
+  .orb-container[data-placement="dock"] :global(.orb-btn:focus-visible),
+  .orb-container[data-placement="dock"] :global(.orb-btn.glass-card--toggled) {
+    opacity: 1;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn:focus-visible) {
+    outline: 2px solid var(--color-accent, #6366f1);
+    outline-offset: 3px;
+  }
+
+  .orb-label {
+    white-space: nowrap;
   }
 
   :global(.orb-btn .icon) {
@@ -229,16 +348,17 @@ import Icon from "./Icon.astro";
     right: 0;
     width: 200px;
 
-    /* Match GlassCard defaults: 5% opacity, 2px blur */
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-text, #1a1a1a);
+    background: color-mix(in srgb, var(--color-bg, #ffffff) 94%, transparent);
+    backdrop-filter: blur(24px) saturate(1.15);
+    -webkit-backdrop-filter: blur(24px) saturate(1.15);
+    border: 1px solid var(--color-border, rgba(0, 0, 0, 0.12));
     border-radius: 12px;
     padding: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
 
     opacity: 0;
+    visibility: hidden;
     transform: scale(0.95) translateY(-8px);
     pointer-events: none;
     transition: all 0.2s ease;
@@ -248,17 +368,30 @@ import Icon from "./Icon.astro";
     gap: 6px;
   }
 
+  .orb-container[data-placement="dock"] .orb-menu {
+    top: auto;
+    right: 0;
+    bottom: calc(100% + 10px);
+    transform: scale(0.96) translateY(8px);
+    transform-origin: bottom right;
+  }
+
   :global(.orb-btn.glass-card--toggled) + .orb-menu {
     opacity: 1;
+    visibility: visible;
     transform: scale(1) translateY(0);
     pointer-events: auto;
   }
 
+  .orb-container[data-placement="dock"] :global(.orb-btn.glass-card--toggled) + .orb-menu {
+    transform: scale(1) translateY(0);
+  }
+
   @media (prefers-color-scheme: dark) {
     .orb-menu {
-      background: rgba(24, 24, 27, 0.05);
+      background: color-mix(in srgb, var(--color-bg, #18181b) 94%, transparent);
       border-color: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
     }
   }
 
@@ -348,9 +481,18 @@ import Icon from "./Icon.astro";
       right: 12px;
     }
 
+    .orb-container[data-placement="dock"] {
+      inset: auto;
+    }
+
     :global(.orb-btn) {
       width: 40px !important;
       height: 40px !important;
+    }
+
+    .orb-container[data-placement="dock"] :global(.orb-btn) {
+      width: auto !important;
+      height: 26px !important;
     }
 
     .orb-menu {

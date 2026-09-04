@@ -1,110 +1,97 @@
 ---
+/**
+ * ShapesPanel.astro — module, eye-frame and eye-ball shapes.
+ * Tiles preview the exact renderer geometry (shape-previews.json is emitted
+ * by `cargo run --example shape_previews` in crates/core/holi-qr).
+ */
 import {
   BODY_SHAPES,
   EYE_FRAME_SHAPES,
   EYE_BALL_SHAPES,
 } from "../../lib/qr-styles-config";
+import previews from "../../lib/constants/shape-previews.json";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-/**
- * ShapesPanel.astro - Geometry customization for QR Code
- * Extracted from StylePanel
- */
+const body = previews.body as Record<string, string>;
+const frame = previews.frame as Record<string, string>;
+const ball = previews.ball as Record<string, string>;
 ---
 
-<div class="advanced-content">
-  <!-- Body Shape -->
+<div class="shapes-panel">
   <div class="shape-section">
-    <label class="section-label">{t("shape.body")}</label>
-    <div class="shape-grid">
-      {
-        BODY_SHAPES.map((shape) => (
-          <button
-            class="shape-btn"
-            data-bodyshape={shape.id}
-            onclick={`setBodyShape('${shape.id}')`}
-            title={t(shape.label as any)}
-          >
-            <svg viewBox="0 0 20 20" set:html={shape.svgInner} />
-          </button>
-        ))
-      }
+    <span class="section-label">{t("shape.body")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.body")}>
+      {BODY_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-bodyshape={shape.id}
+          onclick={`setBodyShape('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.3 -0.3 5.6 5.6" aria-hidden="true"><path d={body[shape.id] || ""} /></svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
     </div>
   </div>
 
   <hr class="separator" />
 
-  <!-- Eye Frame Shape -->
   <div class="shape-section">
-    <label class="section-label">{t("shape.eye")}</label>
-    <div class="shape-grid">
-      {
-        EYE_FRAME_SHAPES.map((shape) => (
-          <button
-            class="shape-btn"
-            data-eyeframe={shape.id}
-            onclick={`setEyeFrame('${shape.id}')`}
-            title={t(shape.label as any)}
-          >
-            <svg viewBox="0 0 20 20" set:html={shape.svgInner} />
-          </button>
-        ))
-      }
+    <span class="section-label">{t("shape.eye")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.eye")}>
+      {EYE_FRAME_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-eyeframe={shape.id}
+          onclick={`setEyeFrame('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.4 -0.4 7.8 7.8" aria-hidden="true">
+            <path d={frame[shape.id] || ""} fill-rule="evenodd" />
+            <path d={ball["square"]} transform="translate(2 2)" />
+          </svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
     </div>
   </div>
 
-  <!-- Eye Ball Shape -->
   <div class="shape-section">
-    <label class="section-label">{t("shape.eyeball")}</label>
-    <div class="shape-grid">
-      {
-        EYE_BALL_SHAPES.map((shape) => (
-          <button
-            class="shape-btn"
-            data-eyeball={shape.id}
-            onclick={`setEyeBall('${shape.id}')`}
-            title={t(shape.label as any)}
-          >
-            <svg viewBox="0 0 20 20" set:html={shape.svgInner} />
-          </button>
-        ))
-      }
+    <span class="section-label">{t("shape.eyeball")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.eyeball")}>
+      {EYE_BALL_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-eyeball={shape.id}
+          onclick={`setEyeBall('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.4 -0.4 7.8 7.8" aria-hidden="true">
+            <path d={frame["square"]} fill-rule="evenodd" opacity="0.35" />
+            <path d={ball[shape.id] || ""} transform="translate(2 2)" />
+          </svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
     </div>
   </div>
 </div>
 
-<script is:inline>
-  // Helper to mark active buttons (reused logic)
-  function setActive(group, val) {
-    document.querySelectorAll(`button[data-${group}]`).forEach((b) => {
-      if (b.dataset[group] === val) b.classList.add("active");
-      else b.classList.remove("active");
-    });
-  }
-
-  // Hook into global events if needed
-  window.addEventListener("qr-config-loaded", (e) => {
-    // Update active states
-  });
-</script>
-
 <style>
-  .advanced-content {
-    /* Removed padding to fit panel better, padding handled by container? */
-    /* Checks EditorCanvas panel styles */
+  .shapes-panel {
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-
-  .separator {
-    border: 0;
-    height: 1px;
-    background: rgba(127, 127, 127, 0.15);
-    margin: 4px 0;
   }
 
   .shape-section {
@@ -113,55 +100,63 @@ const t = useTranslations(lang);
     gap: 8px;
   }
 
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-muted, rgba(127, 127, 127, 0.7));
-    letter-spacing: 0.5px;
-  }
-
-  .shape-grid {
+  .shapes-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
   }
 
-  .shape-btn {
-    aspect-ratio: 1;
-    background: rgba(127, 127, 127, 0.08);
-    border: 1px solid rgba(127, 127, 127, 0.15);
-    border-radius: 8px;
-    color: var(--text-main, rgba(255, 255, 255, 0.7));
-    cursor: pointer;
-    transition: all 0.15s ease;
+  .shapes-btn {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    gap: 5px;
+    padding: 7px 4px 6px;
+    border: 1px solid var(--control-border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   }
 
-  @media (prefers-color-scheme: dark) {
-    .shape-btn {
-      color: rgba(255, 255, 255, 0.7);
+  .shapes-btn svg {
+    width: 34px;
+    height: 34px;
+    fill: currentColor;
+    display: block;
+  }
+
+  .shapes-text {
+    max-width: 100%;
+    font: 650 8.5px/1 var(--font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shapes-btn:hover {
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+
+  .shapes-btn.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+    color: var(--accent-primary);
+  }
+
+  .shapes-btn.active .shapes-text {
+    color: var(--text-main);
+  }
+
+  @media (max-width: 420px) {
+    .shapes-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-  }
-
-  .shape-btn svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .shape-btn:hover {
-    background: rgba(127, 127, 127, 0.2);
-    color: var(--text-main, white);
-    transform: scale(1.05);
-  }
-
-  .shape-btn.active {
-    background: var(--accent-primary, #6366f1);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
   }
 </style>

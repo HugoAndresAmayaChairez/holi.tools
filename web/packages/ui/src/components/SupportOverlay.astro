@@ -1,0 +1,122 @@
+---
+interface Props {
+  id: string;
+  repoUrl?: string;
+  email?: string;
+  currentLang?: string;
+}
+
+const {
+  id,
+  repoUrl = "https://github.com/HugoAndresAmayaChairez/holi.tools",
+  email = "holi@holi.tools",
+  currentLang = "en",
+} = Astro.props;
+
+import SupportSuggestions from "./SupportSuggestions.astro";
+import Icon from "./Icon.astro";
+import { getProductShellCopy } from "../lib/product-shell-copy";
+const copy = getProductShellCopy(currentLang);
+---
+
+<div class="support-overlay" id={`overlay-support-${id}`} style="display:none;">
+  <div
+    class="log-backdrop"
+    onclick={`window.closeOverlay && window.closeOverlay('support', '${id}')`}
+  ></div>
+
+  <aside class="log-drawer" role="dialog" aria-modal="true" aria-label={copy.support}>
+    <header class="support-header">
+      <h2 class="support-heading">{copy.supportSuggestions}</h2>
+      <button
+        class="support-close"
+        aria-label={copy.close}
+        onclick={`window.closeOverlay && window.closeOverlay('support', '${id}')`}
+      >
+        <Icon name="close" size={16} />
+      </button>
+    </header>
+
+    <div class="support-body">
+      <SupportSuggestions
+        email={email}
+        repoUrl={repoUrl}
+        issuesUrl={`${repoUrl}/issues`}
+        currentLang={currentLang}
+      />
+    </div>
+  </aside>
+</div>
+
+<style>
+  .support-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+  }
+
+  .log-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .log-drawer {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    background: var(--depth-glass, rgba(255, 255, 255, 0.03));
+    backdrop-filter: blur(var(--depth-blur, 24px));
+    -webkit-backdrop-filter: blur(var(--depth-blur, 24px));
+    border-right: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    display: flex;
+    flex-direction: column;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.15);
+  }
+
+  .support-header {
+    padding: 36px 26px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .support-heading {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .support-close {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .support-close:hover {
+    filter: brightness(1.06);
+  }
+
+  .support-body {
+    padding: 18px 26px 28px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+</style>

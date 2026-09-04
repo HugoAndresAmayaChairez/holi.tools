@@ -1,35 +1,28 @@
 {
-    "name": "holi-user",
-    "type": "module",
-    "version": "0.0.1",
-    "scripts": {
-        "dev": "astro dev",
-        "start": "astro dev",
-        "build": "astro build",
-        "preview": "astro preview",
-        "astro": "astro"
-    },
-    "dependencies": {
-        "@astrojs/tailwind": "^5.0.0",
-        "@holi/configs": "workspace:*",
-        "@holi/ui": "workspace:*",
-        "@holi/wasm-core": "workspace:*",
-        "@holi/wasm-crypto": "workspace:*",
-        "@holi/wasm-p2p": "workspace:*",
-        "@sqlite.org/sqlite-wasm": "3.51.1-build2",
-        "astro": "^4.0.0",
-        "jszip": "^3.10.1",
-        "lz-string": "^1.5.0",
-        "nostr-tools": "^2.10.4",
-        "tailwindcss": "^3.4.0",
-        "trystero": "^0.22.0",
-        "y-indexeddb": "^9.0.12",
-        "y-protocols": "^1.0.7",
-        "yjs": "^13.6.29"
-    },
-    "devDependencies": {
-        "vite-plugin-top-level-await": "^1.6.0",
-        "vite-plugin-wasm": "^3.5.0",
-        "vitest": "^4.0.16"
-    }
+  "name": "holi-user",
+  "type": "module",
+  "version": "0.3.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "catalog:",
+    "@holi/configs": "workspace:*",
+    "@holi/ui": "workspace:*",
+    "@holi/wasm-crypto": "workspace:*",
+    "@holi/wasm-p2p": "workspace:*",
+    "astro": "catalog:",
+    "tailwindcss": "catalog:",
+    "trystero": "^0.25.4"
+  },
+  "devDependencies": {
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:",
+    "vitest": "catalog:"
+  }
 }

@@ -1,23 +1,38 @@
-# apps/user environment flags
+# holi-user environment settings
 
-## Passphrase encryption (DEV ONLY)
+All settings are optional. Production normally uses Trystero's maintained Nostr relay pool and Holi's default public STUN servers.
 
-This repo includes an optional **dev-only** passphrase-based encryption mode which derives the session key via **PAKE (SPAKE2)**.
+## Debug logging
 
-- Default: **disabled** (no non-PAKE password gate in normal builds)
-- Enable (dev/test only): set `PUBLIC_HOLI_ENABLE_PASSPHRASE_ENCRYPTION=true`
+- `PUBLIC_HOLI_DEBUG=1` enables redacted diagnostic logs.
+- Default: disabled.
 
-Example:
-- `PUBLIC_HOLI_ENABLE_PASSPHRASE_ENCRYPTION=true pnpm -C apps/user dev`
+Never add secrets, capability links, room IDs, message bodies, or raw signaling events to debug output.
 
-Notes:
-- This is still gated behind a flag to avoid shipping any “password gate” UX by default.
-- When disabled, the Encryption UI is hidden and all sessions run plaintext (until PAKE lands).
+## Nostr signaling
 
-## Debug logging (recommended for dev only)
+- `PUBLIC_HOLI_NOSTR_RELAYS` is a comma-separated list of `wss://` relay URLs.
+- `PUBLIC_HOLI_NOSTR_RELAY_REDUNDANCY` selects between 1 and 8 relays when the default pool is used.
 
-Set `PUBLIC_HOLI_DEBUG=1` to enable additional console logging.
+Runtime diagnostic equivalents:
 
-Notes:
-- Logs are intended to be **redacted** (no secrets, no room IDs, no raw signaling payloads), but still avoid enabling this in production.
-- Default: off.
+- `localStorage["holi:nostrRelays"]`
+- `localStorage["holi:nostrRelayRedundancy"]`
+
+An explicit relay list disables Trystero's maintained default selection, so it should only be used for controlled testing or an intentional deployment policy.
+
+## WebRTC ICE and TURN
+
+- `PUBLIC_HOLI_ICE_SERVERS` accepts a JSON array of `RTCIceServer` objects.
+- `PUBLIC_HOLI_ICE_TRANSPORT_POLICY` accepts `all` or `relay`.
+
+Runtime diagnostic equivalents:
+
+- `localStorage["holi:iceServers"]`
+- `localStorage["holi:iceTransportPolicy"]`
+
+Use `relay` only when a working TURN server is included. Public STUN alone cannot connect every restrictive NAT or enterprise network.
+
+## Encryption behavior
+
+There is no production switch that disables DM encryption. Friend DMs and link-based private chats always use their 32-byte shared key for both password-protected Trystero signaling and Holi's application-layer encrypted frames.

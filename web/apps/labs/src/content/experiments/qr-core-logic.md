@@ -1,24 +1,38 @@
 ---
-title: "QR Core Logic"
-description: "Technical dive into high-performance QR generation in Rust."
-tags: ["paper", "rust", "wasm"]
+title: "Why Holi QR keeps a small Rust core"
+description: "A decision guide for placing tested QR logic in Rust while keeping browser behavior and UI in TypeScript."
+summary: "Rust earns its place when one pure, tested encoder has a shipping web consumer; browser APIs and product state remain in TypeScript."
+tags: ["qr", "rust", "wasm"]
+category: "QR"
+format: "paper"
 icon: "qr_code_2"
 color: "var(--palette-qr-accent)"
 lang: en
-order: 2
+order: 20
 ---
 
-An in-depth exploration of the `holi-qr` Rust crate, which powers the QR code generation across all Holi.tools applications.
+Holi QR has a real web consumer for its encoding core, so a small Rust module can be justified. That does not mean the whole application should move to Rust.
 
 ## Architecture
 
-The QR generation follows the **Core + Adapter** pattern:
+The useful boundary is **pure core + thin adapter**:
 
-1. **holi-qr** (Pure Rust): Contains all QR encoding logic
-2. **wasm-qr** (WASM Adapter): Thin wrapper exposing the API to JavaScript
+1. **Core:** deterministic encoding and matrix generation with unit tests.
+2. **WASM adapter:** converts browser-friendly values and returns compact output.
+3. **TypeScript:** files, clipboard, canvas composition, state, accessibility, and UI.
 
-## Why Rust?
+## The gate for keeping Rust
 
-- **Performance**: 10x faster than pure JavaScript implementations
-- **Safety**: Memory-safe without garbage collection overhead
-- **Portability**: Same logic runs in CLI, WASM, and native apps
+Keep the core only while it provides a measured benefit, stays small, and has browser coverage. Do not claim a speedup without a reproducible benchmark on current browsers and hardware.
+
+## What should not grow around it
+
+A CLI, TUI, or public Rust package is not automatically valuable. Building those surfaces only for architectural symmetry adds release work without improving the web product.
+
+## Verification checklist
+
+- Compare output against known QR fixtures.
+- Test the WASM boundary in the browser, not only native Rust.
+- Measure bundle and initialization cost alongside encode time.
+- Keep error messages meaningful after crossing the adapter.
+- Confirm the TypeScript fallback or failure state remains usable.

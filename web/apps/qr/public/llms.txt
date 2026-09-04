@@ -1,0 +1,52 @@
+# Holi QR
+
+Holi QR is a private, offline-capable QR workspace. It generates QR codes in
+the browser, supports advanced styling with saved styles and style links, and
+exports/copies the rendered image.
+
+## URL
+
+- https://qr.holi.tools/
+
+## Capabilities
+
+- Generate QR codes for URL, text, WiFi, vCard, email, SMS, phone, location,
+  event, Bitcoin, app stores, and social links.
+- Customize ink, paper, background, body shape, eye shape, gradients, texture
+  images, logo, liquid effects, blur, noise, an optional text frame, and
+  export size.
+- Save styles in the browser, import/export them as JSON, and share a style
+  through a link whose URL fragment carries the style (never the content).
+- Export SVG, PNG, JPG, WebP, and PDF.
+- Copy the visible styled QR image to the clipboard when browser permissions
+  allow image clipboard writes.
+- Verify scanability using client-side decoding.
+
+## Implementation Parameters
+
+- App package: `holi-qr`
+- App path: `web/apps/qr`
+- Core crate: `crates/core/holi-qr`
+- WASM renderer: `crates/wasm/wasm-qr`
+- Main controller: `web/apps/qr/src/lib/qr-controller.ts`
+- Workspace shell: `web/apps/qr/src/lib/workspace/shell.ts`
+- Portable style + links: `web/apps/qr/src/lib/workspace/style.ts`
+- WebGL preview: `web/apps/qr/src/lib/webgl-liquid-renderer.ts`
+- SVG renderer bridge: `web/apps/qr/src/lib/wasm-svg-renderer.ts`
+
+## Source Of Truth
+
+- Product map: `docs/product.md`
+- Architecture: `docs/architecture.md`
+- Current priorities: `docs/roadmap.md`
+- Normative specs: `spec/README.md`
+
+## Privacy Notes
+
+- QR contents and images are processed locally in the browser.
+- No account is required.
+- Exports are user-triggered.
+- Saved styles stay in browser storage; style links put the style (not the
+  content) in the URL fragment, which browsers do not send to servers.
+- Cloudflare can observe connection metadata such as IP and request time while
+  serving the app, but QR content is not sent as part of generation.

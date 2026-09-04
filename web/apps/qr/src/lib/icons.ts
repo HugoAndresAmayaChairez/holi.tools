@@ -102,6 +102,30 @@ const icons: Record<string, string> = {
     'edit': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
     'build': '<path d="M12 2v4"/><path d="m6.8 15-3.5 3.5"/><path d="m20.7 15 3.5 3.5"/><path d="M6.8 9 3.3 5.5"/><path d="m20.7 9 3.5-3.5"/><path d="m9 22 3-8 3 8"/><path d="M8 22h8"/><circle cx="12" cy="12" r="6"/>',
     'error': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+
+    // Workspace 1.0
+    'chevron_down': '<path d="m6 9 6 6 6-6"/>',
+    'chevron_right': '<path d="m9 6 6 6-6 6"/>',
+    'chevron_left': '<path d="m15 6-6 6 6 6"/>',
+    'category': '<circle cx="8" cy="8" r="4"/><rect x="12" y="12" width="8" height="8" rx="1.5"/>',
+    'shapes': '<circle cx="8" cy="8" r="4"/><rect x="12" y="12" width="8" height="8" rx="1.5"/>',
+    'frame': '<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1"/>',
+    'tune': '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+    'share': '<circle cx="6" cy="12" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="m8 11 8-4M8 13l8 4"/>',
+    'open_in_new': '<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/>',
+    'light_mode': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>',
+    'sun': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>',
+    'transparency': '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
+    'zoom_in': '<circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/><path d="M11 8v6M8 11h6"/>',
+    'zoom_out': '<circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/><path d="M8 11h6"/>',
+    'restart_alt': '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+    'save': '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+    'delete': '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>',
+    'bookmark': '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+    'file_upload': '<path d="M12 16V5"/><path d="m7 10 5-5 5 5"/><path d="M4 19h16"/>',
+    'file_download': '<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>',
+    'keyboard': '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+    'text': '<path d="M5 6V4h14v2"/><path d="M12 4v16"/><path d="M9 20h6"/>',
 };
 
 // Fallback icon (info icon)

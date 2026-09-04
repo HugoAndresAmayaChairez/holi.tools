@@ -2,9 +2,11 @@
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const basePath = `/${lang}`;
 
 const strings = {
   title: t("friends.title"),
+  desc: t("friends.desc"),
   search_placeholder: t("friends.search_placeholder"),
   toggle_blocked: t("friends.toggle_blocked"),
   copy_code: t("friends.copy_code"),
@@ -14,33 +16,46 @@ const strings = {
   no_vault_error: t("friends.no_vault_error"),
   failed_load: t("friends.failed_load"),
   no_matches: t("friends.no_matches"),
+  empty: t("friends.empty"),
+  empty_desc: t("friends.empty_desc"),
   local_only: t("friends.local_only"),
   blocked: t("friends.blocked"),
   trusted: t("friends.trusted"),
   paused: t("friends.paused"),
+  delete_confirm: t("friends.delete_confirm"),
   removed_toast: t("friends.removed_toast"),
   code_copied: t("friends.code_copied"),
   code_already_copied: t("friends.code_already_copied"),
   code_expired: t("friends.code_expired"),
+  confirm_accept: t("friends.confirm_accept"),
+  toast_rejected: t("friends.toast_rejected"),
+  toast_added: t("friends.toast_added"),
+  invite_failed: t("friends.invite_failed"),
+  state_changed: t("friends.state_changed"),
+  chat_label: t("friends.chat_label"),
+  edit_label: t("friends.edit_label"),
+  delete_label: t("friends.delete_label"),
+  status_label: t("friends.status_label"),
 };
 ---
 
-<section id="friends-section" class="space-y-4">
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <h3 class="text-lg font-bold text-white">{strings.title}</h3>
-      <span
-        id="friend-count"
-        class="px-2 py-0.5 rounded-md bg-white/5 text-xs text-zinc-500">0</span
-      >
+<section id="friends-section" class="space-y-5" aria-labelledby="friends-heading">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <div class="flex items-center gap-3">
+        <h2 id="friends-heading" class="text-lg font-bold text-white">{strings.title}</h2>
+        <span id="friend-count" class="rounded-md bg-white/5 px-2 py-0.5 text-xs text-zinc-500" aria-label={strings.title}>0</span>
+      </div>
+      <p class="mt-1 text-sm leading-5 text-zinc-500">{strings.desc}</p>
     </div>
 
     <!-- Filter & Actions -->
-    <div class="flex items-center gap-2 w-full md:w-auto">
-      <div class="relative flex-1 md:w-64">
+    <div class="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+      <div class="relative min-w-[12rem] flex-1 lg:w-64 lg:flex-none">
         <input
           type="text"
           id="friend-search"
+          aria-label={strings.search_placeholder}
           placeholder={strings.search_placeholder}
           class="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-purple-500 focus:outline-none transition-colors"
         />
@@ -59,10 +74,12 @@ const strings = {
       </div>
 
       <button
+        type="button"
         id="toggle-blocked-btn"
-        class="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors"
+        class="rounded-lg bg-white/5 p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
         title={strings.toggle_blocked}
-        data-showing="false"
+        aria-label={strings.toggle_blocked}
+        aria-pressed="true"
       >
         <svg
           class="w-4 h-4"
@@ -82,9 +99,11 @@ const strings = {
       <div class="h-6 w-px bg-white/10 mx-1"></div>
 
       <button
+        type="button"
         id="copy-friend-code-btn"
-        class="hidden p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-zinc-300 transition-colors"
+        class="hidden rounded-lg bg-white/5 p-2 text-zinc-300 transition-colors hover:bg-white/10"
         title={strings.copy_code}
+        aria-label={strings.copy_code}
       >
         <svg
           class="w-4 h-4"
@@ -98,8 +117,9 @@ const strings = {
         >
       </button>
       <button
+        type="button"
         id="add-friend-btn"
-        class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-xs font-medium text-white transition-colors disabled:opacity-50 whitespace-nowrap"
+        class="whitespace-nowrap rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
         disabled
       >
         {strings.add_button}
@@ -109,21 +129,23 @@ const strings = {
 
   <div
     id="no-friends-warning"
-    class="hidden p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400"
+    class="hidden rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-4 text-sm text-amber-200"
+    role="status"
   >
     {strings.no_vault_warning}
   </div>
 
   <!-- Friends List Container -->
-  <div id="friends-list" class="space-y-2">
+  <div id="friends-list" class="space-y-2" aria-live="polite">
     <p class="text-xs text-zinc-500 italic p-4 text-center">
       {strings.loading}
     </p>
   </div>
 </section>
 
-<script define:vars={{ strings }}>
+<script define:vars={{ strings, basePath }}>
   window.friendStrings = strings;
+  window.friendBasePath = basePath;
 </script>
 
 <script>
@@ -137,9 +159,11 @@ const strings = {
   // For now, we will dispatch events to open global modals or implement logic here.
 
   const strings = (window as any).friendStrings;
+  const basePath = (window as any).friendBasePath || "";
 
   let contacts: any[] = [];
-  let showBlocked = false;
+  const HIDE_BLOCKED_KEY = "holi.user.friends.hideBlocked.v1";
+  let hideBlocked = true;
   let friendSearchQuery = "";
   let myPubkey = "";
 
@@ -151,6 +175,20 @@ const strings = {
     "friend-search"
   ) as HTMLInputElement;
   const toggleBlockedBtn = document.getElementById("toggle-blocked-btn");
+  const noVaultWarning = document.getElementById("no-friends-warning");
+
+  // Default to hiding blocked friends; persist preference locally.
+  try {
+    const raw = window.localStorage.getItem(HIDE_BLOCKED_KEY);
+    if (raw === "0") hideBlocked = false;
+  } catch {}
+
+  function syncHideBlockedUi() {
+    if (!toggleBlockedBtn) return;
+    toggleBlockedBtn.classList.toggle("text-purple-400", hideBlocked);
+    toggleBlockedBtn.classList.toggle("bg-purple-500/10", hideBlocked);
+    toggleBlockedBtn.setAttribute("aria-pressed", String(hideBlocked));
+  }
 
   identityStore.subscribe(({ pubkey, identity }) => {
     myPubkey = pubkey || "";
@@ -183,64 +221,77 @@ const strings = {
       return;
     }
 
-    // Import handshake
-    const { generateFriendCode, hostFriendRoom } =
-      await import("../../lib/friends/friend-handshake");
-    const { getPrimaryIdentity } = await import("../../lib/identity/manager");
-    const { getNostrPublicKey } = await import("../../lib/p2p/nostr");
-    const { generateDmConfig } = await import("../../lib/friends/dm");
-    const { addContactWithNostrPubkey, setContactDmByNostrPubkey } =
-      await import("../../lib/contacts/store");
+    try {
+      const { generateFriendCode, hostFriendRoom } =
+        await import("../../lib/friends/friend-handshake");
+      const { getPrimaryIdentity } = await import("../../lib/identity/manager");
+      const { generateDmConfig } = await import("../../lib/friends/dm");
+      const { addContactWithNostrPubkey, setContactDmByNostrPubkey } =
+        await import("../../lib/contacts/store");
 
-    const code = generateFriendCode();
-    await navigator.clipboard.writeText(code);
-    toast.success(strings.code_copied);
+      const code = generateFriendCode();
+      const inviteUrl = `${window.location.origin}${basePath}/friend#${code}`;
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success(strings.code_copied);
 
-    // Start hosting
-    isHosting = true;
-    copyBtn.classList.add("animate-pulse", "text-green-400");
+      isHosting = true;
+      copyBtn.classList.add("animate-pulse", "text-green-400");
 
-    const myself = await getPrimaryIdentity();
-    const pk = await getNostrPublicKey();
-    const dm = generateDmConfig();
+      const myself = await getPrimaryIdentity();
+      const pk = myself?.id || "";
+      const dm = generateDmConfig();
 
-    const myInfo = {
-      pubkey: pk,
-      name: myself?.alias || "Friend",
-      dm,
-    };
+      const myInfo = {
+        pubkey: pk,
+        name: myself?.alias || "Friend",
+        dm,
+      };
 
-    activeRoom = hostFriendRoom(code, myInfo, async (peerInfo) => {
-      // Peer connected!
-      toast.success(`${peerInfo.name} connected!`);
+      activeRoom = hostFriendRoom(code, myInfo, async (peerInfo) => {
+      const label = peerInfo?.name
+        ? `${peerInfo.name} (${String(peerInfo.pubkey || "").slice(0, 8)}…)`
+        : String(peerInfo.pubkey || "").slice(0, 8);
 
+      const ok = confirm(strings.confirm_accept.replace("{name}", label));
+      if (!ok) {
+        toast.info(strings.toast_rejected);
+        return false;
+      }
+
+      // Accept: persist contact + DM config (host dm config is authoritative)
       await addContactWithNostrPubkey(peerInfo.name, peerInfo.pubkey);
-      // Important: use the HOST-generated dm config so both sides share the same room secret.
       await setContactDmByNostrPubkey(peerInfo.pubkey, dm);
 
-      // Cleanup
+      toast.success(
+        strings.toast_added.replace("{name}", peerInfo.name || "Friend")
+      );
+
+      // Cleanup hosting UI (the handshake room will auto-close after accept)
       isHosting = false;
       copyBtn.classList.remove("animate-pulse", "text-green-400");
-      if (activeRoom) {
-        activeRoom.leave();
-        activeRoom = null;
-      }
+      activeRoom = null;
 
       window.dispatchEvent(new Event("reload-contacts"));
-    });
+      return true;
+      });
 
-    // Auto-timeout after 2 minutes
-    setTimeout(() => {
-      if (isHosting) {
-        isHosting = false;
-        copyBtn.classList.remove("animate-pulse", "text-green-400");
-        if (activeRoom) {
-          activeRoom.leave();
-          activeRoom = null;
+      setTimeout(() => {
+        if (isHosting) {
+          isHosting = false;
+          copyBtn.classList.remove("animate-pulse", "text-green-400");
+          if (activeRoom) {
+            activeRoom.leave();
+            activeRoom = null;
+          }
+          toast.info(strings.code_expired);
         }
-        toast.info(strings.code_expired);
-      }
-    }, 120000);
+      }, 120000);
+    } catch (error) {
+      console.error(error);
+      isHosting = false;
+      copyBtn.classList.remove("animate-pulse", "text-green-400");
+      toast.error(strings.invite_failed);
+    }
   });
 
   searchInput?.addEventListener("input", (e) => {
@@ -249,9 +300,11 @@ const strings = {
   });
 
   toggleBlockedBtn?.addEventListener("click", () => {
-    showBlocked = !showBlocked;
-    toggleBlockedBtn.classList.toggle("text-purple-400", showBlocked);
-    toggleBlockedBtn.classList.toggle("bg-purple-500/10", showBlocked);
+    hideBlocked = !hideBlocked;
+    try {
+      window.localStorage.setItem(HIDE_BLOCKED_KEY, hideBlocked ? "1" : "0");
+    } catch {}
+    syncHideBlockedUi();
     renderContacts();
   });
 
@@ -262,12 +315,16 @@ const strings = {
     // Check if workspace is active
     const { getActiveHandle } = await import("../../lib/workspace");
     if (!getActiveHandle()) {
-      listEl.innerHTML = `<p class="text-xs text-zinc-500 italic p-4 text-center">${strings.no_vault_error}</p>`;
+      listEl.innerHTML = "";
+      listEl.className = "space-y-2";
+      noVaultWarning?.classList.remove("hidden");
+      if (countEl) countEl.textContent = "0";
       if (addBtn) addBtn.disabled = true;
       return;
     }
 
     try {
+      noVaultWarning?.classList.add("hidden");
       listEl.innerHTML = `<p class="text-xs text-zinc-500 italic animate-pulse p-4 text-center">${strings.loading}</p>`;
       contacts = await listContacts();
       renderContacts();
@@ -286,7 +343,7 @@ const strings = {
     if (!listEl) return;
 
     const filtered = contacts.filter((c) => {
-      if (!showBlocked && c.state === "blocked") return false;
+      if (hideBlocked && c.state === "blocked") return false;
       if (friendSearchQuery) {
         const key = (c.nostrPubkey || "").toLowerCase();
         const name = c.alias.toLowerCase();
@@ -300,7 +357,11 @@ const strings = {
     if (countEl) countEl.textContent = String(filtered.length);
 
     if (filtered.length === 0) {
-      listEl.innerHTML = `<p class="text-xs text-zinc-500 italic p-4 text-center">${strings.no_matches}</p>`;
+      listEl.className = "space-y-2";
+      const hasSearch = Boolean(friendSearchQuery);
+      listEl.innerHTML = hasSearch
+        ? `<div class="rounded-2xl border border-dashed border-white/10 px-5 py-8 text-center text-sm text-zinc-500">${strings.no_matches}</div>`
+        : `<div class="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-8 text-center"><p class="text-sm font-bold text-zinc-200">${strings.empty}</p><p class="mx-auto mt-1 max-w-md text-xs leading-5 text-zinc-500">${strings.empty_desc}</p></div>`;
       return;
     }
 
@@ -355,6 +416,11 @@ const strings = {
       const statusContainer = document.createElement("div");
       statusContainer.className = "relative";
       const statusBtn = document.createElement("button");
+      statusBtn.type = "button";
+      statusBtn.setAttribute(
+        "aria-label",
+        strings.status_label.replace("{name}", c.alias)
+      );
       const statusColor =
         c.state === "active"
           ? "bg-green-500/20 text-green-400"
@@ -380,13 +446,19 @@ const strings = {
         ["active", "paused", "blocked"].forEach((state) => {
           if (state === c.state) return;
           const item = document.createElement("button");
+          item.type = "button";
           item.className =
             "w-full text-left px-3 py-2 text-xs hover:bg-white/10 text-zinc-300 capitalize";
-          item.textContent = state === "active" ? "Trusted" : state;
+          item.textContent =
+            state === "active"
+              ? strings.trusted
+              : state === "paused"
+                ? strings.paused
+                : strings.blocked;
           item.onclick = async () => {
             await setContactState(c.id, state as any);
             toast.info(
-              `Contact marked as ${state === "active" ? "Trusted" : state}`
+              strings.state_changed.replace("{state}", item.textContent || state)
             );
             menu.remove();
             await loadContacts();
@@ -404,15 +476,28 @@ const strings = {
 
       // Chat Button
       const chatBtn = document.createElement("button");
+      chatBtn.type = "button";
+      chatBtn.disabled = !c.nostrPubkey;
+      chatBtn.setAttribute(
+        "aria-label",
+        strings.chat_label.replace("{name}", c.alias)
+      );
+      chatBtn.title = strings.chat_label.replace("{name}", c.alias);
       chatBtn.className = `p-2 rounded-lg transition-colors ${c.nostrPubkey ? "text-zinc-400 hover:text-white hover:bg-white/10" : "text-zinc-600 cursor-not-allowed"}`;
       chatBtn.innerHTML = `<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`;
       if (c.nostrPubkey) {
         chatBtn.onclick = () =>
-          (window.location.href = `/dm#pk=${c.nostrPubkey}`);
+          (window.location.href = `${basePath}/dm#pk=${c.nostrPubkey}`);
       }
 
       // Edit Button (Rename)
       const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.setAttribute(
+        "aria-label",
+        strings.edit_label.replace("{name}", c.alias)
+      );
+      editBtn.title = strings.edit_label.replace("{name}", c.alias);
       editBtn.className =
         "p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors";
       editBtn.innerHTML = `<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>`;
@@ -426,6 +511,12 @@ const strings = {
 
       // Delete Button
       const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.setAttribute(
+        "aria-label",
+        strings.delete_label.replace("{name}", c.alias)
+      );
+      deleteBtn.title = strings.delete_label.replace("{name}", c.alias);
       deleteBtn.className =
         "p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors";
       deleteBtn.innerHTML = `<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
@@ -450,5 +541,6 @@ const strings = {
   }
 
   // Initial Load
+  syncHideBlockedUi();
   loadContacts();
 </script>

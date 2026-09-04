@@ -18,6 +18,7 @@ export interface TextureState {
     // Logo
     logoTexture: WebGLTexture | null;
     currentLogoUrl: string | null;
+    logoAspect: number;
 
     // Art / Background
     artTexture: WebGLTexture | null;
@@ -50,7 +51,9 @@ export interface TextureState {
 export async function setLogo(ts: TextureState, logoUrl: string | null): Promise<void> {
     if (logoUrl === ts.currentLogoUrl) return;
     ts.currentLogoUrl = logoUrl;
-    ts.logoTexture = await loadTexture(ts.gl, logoUrl, ts.logoTexture);
+    ts.logoTexture = await loadTexture(ts.gl, logoUrl, ts.logoTexture, (img) => {
+        ts.logoAspect = (img.naturalWidth || img.width) / (img.naturalHeight || img.height);
+    });
 }
 
 export async function setArtImage(ts: TextureState, artUrl: string | null): Promise<void> {

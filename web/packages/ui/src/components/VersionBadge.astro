@@ -9,13 +9,19 @@
 interface Props {
   version: string;
   changelogId?: string;
+  placement?: "floating" | "inline";
 }
 
-const { version, changelogId = "main-changelog" } = Astro.props;
+const {
+  version,
+  changelogId = "main-changelog",
+  placement = "floating",
+} = Astro.props;
 ---
 
 <button 
   class="version-badge" 
+  data-placement={placement}
   onclick={`window.openOverlay && window.openOverlay('changelog', '${changelogId}')`}
   aria-label={`Version ${version}, click for changelog`}
 >
@@ -27,7 +33,7 @@ const { version, changelogId = "main-changelog" } = Astro.props;
   .version-badge {
     position: fixed;
     bottom: 20px;
-    left: 20px;
+    right: 20px;
     z-index: 1000;
     
     display: flex;
@@ -57,6 +63,15 @@ const { version, changelogId = "main-changelog" } = Astro.props;
     border-color: var(--color-accent, #6366f1);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .version-badge[data-placement="inline"] {
+    position: static;
+    inset: auto;
+    margin: 0;
+    flex: 0 0 auto;
+    align-self: center;
+    min-height: 26px;
   }
 
   .v-label {

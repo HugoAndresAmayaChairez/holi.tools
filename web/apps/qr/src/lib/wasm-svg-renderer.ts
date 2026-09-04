@@ -1,15 +1,46 @@
 /**
- * Ultra-Light Rust SVG Renderer
- * Uses wasm-qr-svg (27KB) to generate optimized Path data
+ * Official SVG Renderer
+ * Delegates SVG composition (paths + defs + masks + filters) to @holi/wasm-qr.
  */
 
-import { getHoliQrSvg } from './wasm-qr-svg-loader';
-import { drawAllFinderPatterns } from './shapes/finder-renderer';
+import { getHoliWasmQr } from './wasm-qr-loader';
 
 export interface RenderConfig {
     // Colors
     fgColor?: string;
+    // Paper / complement color (fills negative space; transparent where ink exists)
     bgColor?: string; // If transparent, use 'transparent' or null
+    // BG/base layer color (under everything)
+    baseColor?: string; // rgba(...) or 'transparent'
+
+    // Background image (under paper/complement). Minimal SVG fallback support.
+    artImage?: string;
+    artBoundsScale?: number;
+    artOpacity?: number;
+    artFit?: 'cover' | 'contain' | 'fill';
+    artRotation?: number; // degrees
+    artScale?: number; // 1.0 = 100%
+    artOffsetX?: number; // -1..1
+    artOffsetY?: number; // -1..1
+    // Used to blend ink against the underlay (matches WebGL composite)
+    artBlendMode?: string;
+
+    // Paper / ink texture fills (masked per layer)
+    paperImage?: string;
+    paperBoundsScale?: number;
+    paperOpacity?: number; // 0..1 (applies to paperImage only)
+    paperFit?: 'cover' | 'contain' | 'fill';
+    paperRotation?: number; // degrees
+    paperScale?: number; // 1.0 = 100%
+    paperOffsetX?: number; // -1..1
+    paperOffsetY?: number; // -1..1
+    inkImage?: string;
+    inkOpacity?: number; // 0..1 (applies to inkImage only)
+    inkFit?: 'cover' | 'contain' | 'fill';
+    inkRotation?: number; // degrees
+    inkScale?: number; // 1.0 = 100%
+    inkOffsetX?: number; // -1..1
+    inkOffsetY?: number; // -1..1
 
     // Gradient
     gradientEnabled?: boolean;
@@ -19,17 +50,21 @@ export interface RenderConfig {
 
     // Shapes
     bodyShape?: 'square' | 'dots' | 'rounded' | string;
-    eyeFrameShape?: string; // Not implemented in Rust yet
-    eyeBallShape?: string; // Not implemented in Rust yet
+    eyeFrameShape?: string;
+    eyeBallShape?: string;
 
     // Logo
     logo?: string; // Data URL or URL
     logoSize?: number; // 0.1 to 0.5 (percent of QR size)
+    logoOpacity?: number; // 0..1
+    logoFit?: 'cover' | 'contain' | 'fill';
 
     // Effects (Expert)
     effectLiquid?: boolean; // New independent flag
     effectBlur?: number; // Default 0.35
     effectCrystalize?: number; // Default -6 (Threshold)
+    // Layer toggles (optional)
+    inkEnabled?: boolean;
 
     // Data Config
     ecc?: 'L' | 'M' | 'Q' | 'H';
@@ -47,8 +82,8 @@ export class WasmSvgRenderer {
     async init() {
         if (this.initialized) return;
         try {
-            await getHoliQrSvg(); // Load WASM module (dynamic, singleton)
-            console.log("📐 WASM SVG Renderer Initialized (<10KB)");
+            await getHoliWasmQr(); // Load WASM module (dynamic, singleton)
+            console.log("📐 WASM SVG Renderer Initialized (official SVG via Rust)");
             this.initialized = true;
         } catch (e) {
             console.error("❌ SVG Renderer Failed:", e);
@@ -105,159 +140,15 @@ export class WasmSvgRenderer {
     async getSVG(content: string, config?: RenderConfig): Promise<string> {
         if (!this.initialized) await this.init();
 
-        const wasm = await getHoliQrSvg();
-
-        // 1. Generate Base Path from WASM
-        // Options: 0 = Square, 1 = Dots, 2 = Rounded, 3 = Diamond, 4 = Star, 5 = Clover, 6 = Tiny-Dot, 7 = H-Bars
-        let shapeId = 0;
-        switch (config?.bodyShape) {
-            case 'dots': shapeId = 1; break;
-            case 'rounded': shapeId = 2; break;
-            case 'diamond': shapeId = 3; break;
-            case 'star': shapeId = 4; break;
-            case 'clover': shapeId = 5; break;
-            case 'tiny-dots': shapeId = 6; break;
-            case 'classy': shapeId = 7; break; // H-Bars
-            default: shapeId = 0;
+        const wasm = await getHoliWasmQr();
+        const renderFn = (wasm as any).render_official_svg as undefined | ((t: string, cfgJson: string) => string);
+        if (typeof renderFn !== 'function') {
+            console.warn('wasm-qr: render_official_svg() missing (pkg likely out of date). Run: pnpm build:wasm');
+            return '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
         }
 
-        // Generate raw SVG path from Rust
-        const ecc = config?.ecc || 'M';
-        const mask = (config?.mask === undefined || config?.mask === null) ? -1 : config.mask;
-        let svgString = wasm.generate_svg(content, shapeId, ecc, mask);
-
-        // 2. Determine Filter Usage
-        const useLiquidFilter = config?.effectLiquid ?? false;
-
-        // 3. Post-Process SVG for Styles
-
-        // --- Colors & Gradients ---
-        let fillAttr = 'fill="currentColor"';
-        let defs = '';
-        const uuid = 'grad-' + Math.random().toString(36).substring(2, 11);
-        // STABLE Filter ID for live updates
-        const filterId = 'qr-goo-filter';
-
-        // Define Gooey Filter if needed
-        if (useLiquidFilter) {
-            // --- UNIFIED MATH CALIBRATION ---
-            // Goal: Match WebGL visual appearance exactly.
-            // WebGL: Uses fixed 512px canvas. Blur 1.0 = 10px radius.
-            //        Blur Fraction = 10 / 512 = ~0.0195 (1.95% of image width).
-            // SVG:   Uses "Module" units (viewBox size). 
-            //        To match 1.95% width, we must scale by the viewBox size.
-
-            // 1. Get ViewBox Size (Modules)
-            let viewBoxSize = 29; // Fallback default
-            const vbMatch = svgString.match(/viewBox="0 0 (\d+) (\d+)"/);
-            if (vbMatch) {
-                viewBoxSize = parseInt(vbMatch[1]);
-            }
-
-            // 2. Calculate Calibration Factor
-            // factor = (WebGL_Max_Blur_Px / WebGL_Canvas_Px) * SVG_Size
-            // factor = (10.0 / 512.0) * viewBoxSize
-            // stdDeviation = inputBlur * factor
-            const CALIBRATION_FACTOR = (10.0 / 512.0) * viewBoxSize;
-
-            // 3. Apply
-            const rawBlur = config?.effectBlur ?? 0.35; // 0.1 to 2.0
-            // We use a slightly boosted 2.5 multiplier because SVG Gaussian is theoretically infinite 
-            // while WebGL often clamps or has different discrete sampling. 
-            // Empirically, SVG blur looks "weaker" than WebGL for same sigma.
-            // Boosting the calculated sigma by 1.5x - 2.0x usually helps.
-            // Let's stick to the STRICT math first, then tweak if user complains.
-            // Actually, let's use the empirical observation that SVG needs ~1.5x to match WebGL's appearance.
-            const calibratedBlur = rawBlur * CALIBRATION_FACTOR * 1.5;
-
-            const thresh = config?.effectCrystalize ?? 6;
-
-            // Use stable element IDs for live DOM updates
-            defs += `<filter id="${filterId}">
-              <feGaussianBlur id="qr-blur-el" in="SourceGraphic" stdDeviation="${calibratedBlur.toFixed(3)}" result="blur" />
-              <feColorMatrix id="qr-matrix-el" in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -${thresh}" result="goo" />
-              <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-            </filter>`;
-        }
-
-        if (config?.gradientEnabled && config?.gradientColors?.length === 2) {
-            const [c1, c2] = config.gradientColors;
-            // Linear Gradient
-            defs += `<linearGradient id="${uuid}" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="${c1}"/>
-                    <stop offset="100%" stop-color="${c2}"/>
-                 </linearGradient>`;
-            fillAttr = `fill="url(#${uuid})"`;
-        } else if (config?.fgColor) {
-            fillAttr = `fill="${config.fgColor}"`;
-        }
-
-        // Replace global fill
-        svgString = svgString.replace('fill="currentColor"', fillAttr);
-
-        // Apply Filter to the base path
-        if (useLiquidFilter) {
-            // Apply to Body
-            svgString = svgString.replace('<path ', `<path filter="url(#${filterId})" `);
-
-            // Note: If we want to apply to EYES too, we'd do it in the Eye Injection step.
-            // For now, let's keep it on Body as that's the main "Liquid" look.
-            // Eyes usually look better crisp or strictly geometric unless fully integrated.
-        }
-
-        // Inject Defs
-        if (defs) {
-            // Rust output often looks like: <svg ...><path ...>
-            // We insert defs before the first path
-            svgString = svgString.replace('<path', `<defs>${defs}</defs><path`);
-        }
-
-        // --- Background ---
-        if (config?.bgColor && config.bgColor !== 'transparent') {
-            // Prepend bg rect
-            svgString = svgString.replace('<svg ', `<svg style="background-color: ${config.bgColor};" `);
-        }
-
-        // --- Logo Injection ---
-        if (config?.logo) {
-            // Find viewBox to calculate alignment
-            // Format: viewBox="0 0 W H"
-            const vbMatch = svgString.match(/viewBox="0 0 (\d+) (\d+)"/);
-            if (vbMatch) {
-                const size = parseInt(vbMatch[1]);
-                const logoSize = (config.logoSize || 0.2) * size;
-                const xy = (size - logoSize) / 2;
-
-                const imgTag = `<image href="${config.logo}" x="${xy}" y="${xy}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid slice"/>`;
-                svgString = svgString.replace('</svg>', imgTag + '</svg>');
-            }
-        }
-
-        // --- 5. Eye Injection (Hybrid Mode) ---
-        // Rust skips finders, we inject them here for max customization
-        const vbMatch = svgString.match(/viewBox="0 0 (\d+) (\d+)"/);
-        if (vbMatch) {
-            const size = parseInt(vbMatch[1]);
-            // Use shared finder pattern renderer (margin=0 for Rust SVG)
-            const eyesPath = drawAllFinderPatterns(size, 0, {
-                eyeFrameShape: config?.eyeFrameShape || 'square',
-                eyeBallShape: config?.eyeBallShape || 'square'
-            });
-
-            // Apply filter to Eyes if Liquid is ON
-            const eyesFilter = useLiquidFilter ? `filter="url(#${filterId})"` : '';
-            // We need to inject the path with the correct fill. 
-            // Reuse fillAttr which is like 'fill="..."'
-            const eyePathTag = `<path d="${eyesPath}" ${fillAttr} ${eyesFilter} />`;
-
-            svgString = svgString.replace('</svg>', eyePathTag + '</svg>');
-        }
-
-        // Add 100% dimensions for responsiveness if not present
-        if (!svgString.includes('width="100%"')) {
-            svgString = svgString.replace('<svg ', '<svg width="100%" height="100%" ');
-        }
-
-        return svgString;
+        // Keep config canonical in Rust: pass the whole config and let WASM compose layers/defs/masks/paths.
+        const cfgJson = JSON.stringify(config ?? {});
+        return renderFn(content, cfgJson);
     }
 }

@@ -1,0 +1,7 @@
+---
+import ImagePage from "../../components/ImagePage.astro";
+import { SUPPORTED_LANGS, type LanguageCode } from "@holi/configs/i18n";
+export function getStaticPaths() { return SUPPORTED_LANGS.filter((lang) => lang !== "en").map((lang) => ({ params: { lang } })); }
+const lang = Astro.params.lang as LanguageCode;
+---
+<ImagePage lang={lang} />

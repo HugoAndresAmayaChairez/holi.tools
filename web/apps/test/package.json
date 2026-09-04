@@ -7,18 +7,20 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.5.0"
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "astro": "^4.0.0",
-    "@astrojs/tailwind": "^5.0.0",
+    "astro": "catalog:",
+    "@astrojs/tailwind": "catalog:",
     "@holi/ui": "workspace:*",
     "@holi/configs": "workspace:*",
     "@holi/wasm-core": "workspace:*",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "catalog:"
   }
 }

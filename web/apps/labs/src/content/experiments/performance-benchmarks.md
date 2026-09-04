@@ -1,27 +1,34 @@
 ---
-title: "Performance Benchmarks"
-description: "Benchmarking WASM against native JavaScript implementations."
-tags: ["benchmark", "wasm"]
+title: "How to compare WASM and JavaScript fairly"
+description: "A repeatable browser benchmark checklist that includes startup, transfer, memory, and user-visible latency."
+summary: "A useful benchmark measures the complete shipping path and publishes its environment instead of presenting isolated loop times as product truth."
+tags: ["benchmark", "wasm", "performance"]
+category: "Performance"
+format: "experiment"
 icon: "speed"
 color: "var(--palette-paint-accent)"
 lang: en
-order: 3
+order: 30
 ---
 
-A comparative study of WASM vs JavaScript performance across different workloads and browsers.
+A WASM implementation is not automatically faster than JavaScript. The result depends on workload size, data conversion, compilation, caching, browser, and device.
 
-## Benchmark Categories
+## Define the user-visible question
 
-- **CPU-bound**: Matrix operations, hashing, encoding
-- **Memory-bound**: Large data processing, image manipulation
-- **I/O-bound**: IndexedDB operations, network requests
+Measure a real task such as “time from clicking Generate to a scannable QR preview.” Include loading and conversion work the user actually waits for.
 
-## Preliminary Results
+## Record the environment
 
-| Operation | JavaScript | WASM (Rust) | Speedup |
-|-----------|------------|-------------|---------|
-| QR Generation (1000x) | 450ms | 45ms | 10x |
-| SHA-256 (1MB) | 120ms | 18ms | 6.7x |
-| Image Resize | 890ms | 210ms | 4.2x |
+- Browser and exact version.
+- Operating system and hardware.
+- Cold and warm runs.
+- Bundle size and WASM byte size.
+- Sample inputs and iteration count.
 
-*Results may vary by browser and hardware.*
+## Report distributions
+
+Use multiple runs and publish median plus a high percentile. Keep initialization separate, but do not hide it. If the result changes only in a synthetic loop and not in interaction latency, say so.
+
+## Decide with product costs
+
+Performance is one input. Also compare complexity, debugging, accessibility impact, deployment, browser fallback, and contributor experience. Keep WASM only when the complete tradeoff remains positive.

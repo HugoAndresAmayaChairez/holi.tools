@@ -13,13 +13,13 @@ Goal: use `wgpu` (Rust) on the web via WebGPU, keeping heavy rendering/algorithm
 
 From repo root:
 
-- `pnpm --filter @holi/wasm-core wasm:dev`
-- `pnpm --filter @holi/wasm-core wasm:build`
+- `pnpm --filter @holi/wasm-core dev`
+- `pnpm --filter @holi/wasm-core build`
 
-Output goes to `packages/wasm-core/pkg/`.
+Output goes to `crates/wasm/wasm-core/pkg/`.
 
 ## Current status
 
 This is a minimal background renderer that clears the screen with an animated color using `wgpu`.
 
-Next step: expose a stable JS API and wire it into `apps/main` behind a feature flag.
+Next step: expose a stable JS API and wire it into `web/apps/main` behind a feature flag.

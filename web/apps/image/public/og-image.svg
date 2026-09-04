@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f4efe8"/>
+  <path d="M0 490 250 280l155 135 115-120 250 195H0Z" fill="#e8c4b5"/>
+  <path d="M450 490 690 235l125 115 90-88 295 228H450Z" fill="#c65431" opacity=".92"/>
+  <circle cx="925" cy="155" r="72" fill="#ffb18f"/>
+  <text x="76" y="105" fill="#c65431" font-family="ui-monospace, monospace" font-size="32" font-weight="700">holi image</text>
+  <text x="76" y="210" fill="#24211d" font-family="system-ui, sans-serif" font-size="72" font-weight="800">Images stay with you.</text>
+  <text x="79" y="264" fill="#6c655c" font-family="system-ui, sans-serif" font-size="28">Optimize · resize · crop · convert · clean</text>
+</svg>

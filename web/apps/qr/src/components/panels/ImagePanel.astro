@@ -17,28 +17,92 @@ const t = useTranslations(lang);
 <div class="image-panel-content">
   <!-- Mode Selector (Quick Presets) -->
   <div class="mode-selector">
-    <button
-      class="mode-btn active"
-      id="mode-logo"
-      onclick="setImageMode('logo')"
-    >
-      <span class="mode-icon">🎯</span>
-      <span class="mode-label">{t("image.logo")}</span>
-    </button>
-    <button
-      class="mode-btn"
-      id="mode-background"
-      onclick="setImageMode('background')"
-    >
-      <span class="mode-icon">🖼️</span>
-      <span class="mode-label">{t("image.background")}</span>
-    </button>
+    <div class="mode-item">
+      <button
+        class="mode-btn active"
+        id="mode-bg"
+        onclick="setImageMode('bg')"
+      >
+        <span class="mode-thumb" id="thumb-bg" aria-hidden="true">
+          <span class="mode-thumb-icon icon">image</span>
+        </span>
+        <span class="mode-label">{t("image.background")}</span>
+      </button>
+      <button
+        class="mode-clear"
+        id="clear-bg"
+        type="button"
+        title={t("image.remove")}
+        onclick="clearImageSlot(event, 'bg')"
+      >
+        ×
+      </button>
+    </div>
+    <div class="mode-item">
+      <button
+        class="mode-btn"
+        id="mode-paper"
+        onclick="setImageMode('paper')"
+      >
+        <span class="mode-thumb" id="thumb-paper" aria-hidden="true">
+          <span class="mode-thumb-icon icon">photo</span>
+        </span>
+        <span class="mode-label">{t("image.paper")}</span>
+      </button>
+      <button
+        class="mode-clear"
+        id="clear-paper"
+        type="button"
+        title={t("image.remove")}
+        onclick="clearImageSlot(event, 'paper')"
+      >
+        ×
+      </button>
+    </div>
+    <div class="mode-item">
+      <button
+        class="mode-btn"
+        id="mode-ink"
+        onclick="setImageMode('ink')"
+      >
+        <span class="mode-thumb" id="thumb-ink" aria-hidden="true">
+          <span class="mode-thumb-icon icon">brush</span>
+        </span>
+        <span class="mode-label">{t("image.ink")}</span>
+      </button>
+      <button
+        class="mode-clear"
+        id="clear-ink"
+        type="button"
+        title={t("image.remove")}
+        onclick="clearImageSlot(event, 'ink')"
+      >
+        ×
+      </button>
+    </div>
+    <div class="mode-item">
+      <button class="mode-btn" id="mode-logo" onclick="setImageMode('logo')">
+        <span class="mode-thumb" id="thumb-logo" aria-hidden="true">
+          <span class="mode-thumb-icon icon">add_photo_alternate</span>
+        </span>
+        <span class="mode-label">{t("image.logo")}</span>
+      </button>
+      <button
+        class="mode-clear"
+        id="clear-logo"
+        type="button"
+        title={t("image.remove")}
+        onclick="clearImageSlot(event, 'logo')"
+      >
+        ×
+      </button>
+    </div>
   </div>
 
   <!-- Image Upload Area -->
   <div class="image-upload-area" id="image-upload-area">
     <div class="upload-placeholder" id="image-placeholder">
-      <div class="upload-icon">📷</div>
+      <div class="upload-icon icon">upload_file</div>
       <div class="upload-text">{t("image.drop")}</div>
       <div class="upload-subtext">{t("image.browse")}</div>
       <input
@@ -61,13 +125,28 @@ const t = useTranslations(lang);
       <button
         class="change-btn"
         onclick="document.getElementById('image-input').click()"
-        >🔄 {t("image.change")}</button
+        ><span class="icon">refresh</span> {t("image.change")}</button
       >
     </div>
   </div>
 
   <!-- Logo Mode Controls -->
   <div class="controls-section" id="logo-controls" style="display:none;">
+    <div class="control-row">
+      <label class="control-label">
+        {t("image.opacity")}
+        <span class="control-value" id="logo-opacity-val">100%</span>
+      </label>
+      <input
+        type="range"
+        id="logo-opacity"
+        min="0"
+        max="100"
+        value="100"
+        oninput="updateLogoOpacity(this.value)"
+      />
+    </div>
+
     <div class="control-row">
       <label class="control-label">
         {t("image.size")}
@@ -82,6 +161,16 @@ const t = useTranslations(lang);
         oninput="updateLogoSize(this.value)"
       />
     </div>
+
+    <div class="control-group">
+      <label class="control-label">{t("image.fit")}</label>
+      <div class="fit-buttons">
+        <button class="fit-btn" data-logo-fit="cover" onclick="setLogoFit('cover')">{t("image.cover")}</button>
+        <button class="fit-btn active" data-logo-fit="contain" onclick="setLogoFit('contain')">{t("image.contain")}</button>
+        <button class="fit-btn" data-logo-fit="fill" onclick="setLogoFit('fill')">{t("image.fill")}</button>
+      </div>
+    </div>
+
     <div class="control-row">
       <label class="control-label">{t("image.bg_container")}</label>
       <label class="toggle-switch">
@@ -93,6 +182,11 @@ const t = useTranslations(lang);
         />
         <span class="toggle-slider"></span>
       </label>
+    </div>
+
+    <div class="control-row" id="logo-bg-color-row">
+      <label class="control-label">{t("image.bg_color")}</label>
+      <input type="color" id="logo-bg-color" value="#ffffff" onchange="updateLogoBgColor(this.value)" />
     </div>
 
     <!-- Shape Controls -->
@@ -147,49 +241,59 @@ const t = useTranslations(lang);
         oninput="updateLogoPadding(this.value)"
       />
     </div>
+
+    <div class="transform-section">
+      <label class="control-label section-title">{t("image.transform")}</label>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.rotation")}
+          <span class="control-value" id="logo-rotation-val">0°</span>
+        </label>
+        <input type="range" id="logo-rotation" min="-180" max="180" value="0" oninput="updateLogoRotation(this.value)" />
+      </div>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.scale")}
+          <span class="control-value" id="logo-scale-val">100%</span>
+        </label>
+        <input type="range" id="logo-scale" min="50" max="200" value="100" oninput="updateLogoScale(this.value)" />
+      </div>
+
+      <div class="offset-row">
+        <div class="control-row half">
+          <label class="control-label">X</label>
+          <input type="range" id="logo-offset-x" min="-100" max="100" value="0" oninput="updateLogoOffset()" />
+        </div>
+        <div class="control-row half">
+          <label class="control-label">Y</label>
+          <input type="range" id="logo-offset-y" min="-100" max="100" value="0" oninput="updateLogoOffset()" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Background Mode Controls -->
-  <div class="controls-section" id="background-controls" style="display:none;">
+  <div class="controls-section" id="bg-controls" style="display:none;">
+    <div class="control-row">
+      <label class="control-label">{t("image.bg_color")}</label>
+      <input type="color" id="bg-color" value="#ffffff" onchange="updateBgColor(this.value)" />
+    </div>
+
     <div class="control-row">
       <label class="control-label">
         {t("image.opacity")}
-        <span class="control-value" id="art-opacity-val">100%</span>
+        <span class="control-value" id="bg-opacity-val">100%</span>
       </label>
       <input
         type="range"
-        id="art-opacity"
+        id="bg-opacity"
         min="10"
         max="100"
         value="100"
-        oninput="updateArtOpacity(this.value)"
+        oninput="updateBgOpacity(this.value)"
       />
-    </div>
-
-    <div class="control-group">
-      <label class="control-label">{t("image.blend_mode")}</label>
-      <div class="blend-buttons">
-        <button
-          class="blend-btn active"
-          data-blend="normal"
-          onclick="setArtBlend('normal')">{t("image.normal")}</button
-        >
-        <button
-          class="blend-btn"
-          data-blend="multiply"
-          onclick="setArtBlend('multiply')">{t("image.multiply")}</button
-        >
-        <button
-          class="blend-btn"
-          data-blend="screen"
-          onclick="setArtBlend('screen')">{t("image.screen")}</button
-        >
-        <button
-          class="blend-btn"
-          data-blend="overlay"
-          onclick="setArtBlend('overlay')">{t("image.overlay")}</button
-        >
-      </div>
     </div>
 
     <div class="control-group">
@@ -198,14 +302,14 @@ const t = useTranslations(lang);
         <button
           class="fit-btn active"
           data-fit="cover"
-          onclick="setArtFit('cover')">{t("image.cover")}</button
+          onclick="setBgFit('cover')">{t("image.cover")}</button
         >
         <button
           class="fit-btn"
           data-fit="contain"
-          onclick="setArtFit('contain')">{t("image.contain")}</button
+          onclick="setBgFit('contain')">{t("image.contain")}</button
         >
-        <button class="fit-btn" data-fit="fill" onclick="setArtFit('fill')"
+        <button class="fit-btn" data-fit="fill" onclick="setBgFit('fill')"
           >{t("image.fill")}</button
         >
       </div>
@@ -220,30 +324,30 @@ const t = useTranslations(lang);
       <div class="control-row">
         <label class="control-label">
           {t("image.rotation")}
-          <span class="control-value" id="art-rotation-val">0°</span>
+          <span class="control-value" id="bg-rotation-val">0°</span>
         </label>
         <input
           type="range"
-          id="art-rotation"
+          id="bg-rotation"
           min="-180"
           max="180"
           value="0"
-          oninput="updateArtRotation(this.value)"
+          oninput="updateBgRotation(this.value)"
         />
       </div>
 
       <div class="control-row">
         <label class="control-label">
           {t("image.scale")}
-          <span class="control-value" id="art-scale-val">100%</span>
+          <span class="control-value" id="bg-scale-val">100%</span>
         </label>
         <input
           type="range"
-          id="art-scale"
+          id="bg-scale"
           min="50"
           max="200"
           value="100"
-          oninput="updateArtScale(this.value)"
+          oninput="updateBgScale(this.value)"
         />
       </div>
 
@@ -252,23 +356,139 @@ const t = useTranslations(lang);
           <label class="control-label">X</label>
           <input
             type="range"
-            id="art-offset-x"
+            id="bg-offset-x"
             min="-100"
             max="100"
             value="0"
-            oninput="updateArtOffset()"
+            oninput="updateBgOffset()"
           />
         </div>
         <div class="control-row half">
           <label class="control-label">Y</label>
           <input
             type="range"
-            id="art-offset-y"
+            id="bg-offset-y"
             min="-100"
             max="100"
             value="0"
-            oninput="updateArtOffset()"
+            oninput="updateBgOffset()"
           />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paper Mode Controls -->
+  <div class="controls-section" id="paper-controls" style="display:none;">
+    <div class="control-row">
+      <label class="control-label">
+        {t("image.opacity")}
+        <span class="control-value" id="paper-opacity-val">100%</span>
+      </label>
+      <input
+        type="range"
+        id="paper-opacity"
+        min="0"
+        max="100"
+        value="100"
+        oninput="updatePaperOpacity(this.value)"
+      />
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">{t("image.fit")}</label>
+      <div class="fit-buttons">
+        <button class="fit-btn active" data-fit="cover" onclick="setPaperFit('cover')">{t("image.cover")}</button>
+        <button class="fit-btn" data-fit="contain" onclick="setPaperFit('contain')">{t("image.contain")}</button>
+        <button class="fit-btn" data-fit="fill" onclick="setPaperFit('fill')">{t("image.fill")}</button>
+      </div>
+    </div>
+
+    <div class="transform-section">
+      <label class="control-label section-title">{t("image.transform")}</label>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.rotation")}
+          <span class="control-value" id="paper-rotation-val">0°</span>
+        </label>
+        <input type="range" id="paper-rotation" min="-180" max="180" value="0" oninput="updatePaperRotation(this.value)" />
+      </div>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.scale")}
+          <span class="control-value" id="paper-scale-val">100%</span>
+        </label>
+        <input type="range" id="paper-scale" min="50" max="200" value="100" oninput="updatePaperScale(this.value)" />
+      </div>
+
+      <div class="offset-row">
+        <div class="control-row half">
+          <label class="control-label">X</label>
+          <input type="range" id="paper-offset-x" min="-100" max="100" value="0" oninput="updatePaperOffset()" />
+        </div>
+        <div class="control-row half">
+          <label class="control-label">Y</label>
+          <input type="range" id="paper-offset-y" min="-100" max="100" value="0" oninput="updatePaperOffset()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ink Mode Controls -->
+  <div class="controls-section" id="ink-controls" style="display:none;">
+    <div class="control-row">
+      <label class="control-label">
+        {t("image.opacity")}
+        <span class="control-value" id="ink-opacity-val">100%</span>
+      </label>
+      <input
+        type="range"
+        id="ink-opacity"
+        min="0"
+        max="100"
+        value="100"
+        oninput="updateInkOpacity(this.value)"
+      />
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">{t("image.fit")}</label>
+      <div class="fit-buttons">
+        <button class="fit-btn active" data-fit="cover" onclick="setInkFit('cover')">{t("image.cover")}</button>
+        <button class="fit-btn" data-fit="contain" onclick="setInkFit('contain')">{t("image.contain")}</button>
+        <button class="fit-btn" data-fit="fill" onclick="setInkFit('fill')">{t("image.fill")}</button>
+      </div>
+    </div>
+
+    <div class="transform-section">
+      <label class="control-label section-title">{t("image.transform")}</label>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.rotation")}
+          <span class="control-value" id="ink-rotation-val">0°</span>
+        </label>
+        <input type="range" id="ink-rotation" min="-180" max="180" value="0" oninput="updateInkRotation(this.value)" />
+      </div>
+
+      <div class="control-row">
+        <label class="control-label">
+          {t("image.scale")}
+          <span class="control-value" id="ink-scale-val">100%</span>
+        </label>
+        <input type="range" id="ink-scale" min="50" max="200" value="100" oninput="updateInkScale(this.value)" />
+      </div>
+
+      <div class="offset-row">
+        <div class="control-row half">
+          <label class="control-label">X</label>
+          <input type="range" id="ink-offset-x" min="-100" max="100" value="0" oninput="updateInkOffset()" />
+        </div>
+        <div class="control-row half">
+          <label class="control-label">Y</label>
+          <input type="range" id="ink-offset-y" min="-100" max="100" value="0" oninput="updateInkOffset()" />
         </div>
       </div>
     </div>
@@ -276,16 +496,32 @@ const t = useTranslations(lang);
 </div>
 
 <script>
-  let currentMode = "logo";
+  let currentMode = "bg";
 
   function getConfig() {
     return (window as any).state?.config;
   }
 
-  function getCurrentImage(): string | undefined {
+  function getLayers() {
+    return (window as any).qrLayers?.get?.() || (window as any).state?.config?.layers;
+  }
+
+  function getCurrentImageForMode(mode: "bg" | "paper" | "ink" | "logo"): string | undefined {
+    const layers = getLayers();
+    if (layers) {
+      if (mode === "bg") return layers.bg?.image;
+      if (mode === "paper") return layers.paper?.image;
+      if (mode === "ink") return layers.ink?.image;
+      return layers.logo?.image;
+    }
     const cfg = getConfig();
     if (!cfg) return undefined;
-    return currentMode === "background" ? cfg.artImage : cfg.logo;
+    if (mode === "bg") return cfg.artImage;
+    return cfg.logo;
+  }
+
+  function getCurrentImage(): string | undefined {
+    return getCurrentImageForMode(currentMode as any);
   }
 
   // Public hook so other components (like the panel system) can force a UI sync
@@ -293,22 +529,100 @@ const t = useTranslations(lang);
   window.refreshImagePanelUI = function () {
     // Ensure mode button styles match currentMode
     document
+      .getElementById("mode-bg")
+      ?.classList.toggle("active", currentMode === "bg");
+    document
+      .getElementById("mode-paper")
+      ?.classList.toggle("active", currentMode === "paper");
+    document
+      .getElementById("mode-ink")
+      ?.classList.toggle("active", currentMode === "ink");
+    document
       .getElementById("mode-logo")
       ?.classList.toggle("active", currentMode === "logo");
-    document
-      .getElementById("mode-background")
-      ?.classList.toggle("active", currentMode === "background");
 
+    updateModeThumbs();
     updateImageUI(!!getCurrentImage());
   };
 
-  function tryInitImagePanelUI() {
-    // state/config might be attached after inline scripts run
+  function updateModeThumbs() {
+    const layers = getLayers();
+
+    const slots = [
+      {
+        id: "bg",
+        image: layers?.bg?.image,
+        enabled: layers?.bg?.enabled ?? true,
+      },
+      {
+        id: "paper",
+        image: layers?.paper?.image,
+        enabled: layers?.paper?.enabled ?? true,
+      },
+      {
+        id: "ink",
+        image: layers?.ink?.image,
+        enabled: layers?.ink?.enabled ?? true,
+      },
+      {
+        id: "logo",
+        image: layers?.logo?.image,
+        enabled: layers?.logo?.enabled ?? true,
+      },
+    ];
+
+    for (const s of slots) {
+      const thumb = document.getElementById(`thumb-${s.id}`) as HTMLElement | null;
+      const clear = document.getElementById(`clear-${s.id}`) as HTMLButtonElement | null;
+      if (!thumb) continue;
+      const has = typeof s.image === "string" && s.image.length > 0;
+      thumb.classList.toggle("has-image", has);
+      thumb.classList.toggle("disabled", has && !s.enabled);
+      thumb.style.backgroundImage = has ? `url("${s.image}")` : "";
+      if (clear) clear.style.display = has ? "flex" : "none";
+    }
+  }
+
+  window.clearImageSlot = function (event: Event, slot: "bg" | "paper" | "ink" | "logo") {
+    event.preventDefault();
+    event.stopPropagation();
+
     const cfg = getConfig();
-    if (!cfg) {
+    if (!cfg) return;
+
+    const layers = getLayers();
+    if (!layers) return;
+
+    if (slot === "logo") {
+      if ((window as any).qrLayers?.setLogo) (window as any).qrLayers.setLogo(undefined);
+      else cfg.logo = undefined;
+    } else if (slot === "bg") {
+      if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ image: undefined });
+      else {
+        layers.bg.image = undefined;
+      }
+    } else if (slot === "paper") {
+      if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ image: undefined });
+      else layers.paper.image = undefined;
+    } else if (slot === "ink") {
+      if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ image: undefined });
+      else layers.ink.image = undefined;
+    }
+
+    updateModeThumbs();
+    updateImageUI(!!getCurrentImage());
+    (window as any).updateQR?.();
+  };
+
+  function tryInitImagePanelUI() {
+    // state/config and/or qrLayers might be attached after inline scripts run
+    const cfg = getConfig();
+    const layers = getLayers();
+    if (!cfg || !layers?.bg || !layers?.paper || !layers?.ink || !layers?.logo) {
       setTimeout(tryInitImagePanelUI, 50);
       return;
     }
+    initDropArea();
     window.refreshImagePanelUI?.();
   }
 
@@ -321,44 +635,255 @@ const t = useTranslations(lang);
   // Also re-sync after Astro view transitions
   document.addEventListener("astro:page-load", tryInitImagePanelUI);
 
-  window.setImageMode = function (mode: "logo" | "background") {
+  function syncBgControlsFromLayers() {
+    const layers = getLayers();
+    if (!layers?.bg) return;
+
+    const color = document.getElementById("bg-color") as HTMLInputElement | null;
+    if (color) color.value = layers.bg.color || "#ffffff";
+
+    const op = document.getElementById("bg-opacity") as HTMLInputElement | null;
+    const opVal = document.getElementById("bg-opacity-val");
+    if (op) {
+      const pct = Math.round(((layers.bg.opacity ?? 1) * 100));
+      op.value = String(pct);
+      if (opVal) opVal.textContent = `${pct}%`;
+    }
+
+    const rot = document.getElementById("bg-rotation") as HTMLInputElement | null;
+    const rotVal = document.getElementById("bg-rotation-val");
+    if (rot) {
+      const deg = Math.round(layers.bg.rotation ?? 0);
+      rot.value = String(deg);
+      if (rotVal) rotVal.textContent = `${deg}°`;
+    }
+
+    const scale = document.getElementById("bg-scale") as HTMLInputElement | null;
+    const scaleVal = document.getElementById("bg-scale-val");
+    if (scale) {
+      const pct = Math.round(((layers.bg.scale ?? 1) * 100));
+      scale.value = String(pct);
+      if (scaleVal) scaleVal.textContent = `${pct}%`;
+    }
+
+    const ox = document.getElementById("bg-offset-x") as HTMLInputElement | null;
+    const oy = document.getElementById("bg-offset-y") as HTMLInputElement | null;
+    if (ox) ox.value = String(Math.round(((layers.bg.offsetX ?? 0) * 100)));
+    if (oy) oy.value = String(Math.round(((layers.bg.offsetY ?? 0) * 100)));
+
+    document.querySelectorAll("#bg-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    const fit = layers.bg.fit || "cover";
+    document.querySelector(`#bg-controls [data-fit="${fit}"]`)?.classList.add("active");
+  }
+
+  function syncPaperControlsFromLayers() {
+    const layers = getLayers();
+    if (!layers?.paper) return;
+
+    const op = document.getElementById("paper-opacity") as HTMLInputElement | null;
+    const opVal = document.getElementById("paper-opacity-val");
+    if (op) {
+      const pct = Math.round(((layers.paper.opacity ?? 1) * 100));
+      op.value = String(pct);
+      if (opVal) opVal.textContent = `${pct}%`;
+    }
+
+    const rot = document.getElementById("paper-rotation") as HTMLInputElement | null;
+    const rotVal = document.getElementById("paper-rotation-val");
+    if (rot) {
+      const deg = Math.round(layers.paper.rotation ?? 0);
+      rot.value = String(deg);
+      if (rotVal) rotVal.textContent = `${deg}°`;
+    }
+
+    const scale = document.getElementById("paper-scale") as HTMLInputElement | null;
+    const scaleVal = document.getElementById("paper-scale-val");
+    if (scale) {
+      const pct = Math.round(((layers.paper.scale ?? 1) * 100));
+      scale.value = String(pct);
+      if (scaleVal) scaleVal.textContent = `${pct}%`;
+    }
+
+    const ox = document.getElementById("paper-offset-x") as HTMLInputElement | null;
+    const oy = document.getElementById("paper-offset-y") as HTMLInputElement | null;
+    if (ox) ox.value = String(Math.round(((layers.paper.offsetX ?? 0) * 100)));
+    if (oy) oy.value = String(Math.round(((layers.paper.offsetY ?? 0) * 100)));
+
+    document.querySelectorAll("#paper-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    const fit = layers.paper.fit || "cover";
+    document.querySelector(`#paper-controls [data-fit="${fit}"]`)?.classList.add("active");
+  }
+
+  function syncInkControlsFromLayers() {
+    const layers = getLayers();
+    if (!layers?.ink) return;
+
+    const op = document.getElementById("ink-opacity") as HTMLInputElement | null;
+    const opVal = document.getElementById("ink-opacity-val");
+    if (op) {
+      const pct = Math.round(((layers.ink.opacity ?? 1) * 100));
+      op.value = String(pct);
+      if (opVal) opVal.textContent = `${pct}%`;
+    }
+
+    const rot = document.getElementById("ink-rotation") as HTMLInputElement | null;
+    const rotVal = document.getElementById("ink-rotation-val");
+    if (rot) {
+      const deg = Math.round(layers.ink.rotation ?? 0);
+      rot.value = String(deg);
+      if (rotVal) rotVal.textContent = `${deg}°`;
+    }
+
+    const scale = document.getElementById("ink-scale") as HTMLInputElement | null;
+    const scaleVal = document.getElementById("ink-scale-val");
+    if (scale) {
+      const pct = Math.round(((layers.ink.scale ?? 1) * 100));
+      scale.value = String(pct);
+      if (scaleVal) scaleVal.textContent = `${pct}%`;
+    }
+
+    const ox = document.getElementById("ink-offset-x") as HTMLInputElement | null;
+    const oy = document.getElementById("ink-offset-y") as HTMLInputElement | null;
+    if (ox) ox.value = String(Math.round(((layers.ink.offsetX ?? 0) * 100)));
+    if (oy) oy.value = String(Math.round(((layers.ink.offsetY ?? 0) * 100)));
+
+    document.querySelectorAll("#ink-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    const fit = layers.ink.fit || "cover";
+    document.querySelector(`#ink-controls [data-fit="${fit}"]`)?.classList.add("active");
+  }
+
+  function syncLogoControlsFromState() {
+    const cfg = getConfig();
+    const layers = getLayers();
+    if (!cfg || !layers?.logo) return;
+
+    const op = document.getElementById("logo-opacity") as HTMLInputElement | null;
+    const opVal = document.getElementById("logo-opacity-val");
+    if (op) {
+      const pct = Math.round(((layers.logo.opacity ?? 1) * 100));
+      op.value = String(pct);
+      if (opVal) opVal.textContent = `${pct}%`;
+    }
+
+    const rot = document.getElementById("logo-rotation") as HTMLInputElement | null;
+    const rotVal = document.getElementById("logo-rotation-val");
+    if (rot) {
+      const deg = Math.round(cfg.logoRotation ?? 0);
+      rot.value = String(deg);
+      if (rotVal) rotVal.textContent = `${deg}°`;
+    }
+
+    const scale = document.getElementById("logo-scale") as HTMLInputElement | null;
+    const scaleVal = document.getElementById("logo-scale-val");
+    if (scale) {
+      const pct = Math.round(((cfg.logoScale ?? 1) * 100));
+      scale.value = String(pct);
+      if (scaleVal) scaleVal.textContent = `${pct}%`;
+    }
+
+    const ox = document.getElementById("logo-offset-x") as HTMLInputElement | null;
+    const oy = document.getElementById("logo-offset-y") as HTMLInputElement | null;
+    if (ox) ox.value = String(Math.round(((cfg.logoOffsetX ?? 0) * 100)));
+    if (oy) oy.value = String(Math.round(((cfg.logoOffsetY ?? 0) * 100)));
+
+    document.querySelectorAll("#logo-controls [data-logo-fit]").forEach((b) => b.classList.remove("active"));
+    const fit = layers.logo.fit || cfg.logoFit || "contain";
+    document.querySelector(`#logo-controls [data-logo-fit="${fit}"]`)?.classList.add("active");
+
+    const bgEnabled = cfg.logoBgEnabled !== false;
+    const bgToggle = document.getElementById("logo-bg-toggle") as HTMLInputElement | null;
+    if (bgToggle) bgToggle.checked = bgEnabled;
+
+    const bgColor = document.getElementById("logo-bg-color") as HTMLInputElement | null;
+    if (bgColor) bgColor.value = normalizeLogoBgColor(cfg.logoBgColor);
+
+    const shape = cfg.logoBgShape || "rounded";
+    document.querySelectorAll("#logo-shape-group [data-shape]").forEach((b) => b.classList.remove("active"));
+    document.querySelector(`#logo-shape-group [data-shape="${shape}"]`)?.classList.add("active");
+    syncLogoBgControlVisibility(bgEnabled, shape);
+  }
+
+  function normalizeLogoBgColor(value: unknown): string {
+    if (typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)) {
+      return value;
+    }
+    if (Array.isArray(value) && value.length >= 3) {
+      const max = value.some((v) => typeof v === "number" && v > 1) ? 255 : 1;
+      const parts = value.slice(0, 3).map((v) => {
+        const n = typeof v === "number" && Number.isFinite(v) ? v : max;
+        return Math.round(Math.max(0, Math.min(255, (n / max) * 255)))
+          .toString(16)
+          .padStart(2, "0");
+      });
+      return `#${parts.join("")}`;
+    }
+    return "#ffffff";
+  }
+
+  function syncLogoBgControlVisibility(enabled: boolean, shape?: string) {
+    const shapeGroup = document.getElementById("logo-shape-group");
+    const colorRow = document.getElementById("logo-bg-color-row");
+    const radiusRow = document.getElementById("logo-radius-row");
+    const paddingRow = document
+      .getElementById("logo-padding")
+      ?.closest(".control-row") as HTMLElement | null;
+    const resolvedShape = shape || getConfig()?.logoBgShape || "rounded";
+
+    if (shapeGroup) shapeGroup.style.display = enabled ? "flex" : "none";
+    if (colorRow) colorRow.style.display = enabled ? "flex" : "none";
+    if (paddingRow) paddingRow.style.display = enabled ? "flex" : "none";
+    if (radiusRow) radiusRow.style.display = enabled && resolvedShape === "rounded" ? "flex" : "none";
+  }
+
+  window.setImageMode = function (mode: "bg" | "paper" | "ink" | "logo") {
     currentMode = mode;
 
     // Update button states
-    document
-      .getElementById("mode-logo")
-      ?.classList.toggle("active", mode === "logo");
-    document
-      .getElementById("mode-background")
-      ?.classList.toggle("active", mode === "background");
-
-    const cfg = getConfig();
-    const hasImage = !!(mode === "background" ? cfg?.artImage : cfg?.logo);
+    document.getElementById("mode-bg")?.classList.toggle("active", mode === "bg");
+    document.getElementById("mode-paper")?.classList.toggle("active", mode === "paper");
+    document.getElementById("mode-ink")?.classList.toggle("active", mode === "ink");
+    document.getElementById("mode-logo")?.classList.toggle("active", mode === "logo");
 
     // Show/hide mode-specific controls
     const logoControls = document.getElementById("logo-controls");
-    const bgControls = document.getElementById("background-controls");
+    const bgControls = document.getElementById("bg-controls");
+    const paperControls = document.getElementById("paper-controls");
+    const inkControls = document.getElementById("ink-controls");
 
-    if (hasImage) {
-      if (mode === "logo") {
-        if (logoControls) logoControls.style.display = "flex";
-        if (bgControls) bgControls.style.display = "none";
-      } else {
-        if (logoControls) logoControls.style.display = "none";
-        if (bgControls) bgControls.style.display = "flex";
-      }
+    if (mode === "logo") {
+      if (logoControls) logoControls.style.display = "flex";
+      if (bgControls) bgControls.style.display = "none";
+      if (paperControls) paperControls.style.display = "none";
+      if (inkControls) inkControls.style.display = "none";
+      syncLogoControlsFromState();
+    } else if (mode === "bg") {
+      if (logoControls) logoControls.style.display = "none";
+      if (bgControls) bgControls.style.display = "flex";
+      if (paperControls) paperControls.style.display = "none";
+      if (inkControls) inkControls.style.display = "none";
+      syncBgControlsFromLayers();
+    } else if (mode === "paper") {
+      if (logoControls) logoControls.style.display = "none";
+      if (bgControls) bgControls.style.display = "none";
+      if (paperControls) paperControls.style.display = "flex";
+      if (inkControls) inkControls.style.display = "none";
+      syncPaperControlsFromLayers();
+    } else if (mode === "ink") {
+      if (logoControls) logoControls.style.display = "none";
+      if (bgControls) bgControls.style.display = "none";
+      if (paperControls) paperControls.style.display = "none";
+      if (inkControls) inkControls.style.display = "flex";
+      syncInkControlsFromLayers();
+    } else {
+      if (logoControls) logoControls.style.display = "none";
+      if (bgControls) bgControls.style.display = "none";
+      if (paperControls) paperControls.style.display = "none";
+      if (inkControls) inkControls.style.display = "none";
     }
 
-    // Update render mode without disabling background when editing logo.
-    // Background visibility should be controlled by `artEnabled`, not by the UI mode.
-    if (cfg) {
-      if (mode === "background") {
-        // When entering background mode, auto-enable art if there's an image.
-        if (cfg.artImage) cfg.artEnabled = true;
-      }
-      updateImageUI(hasImage);
-      (window as any).updateQR?.();
-    }
+    updateModeThumbs();
+    updateImageUI(!!getCurrentImageForMode(mode));
+    (window as any).updateQR?.();
   };
 
   window.handleImageUpload = async function (event: Event) {
@@ -366,16 +891,21 @@ const t = useTranslations(lang);
     const file = input.files?.[0];
     if (!file) return;
 
+    const modeAtPick = currentMode;
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
 
       const cfg = getConfig();
       if (!cfg) return;
+      const layers = getLayers();
+      if (!layers) return;
 
       // Store ONLY in the active slot
-      if (currentMode === "logo") {
-        cfg.logo = dataUrl;
+      if (modeAtPick === "logo") {
+        if ((window as any).qrLayers?.setLogo) (window as any).qrLayers.setLogo(dataUrl);
+        else cfg.logo = dataUrl;
+        cfg.logoColor = "original";
         // Do not disable background art when uploading a logo.
 
         // Set sensible defaults only if unset
@@ -383,24 +913,31 @@ const t = useTranslations(lang);
           cfg.logoSize = 0.2;
         if (cfg.logoBgEnabled === undefined || cfg.logoBgEnabled === null)
           cfg.logoBgEnabled = true;
-      } else {
-        cfg.artImage = dataUrl;
-        cfg.artEnabled = true;
-
-        if (cfg.artOpacity === undefined || cfg.artOpacity === null)
-          cfg.artOpacity = 1.0;
-        if (!cfg.artBlendMode) cfg.artBlendMode = "normal";
-        if (!cfg.artFit) cfg.artFit = "cover";
-        if (cfg.artRotation === undefined || cfg.artRotation === null)
-          cfg.artRotation = 0;
-        if (cfg.artScale === undefined || cfg.artScale === null)
-          cfg.artScale = 1.0;
-        if (cfg.artOffsetX === undefined || cfg.artOffsetX === null)
-          cfg.artOffsetX = 0;
-        if (cfg.artOffsetY === undefined || cfg.artOffsetY === null)
-          cfg.artOffsetY = 0;
+        if (!cfg.logoFit) cfg.logoFit = "contain";
+        if (layers.logo && !layers.logo.fit) layers.logo.fit = "contain";
+      } else if (modeAtPick === "bg") {
+        if ((window as any).qrLayers?.setBg) {
+          (window as any).qrLayers.setBg({ image: dataUrl, enabled: true });
+        } else {
+          layers.bg.image = dataUrl;
+          layers.bg.enabled = true;
+        }
+        syncBgControlsFromLayers();
+      } else if (modeAtPick === "paper") {
+        if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ image: dataUrl, enabled: true });
+        else {
+          layers.paper.image = dataUrl;
+          layers.paper.enabled = true;
+        }
+      } else if (modeAtPick === "ink") {
+        if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ image: dataUrl, enabled: true });
+        else {
+          layers.ink.image = dataUrl;
+          layers.ink.enabled = true;
+        }
       }
 
+      updateModeThumbs();
       updateImageUI(true);
       (window as any).updateQR?.();
 
@@ -411,26 +948,16 @@ const t = useTranslations(lang);
   };
 
   window.removeImage = function () {
-    const cfg = getConfig();
-    if (!cfg) return;
-
-    if (currentMode === "logo") {
-      cfg.logo = undefined;
-      // Do not touch art image; user might be using it in background mode.
-    } else {
-      cfg.artImage = undefined;
-      cfg.artEnabled = false;
-    }
-
-    updateImageUI(!!getCurrentImage());
-    (window as any).updateQR?.();
+    window.clearImageSlot?.(new Event("remove"), currentMode);
   };
 
   function updateImageUI(hasImage: boolean) {
     const placeholder = document.getElementById("image-placeholder");
     const preview = document.getElementById("image-preview");
     const logoControls = document.getElementById("logo-controls");
-    const bgControls = document.getElementById("background-controls");
+    const bgControls = document.getElementById("bg-controls");
+    const paperControls = document.getElementById("paper-controls");
+    const inkControls = document.getElementById("ink-controls");
     const img = document.getElementById("preview-img") as HTMLImageElement;
     const area = document.getElementById("image-upload-area");
 
@@ -444,16 +971,45 @@ const t = useTranslations(lang);
       if (currentMode === "logo") {
         if (logoControls) logoControls.style.display = "flex";
         if (bgControls) bgControls.style.display = "none";
-      } else {
+        if (paperControls) paperControls.style.display = "none";
+        if (inkControls) inkControls.style.display = "none";
+        syncLogoControlsFromState();
+      } else if (currentMode === "bg") {
         if (logoControls) logoControls.style.display = "none";
         if (bgControls) bgControls.style.display = "flex";
+        if (paperControls) paperControls.style.display = "none";
+        if (inkControls) inkControls.style.display = "none";
+        syncBgControlsFromLayers();
+      } else if (currentMode === "paper") {
+        if (logoControls) logoControls.style.display = "none";
+        if (bgControls) bgControls.style.display = "none";
+        if (paperControls) paperControls.style.display = "flex";
+        if (inkControls) inkControls.style.display = "none";
+        syncPaperControlsFromLayers();
+      } else if (currentMode === "ink") {
+        if (logoControls) logoControls.style.display = "none";
+        if (bgControls) bgControls.style.display = "none";
+        if (paperControls) paperControls.style.display = "none";
+        if (inkControls) inkControls.style.display = "flex";
+        syncInkControlsFromLayers();
+      } else {
+        if (logoControls) logoControls.style.display = "none";
+        if (bgControls) bgControls.style.display = "none";
+        if (paperControls) paperControls.style.display = "none";
+        if (inkControls) inkControls.style.display = "none";
       }
     } else {
       if (placeholder) placeholder.style.display = "flex";
       if (preview) preview.style.display = "none";
       if (area) area.classList.remove("has-image");
-      if (logoControls) logoControls.style.display = "none";
-      if (bgControls) bgControls.style.display = "none";
+      if (logoControls) logoControls.style.display = currentMode === "logo" ? "flex" : "none";
+      if (bgControls) bgControls.style.display = currentMode === "bg" ? "flex" : "none";
+      if (paperControls) paperControls.style.display = currentMode === "paper" ? "flex" : "none";
+      if (inkControls) inkControls.style.display = currentMode === "ink" ? "flex" : "none";
+      if (currentMode === "logo") syncLogoControlsFromState();
+      if (currentMode === "bg") syncBgControlsFromLayers();
+      if (currentMode === "paper") syncPaperControlsFromLayers();
+      if (currentMode === "ink") syncInkControlsFromLayers();
     }
   }
 
@@ -468,19 +1024,25 @@ const t = useTranslations(lang);
   };
 
   window.updateLogoBg = function (enabled: boolean) {
-    // Show/hide shape controls based on bg toggle
-    const shapeGroup = document.getElementById("logo-shape-group");
-    const paddingRow = document
-      .getElementById("logo-padding")
-      .closest(".control-row");
-
-    // Actually padding might be useful even without BG? No, padding implies BG.
-    // Wait, if no BG, padding just shrinks the image relative to size.
-
     if ((window as any).state?.config) {
       (window as any).state.config.logoBgEnabled = enabled;
+      if (enabled && !(window as any).state.config.logoBgColor) {
+        (window as any).state.config.logoBgColor = "#ffffff";
+      }
+      syncLogoBgControlVisibility(enabled);
       (window as any).updateQR?.();
     }
+  };
+
+  window.updateLogoBgColor = function (value: string) {
+    const cfg = getConfig();
+    if (!cfg) return;
+    cfg.logoBgColor = value || "#ffffff";
+    cfg.logoBgEnabled = true;
+    const bgToggle = document.getElementById("logo-bg-toggle") as HTMLInputElement | null;
+    if (bgToggle) bgToggle.checked = true;
+    syncLogoBgControlVisibility(true);
+    (window as any).updateQR?.();
   };
 
   window.setLogoShape = function (shape: string) {
@@ -489,12 +1051,9 @@ const t = useTranslations(lang);
       .forEach((b) => b.classList.remove("active"));
     document.querySelector(`[data-shape="${shape}"]`)?.classList.add("active");
 
-    const radiusRow = document.getElementById("logo-radius-row");
-    if (radiusRow)
-      radiusRow.style.display = shape === "rounded" ? "flex" : "none";
-
     if ((window as any).state?.config) {
       (window as any).state.config.logoBgShape = shape;
+      syncLogoBgControlVisibility((window as any).state.config.logoBgEnabled !== false, shape);
       (window as any).updateQR?.();
     }
   };
@@ -515,70 +1074,22 @@ const t = useTranslations(lang);
     }
   };
 
-  // Background Controls
-  window.updateArtOpacity = function (value: number) {
-    document.getElementById("art-opacity-val")!.textContent = `${value}%`;
-    if ((window as any).state?.config) {
-      (window as any).state.config.artOpacity = value / 100;
-      (window as any).updateQR?.();
-    }
+  window.setLogoFit = function (fit: string) {
+    document.querySelectorAll("#logo-controls [data-logo-fit]").forEach((b) => b.classList.remove("active"));
+    document.querySelector(`#logo-controls [data-logo-fit="${fit}"]`)?.classList.add("active");
+    const layers = getLayers();
+    const cfg = getConfig();
+    if (layers?.logo) layers.logo.fit = fit;
+    if (cfg) cfg.logoFit = fit;
+    (window as any).updateQR?.();
   };
 
-  window.setArtBlend = function (blend: string) {
-    document
-      .querySelectorAll(".blend-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document.querySelector(`[data-blend="${blend}"]`)?.classList.add("active");
-    if ((window as any).state?.config) {
-      (window as any).state.config.artBlendMode = blend;
-      (window as any).updateQR?.();
-    }
-  };
-
-  window.setArtFit = function (fit: string) {
-    document
-      .querySelectorAll(".fit-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document.querySelector(`[data-fit="${fit}"]`)?.classList.add("active");
-    if ((window as any).state?.config) {
-      (window as any).state.config.artFit = fit;
-      (window as any).updateQR?.();
-    }
-  };
-
-  // Transform Controls
-  window.updateArtRotation = function (value: number) {
-    document.getElementById("art-rotation-val")!.textContent = `${value}°`;
-    if ((window as any).state?.config) {
-      (window as any).state.config.artRotation = parseFloat(value as any);
-      (window as any).updateQR?.();
-    }
-  };
-
-  window.updateArtScale = function (value: number) {
-    document.getElementById("art-scale-val")!.textContent = `${value}%`;
-    if ((window as any).state?.config) {
-      (window as any).state.config.artScale = value / 100;
-      (window as any).updateQR?.();
-    }
-  };
-
-  window.updateArtOffset = function () {
-    const x =
-      (document.getElementById("art-offset-x") as HTMLInputElement)?.value || 0;
-    const y =
-      (document.getElementById("art-offset-y") as HTMLInputElement)?.value || 0;
-    if ((window as any).state?.config) {
-      (window as any).state.config.artOffsetX = parseFloat(x as any) / 100;
-      (window as any).state.config.artOffsetY = parseFloat(y as any) / 100;
-      (window as any).updateQR?.();
-    }
-  };
-
-  // Drag and drop
-  document.addEventListener("DOMContentLoaded", () => {
-    const area = document.getElementById("image-upload-area");
-    if (!area) return;
+  function initDropArea() {
+    const area = document.getElementById("image-upload-area") as HTMLElement | null;
+    const input = document.getElementById("image-input") as HTMLInputElement | null;
+    if (!area || !input) return;
+    if ((area as any).dataset?.inited === "1") return;
+    (area as any).dataset.inited = "1";
 
     area.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -593,45 +1104,241 @@ const t = useTranslations(lang);
       e.preventDefault();
       area.classList.remove("dragover");
 
-      const file = e.dataTransfer?.files[0];
-      if (file?.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const dataUrl = ev.target?.result as string;
-          const cfg = getConfig();
-          if (!cfg) return;
+      const file = e.dataTransfer?.files?.[0];
+      if (!file?.type?.startsWith("image/")) return;
 
-          if (currentMode === "logo") {
-            cfg.logo = dataUrl;
-            // Do not disable background art when dropping a logo.
-            if (cfg.logoSize === undefined || cfg.logoSize === null)
-              cfg.logoSize = 0.2;
-            if (cfg.logoBgEnabled === undefined || cfg.logoBgEnabled === null)
-              cfg.logoBgEnabled = true;
-          } else {
-            cfg.artImage = dataUrl;
-            cfg.artEnabled = true;
-            if (cfg.artOpacity === undefined || cfg.artOpacity === null)
-              cfg.artOpacity = 1.0;
-            if (!cfg.artBlendMode) cfg.artBlendMode = "normal";
-            if (!cfg.artFit) cfg.artFit = "cover";
-            if (cfg.artRotation === undefined || cfg.artRotation === null)
-              cfg.artRotation = 0;
-            if (cfg.artScale === undefined || cfg.artScale === null)
-              cfg.artScale = 1.0;
-            if (cfg.artOffsetX === undefined || cfg.artOffsetX === null)
-              cfg.artOffsetX = 0;
-            if (cfg.artOffsetY === undefined || cfg.artOffsetY === null)
-              cfg.artOffsetY = 0;
+      const modeAtDrop = currentMode;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (!dataUrl) return;
+
+        // Reuse the upload code path by assigning to input handler with captured mode.
+        const cfg = getConfig();
+        const layers = getLayers();
+        if (!cfg || !layers) return;
+
+        if (modeAtDrop === "logo") {
+          if ((window as any).qrLayers?.setLogo) (window as any).qrLayers.setLogo(dataUrl);
+          else cfg.logo = dataUrl;
+          cfg.logoColor = "original";
+          if (!cfg.logoFit) cfg.logoFit = "contain";
+          if (layers.logo && !layers.logo.fit) layers.logo.fit = "contain";
+        } else if (modeAtDrop === "bg") {
+          if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ image: dataUrl, enabled: true });
+          else {
+            layers.bg.image = dataUrl;
+            layers.bg.enabled = true;
           }
+          syncBgControlsFromLayers();
+        } else if (modeAtDrop === "paper") {
+          if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ image: dataUrl, enabled: true });
+          else {
+            layers.paper.image = dataUrl;
+            layers.paper.enabled = true;
+          }
+        } else if (modeAtDrop === "ink") {
+          if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ image: dataUrl, enabled: true });
+          else {
+            layers.ink.image = dataUrl;
+            layers.ink.enabled = true;
+          }
+        }
 
-          updateImageUI(true);
-          (window as any).updateQR?.();
-        };
-        reader.readAsDataURL(file);
-      }
+        updateModeThumbs();
+        updateImageUI(true);
+        (window as any).updateQR?.();
+
+        // Allow selecting the same file again
+        input.value = "";
+      };
+      reader.readAsDataURL(file);
     });
-  });
+  }
+
+  // BG Controls
+  window.updateBgColor = function (value: string) {
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ color: value });
+    else layers.bg.color = value;
+    (window as any).updateQR?.();
+  };
+
+  window.updateBgOpacity = function (value: number) {
+    document.getElementById("bg-opacity-val")!.textContent = `${value}%`;
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ opacity: value / 100 });
+    else layers.bg.opacity = value / 100;
+    (window as any).updateQR?.();
+  };
+
+  window.setBgFit = function (fit: string) {
+    document.querySelectorAll("#bg-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelector(`#bg-controls [data-fit="${fit}"]`)?.classList.add("active");
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ fit });
+    else layers.bg.fit = fit;
+    (window as any).updateQR?.();
+  };
+
+  window.updateBgRotation = function (value: number) {
+    document.getElementById("bg-rotation-val")!.textContent = `${value}°`;
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ rotation: parseFloat(value as any) });
+    else layers.bg.rotation = parseFloat(value as any);
+    (window as any).updateQR?.();
+  };
+
+  window.updateBgScale = function (value: number) {
+    document.getElementById("bg-scale-val")!.textContent = `${value}%`;
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg({ scale: value / 100 });
+    else layers.bg.scale = value / 100;
+    (window as any).updateQR?.();
+  };
+
+  window.updateBgOffset = function () {
+    const x = (document.getElementById("bg-offset-x") as HTMLInputElement)?.value || 0;
+    const y = (document.getElementById("bg-offset-y") as HTMLInputElement)?.value || 0;
+    const layers = getLayers();
+    if (!layers) return;
+    const patch = { offsetX: parseFloat(x as any) / 100, offsetY: parseFloat(y as any) / 100 };
+    if ((window as any).qrLayers?.setBg) (window as any).qrLayers.setBg(patch);
+    else Object.assign(layers.bg, patch);
+    (window as any).updateQR?.();
+  };
+
+  // Paper Controls
+  window.updatePaperOpacity = function (value: number) {
+    document.getElementById("paper-opacity-val")!.textContent = `${value}%`;
+    (window as any).qrLayers?.setLayerOpacity?.("paper", Math.max(0, Math.min(1, value / 100)));
+  };
+
+  window.setPaperFit = function (fit: string) {
+    document.querySelectorAll("#paper-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelector(`#paper-controls [data-fit="${fit}"]`)?.classList.add("active");
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ fit });
+    else layers.paper.fit = fit;
+    (window as any).updateQR?.();
+  };
+
+  window.updatePaperRotation = function (value: number) {
+    document.getElementById("paper-rotation-val")!.textContent = `${value}°`;
+    const layers = getLayers();
+    if (!layers) return;
+    const deg = parseFloat(value as any);
+    if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ rotation: deg });
+    else layers.paper.rotation = deg;
+    (window as any).updateQR?.();
+  };
+
+  window.updatePaperScale = function (value: number) {
+    document.getElementById("paper-scale-val")!.textContent = `${value}%`;
+    const layers = getLayers();
+    if (!layers) return;
+    const s = (value as any) / 100;
+    if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper({ scale: s });
+    else layers.paper.scale = s;
+    (window as any).updateQR?.();
+  };
+
+  window.updatePaperOffset = function () {
+    const x = (document.getElementById("paper-offset-x") as HTMLInputElement)?.value || 0;
+    const y = (document.getElementById("paper-offset-y") as HTMLInputElement)?.value || 0;
+    const layers = getLayers();
+    if (!layers) return;
+    const patch = { offsetX: parseFloat(x as any) / 100, offsetY: parseFloat(y as any) / 100 };
+    if ((window as any).qrLayers?.setPaper) (window as any).qrLayers.setPaper(patch);
+    else Object.assign(layers.paper, patch);
+    (window as any).updateQR?.();
+  };
+
+  // Ink Controls
+  window.updateInkOpacity = function (value: number) {
+    document.getElementById("ink-opacity-val")!.textContent = `${value}%`;
+    (window as any).qrLayers?.setLayerOpacity?.("ink", Math.max(0, Math.min(1, value / 100)));
+  };
+
+  window.setInkFit = function (fit: string) {
+    document.querySelectorAll("#ink-controls .fit-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelector(`#ink-controls [data-fit="${fit}"]`)?.classList.add("active");
+    const layers = getLayers();
+    if (!layers) return;
+    if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ fit });
+    else layers.ink.fit = fit;
+    (window as any).updateQR?.();
+  };
+
+  window.updateInkRotation = function (value: number) {
+    document.getElementById("ink-rotation-val")!.textContent = `${value}°`;
+    const layers = getLayers();
+    if (!layers) return;
+    const deg = parseFloat(value as any);
+    if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ rotation: deg });
+    else layers.ink.rotation = deg;
+    (window as any).updateQR?.();
+  };
+
+  window.updateInkScale = function (value: number) {
+    document.getElementById("ink-scale-val")!.textContent = `${value}%`;
+    const layers = getLayers();
+    if (!layers) return;
+    const s = (value as any) / 100;
+    if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk({ scale: s });
+    else layers.ink.scale = s;
+    (window as any).updateQR?.();
+  };
+
+  window.updateInkOffset = function () {
+    const x = (document.getElementById("ink-offset-x") as HTMLInputElement)?.value || 0;
+    const y = (document.getElementById("ink-offset-y") as HTMLInputElement)?.value || 0;
+    const layers = getLayers();
+    if (!layers) return;
+    const patch = { offsetX: parseFloat(x as any) / 100, offsetY: parseFloat(y as any) / 100 };
+    if ((window as any).qrLayers?.setInk) (window as any).qrLayers.setInk(patch);
+    else Object.assign(layers.ink, patch);
+    (window as any).updateQR?.();
+  };
+
+  // Logo (opacity + transform)
+  window.updateLogoOpacity = function (value: number) {
+    document.getElementById("logo-opacity-val")!.textContent = `${value}%`;
+    (window as any).qrLayers?.setLayerOpacity?.("logo", Math.max(0, Math.min(1, value / 100)));
+  };
+
+  window.updateLogoRotation = function (value: number) {
+    document.getElementById("logo-rotation-val")!.textContent = `${value}°`;
+    const cfg = getConfig();
+    if (!cfg) return;
+    cfg.logoRotation = parseFloat(value as any);
+    (window as any).updateQR?.();
+  };
+
+  window.updateLogoScale = function (value: number) {
+    document.getElementById("logo-scale-val")!.textContent = `${value}%`;
+    const cfg = getConfig();
+    if (!cfg) return;
+    cfg.logoScale = (value as any) / 100;
+    (window as any).updateQR?.();
+  };
+
+  window.updateLogoOffset = function () {
+    const cfg = getConfig();
+    if (!cfg) return;
+    const x = (document.getElementById("logo-offset-x") as HTMLInputElement)?.value || 0;
+    const y = (document.getElementById("logo-offset-y") as HTMLInputElement)?.value || 0;
+    cfg.logoOffsetX = parseFloat(x as any) / 100;
+    cfg.logoOffsetY = parseFloat(y as any) / 100;
+    (window as any).updateQR?.();
+  };
+
 </script>
 
 <style>
@@ -650,8 +1357,14 @@ const t = useTranslations(lang);
     border-radius: 12px;
   }
 
-  .mode-btn {
+  .mode-item {
+    position: relative;
     flex: 1;
+    min-width: 0;
+  }
+
+  .mode-btn {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -675,8 +1388,37 @@ const t = useTranslations(lang);
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
   }
 
-  .mode-icon {
-    font-size: 24px;
+  .mode-thumb {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(127, 127, 127, 0.25);
+    background: rgba(127, 127, 127, 0.12);
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+  }
+
+  .mode-thumb.has-image .mode-thumb-icon {
+    opacity: 0;
+  }
+
+  .mode-thumb.disabled {
+    filter: grayscale(1);
+    opacity: 0.6;
+  }
+
+  .mode-thumb-icon {
+    font-size: 20px;
+    opacity: 0.9;
+  }
+
+  .mode-thumb-icon :global(svg) {
+    width: 20px;
+    height: 20px;
   }
 
   .mode-label {
@@ -684,6 +1426,30 @@ const t = useTranslations(lang);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .mode-clear {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: rgba(239, 68, 68, 0.92);
+    color: white;
+    font-size: 14px;
+    line-height: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s;
+    z-index: 1;
+  }
+
+  .mode-clear:hover {
+    transform: scale(1.08);
   }
 
   /* Upload Area */
@@ -729,6 +1495,12 @@ const t = useTranslations(lang);
   .upload-icon {
     font-size: 36px;
     opacity: 0.8;
+    color: var(--accent-primary);
+  }
+
+  .upload-icon :global(svg) {
+    width: 30px;
+    height: 30px;
   }
 
   .upload-text {

@@ -3,6 +3,11 @@ import tailwind from "@astrojs/tailwind";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import { SUPPORTED_LANGS, DEFAULT_LANG } from "@holi/configs/i18n";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, "../../..");
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,8 +20,7 @@ export default defineConfig({
     defaultLocale: DEFAULT_LANG,
     locales: SUPPORTED_LANGS,
     routing: {
-      prefixDefaultLocale: true,
-      redirectToDefaultLocale: false,
+      prefixDefaultLocale: false,
       fallbackType: "redirect"
     },
   },
@@ -26,6 +30,11 @@ export default defineConfig({
     }),
   ],
   vite: {
+    server: {
+      fs: {
+        allow: [repoRoot],
+      },
+    },
     plugins: [wasm(), topLevelAwait()],
   },
 });

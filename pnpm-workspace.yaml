@@ -1,3 +1,22 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - "web/apps/*"
+  - "web/packages/*"
+  - "crates/wasm/*"
+
+catalog:
+  # Astro
+  astro: "^4.0.0"
+  "@astrojs/tailwind": "^5.0.0"
+  "@astrojs/react": "^3.0.0"
+
+  # Styles
+  tailwindcss: "^3.4.0"
+
+  # React
+  react: "^18.2.0"
+  "react-dom": "^18.2.0"
+
+  # Vite Plugins & Testing
+  vite-plugin-top-level-await: "^1.6.0"
+  vite-plugin-wasm: "^3.5.0"
+  vitest: "^4.0.16"

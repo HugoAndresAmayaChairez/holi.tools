@@ -1,12 +1,11 @@
 ---
-import ToastContainer from "./ui/ToastContainer.astro";
 import IdentityHeader from "./vault/IdentityHeader.astro";
 import FriendsSection from "./vault/FriendsSection.astro";
 import ProjectsSection from "./vault/ProjectsSection.astro";
+import HoliCard from "./ui/HoliCard.astro";
 
 // Modals
 import FriendModal from "./vault/modals/FriendModal.astro";
-import FriendInviteDialog from "./vault/modals/FriendInviteDialog.astro";
 import IdentityModal from "./vault/modals/IdentityModal.astro";
 import ProjectModals from "./vault/modals/ProjectModals.astro";
 
@@ -15,33 +14,33 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<main
-  class="min-h-screen bg-black text-white font-sans selection:bg-purple-500/30"
->
-  <ToastContainer />
+<section aria-label={t("nav.dashboard")} class="text-white">
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <HoliCard class="holi-shell h-full overflow-visible" rounded="lg" padding="none">
+        <IdentityHeader />
+      </HoliCard>
+    </div>
 
-  <div class="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
-    <!-- Master Vault Card -->
-    <div
-      class="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative"
-    >
-      <!-- Header (Identity & Vault Status) -->
-      <IdentityHeader />
+    <div class="lg:col-span-8">
+      <HoliCard class="h-full overflow-visible" rounded="lg" padding="none">
+        <div class="p-5 sm:p-6">
+          <ProjectsSection />
+        </div>
+      </HoliCard>
+    </div>
 
-      <!-- Main Content -->
-      <div class="p-6 space-y-8">
-        <!-- Friends Section -->
-        <FriendsSection />
-
-        <!-- Projects Section -->
-        <ProjectsSection />
-      </div>
+    <div class="lg:col-span-12">
+      <HoliCard class="overflow-visible" rounded="lg" padding="none">
+        <div class="p-5 sm:p-6">
+          <FriendsSection />
+        </div>
+      </HoliCard>
     </div>
   </div>
 
   <!-- Dialogs -->
   <FriendModal />
-  <FriendInviteDialog />
   <IdentityModal />
   <ProjectModals />
-</main>
+</section>

@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://holi.tools/sitemap.xml
+LLMs: https://holi.tools/llms.txt
+Bots: https://holi.tools/bots.txt

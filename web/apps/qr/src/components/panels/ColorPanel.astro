@@ -20,14 +20,6 @@ const t = useTranslations(lang);
   <div class="color-row">
     <div class="color-label">
       <span class="label-text">{t("color.foreground")}</span>
-      <label class="transparency-toggle" title={t("color.transparency")}>
-        <input
-          type="checkbox"
-          id="chk-fg-transparent"
-          onchange="toggleFgTransparent(this.checked)"
-        />
-        <span class="toggle-icon">🚫</span>
-      </label>
     </div>
     <div class="color-picker-wrapper" id="fg-picker-wrapper">
       <input
@@ -36,24 +28,16 @@ const t = useTranslations(lang);
         value="#000000"
         oninput="updateColor('fg', this.value)"
       />
-      <div class="transparency-pattern" id="fg-transparency-pattern"></div>
     </div>
   </div>
 </div>
 
 <!-- Background Color -->
+<!-- Background Color -->
 <div class="color-section">
-  <div class="color-row">
+  <div class="color-row" id="bg-color-row">
     <div class="color-label">
       <span class="label-text">{t("color.background")}</span>
-      <label class="transparency-toggle" title={t("color.transparency")}>
-        <input
-          type="checkbox"
-          id="chk-bg-transparent"
-          onchange="toggleBgTransparent(this.checked)"
-        />
-        <span class="toggle-icon">🚫</span>
-      </label>
     </div>
     <div class="color-picker-wrapper" id="bg-picker-wrapper">
       <input
@@ -62,7 +46,6 @@ const t = useTranslations(lang);
         value="#ffffff"
         oninput="updateColor('bg', this.value)"
       />
-      <div class="transparency-pattern" id="bg-transparency-pattern"></div>
     </div>
   </div>
 </div>
@@ -119,6 +102,45 @@ const t = useTranslations(lang);
 <div class="section-divider"></div>
 <div class="gradient-label">{t("color.gradients")}</div>
 
+<div class="gradient-presets" aria-label="Gradient presets">
+  <button
+    class="grad-preset"
+    style="--g1:#111827;--g2:#2563eb"
+    onclick="applyGradientPreset(1, '#111827', '#2563eb', 35)"
+    title="Ink blue"
+  ></button>
+  <button
+    class="grad-preset"
+    style="--g1:#064e3b;--g2:#22c55e"
+    onclick="applyGradientPreset(1, '#064e3b', '#22c55e', 125)"
+    title="Deep green"
+  ></button>
+  <button
+    class="grad-preset"
+    style="--g1:#7f1d1d;--g2:#f97316"
+    onclick="applyGradientPreset(2, '#7f1d1d', '#f97316', 0)"
+    title="Warm radial"
+  ></button>
+  <button
+    class="grad-preset"
+    style="--g1:#312e81;--g2:#06b6d4"
+    onclick="applyGradientPreset(3, '#312e81', '#06b6d4', 210)"
+    title="Sweep"
+  ></button>
+  <button
+    class="grad-preset"
+    style="--g1:#18181b;--g2:#eab308"
+    onclick="applyGradientPreset(4, '#18181b', '#eab308', 0)"
+    title="Diamond glow"
+  ></button>
+  <button
+    class="grad-preset"
+    style="--g1:#000000;--g2:#ffffff"
+    onclick="applyGradientPreset(0, '#000000', '#ffffff', 0)"
+    title="Solid"
+  ></button>
+</div>
+
 <div class="control-group">
   <div class="control-row">
     <label for="gradient-type">{t("color.gradient.type")}</label>
@@ -169,99 +191,11 @@ const t = useTranslations(lang);
 </div>
 
 <script>
-  // Gradient control functions
-  (window as any).toggleGradient = function (enabled: boolean) {
-    const controls = document.getElementById("gradient-controls");
-    if (controls) {
-      controls.style.display = enabled ? "flex" : "none";
-    }
+  // Import logic from library
+  import "../../lib/panels/color-panel";
 
-    if (window.state && window.state.config) {
-      window.state.config.gradientEnabled = enabled;
-      if (enabled && !window.state.config.gradientColors) {
-        // Set default colors
-        window.state.config.gradientColors = ["#6366f1", "#ec4899"];
-        window.state.config.gradientType = 1;
-        window.state.config.gradientAngle = 45;
-      }
-      window.updateQR?.();
-    }
-  };
-
-  (window as any).setGradientType = function (type: "linear" | "radial") {
-    document.querySelectorAll("[data-gradtype]").forEach((btn) => {
-      btn.classList.toggle(
-        "active",
-        (btn as HTMLElement).dataset.gradtype === type
-      );
-    });
-
-    const angleRow = document.getElementById("gradient-angle-row");
-    if (angleRow) {
-      angleRow.style.display = type === "linear" ? "flex" : "none";
-    }
-
-    if (window.state?.config) {
-      window.state.config.gradientType = type === "linear" ? 1 : 2;
-      window.updateQR?.();
-    }
-  };
-
-  // Apply a transparent background preset
-  (window as any).applyTransparentPreset = function () {
-    const fgPicker = document.getElementById("color-fg") as HTMLInputElement;
-    const bgCheck = document.getElementById(
-      "chk-bg-transparent"
-    ) as HTMLInputElement;
-
-    if (fgPicker) {
-      fgPicker.value = "#000000";
-      (window as any).updateColor?.("fg", "#000000");
-    }
-
-    if (bgCheck && !bgCheck.checked) {
-      bgCheck.checked = true;
-      (window as any).toggleBgTransparent?.(true);
-    }
-  };
-
-  // Modern Gradient Logic
-  (window as any).updateGradient = () => {
-    const typeSelect = document.getElementById(
-      "gradient-type"
-    ) as HTMLSelectElement;
-    const color2Input = document.getElementById(
-      "gradient-color-2"
-    ) as HTMLInputElement;
-    const angleInput = document.getElementById(
-      "gradient-angle"
-    ) as HTMLInputElement;
-
-    if (!typeSelect || !color2Input || !angleInput) return;
-
-    const type = parseInt(typeSelect.value);
-    const color2 = color2Input.value;
-    const angle = parseInt(angleInput.value);
-
-    // Show/Hide controls based on type
-    const colorRow = document.getElementById("gradient-color-row");
-    const angleRow = document.getElementById("gradient-angle-row");
-
-    if (colorRow) colorRow.style.display = type > 0 ? "flex" : "none";
-    if (angleRow)
-      angleRow.style.display = type === 1 || type === 3 ? "flex" : "none";
-
-    // Dispatch event
-    window.dispatchEvent(
-      new CustomEvent("qr-gradient-change", {
-        detail: {
-          type,
-          color2,
-          angle: angle * (Math.PI / 180), // Convert to radians for WebGL
-        },
-      })
-    );
-  };
+  // NOTE: The inline functions previously here are now handled by color-panel.ts
+  // which attaches them to window automatically when imported.
 </script>
 
 <style>
@@ -286,45 +220,7 @@ const t = useTranslations(lang);
   .label-text {
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-main, rgba(255, 255, 255, 0.9));
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .label-text {
-      color: rgba(255, 255, 255, 0.9);
-    }
-  }
-
-  /* Transparency Toggle */
-  .transparency-toggle {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-  }
-
-  .transparency-toggle:hover {
-    opacity: 0.8;
-  }
-
-  .transparency-toggle input {
-    display: none;
-  }
-
-  .transparency-toggle input:checked + .toggle-icon {
-    opacity: 1;
-  }
-
-  .toggle-icon {
-    font-size: 14px;
-    opacity: 0.6;
-    transition: all 0.2s;
-  }
-
-  .transparency-toggle input:checked ~ .toggle-icon,
-  .transparency-toggle:has(input:checked) {
-    opacity: 1;
+    color: var(--text-main);
   }
 
   /* Color Picker Wrapper */
@@ -352,35 +248,6 @@ const t = useTranslations(lang);
 
   .color-picker-wrapper input[type="color"]:disabled {
     cursor: not-allowed;
-  }
-
-  /* Transparency Pattern Overlay */
-  .transparency-pattern {
-    position: absolute;
-    inset: 3px;
-    border-radius: 7px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-    background-image:
-      linear-gradient(45deg, #ccc 25%, transparent 25%),
-      linear-gradient(-45deg, #ccc 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #ccc 75%),
-      linear-gradient(-45deg, transparent 75%, #ccc 75%);
-    background-size: 8px 8px;
-    background-position:
-      0 0,
-      0 4px,
-      4px -4px,
-      -4px 0px;
-  }
-
-  .color-picker-wrapper.transparent .transparency-pattern {
-    opacity: 1;
-  }
-
-  .color-picker-wrapper.transparent input[type="color"] {
-    opacity: 0.3;
   }
 
   /* Section Divider */
@@ -547,17 +414,17 @@ const t = useTranslations(lang);
   .type-btn {
     flex: 1;
     padding: 8px;
-    border: 1px solid rgba(127, 127, 127, 0.2);
+    border: 1px solid var(--control-border);
     border-radius: 8px;
-    background: rgba(127, 127, 127, 0.1);
-    color: var(--text-main, rgba(255, 255, 255, 0.7));
+    background: var(--surface-soft);
+    color: var(--text-main);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .type-btn:hover {
-    background: rgba(127, 127, 127, 0.2);
+    background: var(--surface-hover);
   }
 
   .type-btn.active {
@@ -629,6 +496,7 @@ const t = useTranslations(lang);
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 6px;
+    margin-bottom: 12px;
   }
 
   .grad-preset {
@@ -636,6 +504,9 @@ const t = useTranslations(lang);
     border-radius: 8px;
     border: 2px solid rgba(127, 127, 127, 0.2);
     cursor: pointer;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.35), transparent 34%),
+      linear-gradient(135deg, var(--g1), var(--g2));
     transition: all 0.2s;
   }
 
@@ -647,29 +518,29 @@ const t = useTranslations(lang);
   /* Gradient Controls */
   .modern-select {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-soft);
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     padding: 8px;
-    color: white;
+    color: var(--text-main);
     font-size: 14px;
     outline: none;
     cursor: pointer;
   }
 
   .modern-select:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
   }
 
   .modern-select option {
-    background: #1a1a1a;
-    color: white;
+    background: var(--bg-card);
+    color: var(--text-main);
   }
 
   .gradient-label {
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -689,6 +560,6 @@ const t = useTranslations(lang);
 
   .control-row label {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
   }
 </style>

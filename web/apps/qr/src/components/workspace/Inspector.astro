@@ -1,0 +1,104 @@
+---
+/**
+ * Inspector.astro — right column with the docked style tabs
+ * (Color · Shapes · Effects · Image · Frame · Advanced) and the share card.
+ * On narrow screens it becomes the bottom sheet and gains a Content tab
+ * that reveals the rail.
+ */
+import ColorPanel from "../panels/ColorPanel.astro";
+import ShapesPanel from "../panels/ShapesPanel.astro";
+import EffectPanel from "../panels/EffectPanel.astro";
+import ImagePanel from "../panels/ImagePanel.astro";
+import FramePanel from "../panels/FramePanel.astro";
+import AdvancedPanel from "../panels/AdvancedPanel.astro";
+import { getIconSvg } from "../../lib/icons";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const tabs = [
+  { id: "color", icon: "palette", label: t("panel.colors") },
+  { id: "shapes", icon: "category", label: t("panel.shapes") },
+  { id: "effect", icon: "auto_awesome", label: t("panel.effects") },
+  { id: "image", icon: "add_photo_alternate", label: t("panel.image") },
+  { id: "frame", icon: "frame", label: t("ws.tab_frame") },
+  { id: "advanced", icon: "tune", label: t("panel.advanced") },
+];
+const collapseIcon = getIconSvg("chevron_right", 14);
+---
+
+<aside class="qr-inspector" id="qr-inspector" aria-label={t("ws.style")}>
+  <button
+    class="qr-inspector-toggle"
+    id="qr-inspector-toggle"
+    type="button"
+    title={t("ws.inspector_collapse")}
+    aria-label={t("ws.inspector_collapse")}
+    aria-expanded="true"
+    aria-controls="inspector-panes"
+    set:html={collapseIcon}
+  />
+
+  <div class="qr-rail-collapsed" aria-hidden="true">
+    <span class="section-label">{t("ws.style")}</span>
+  </div>
+
+  <div class="inspector-tabs" role="tablist" aria-label={t("ws.style")} id="inspector-tabs">
+    <button class="inspector-tab is-mobile-only" role="tab" type="button" data-pane="content" aria-selected="false" id="tab-content">
+      <span class="icon">link</span><span>{t("ws.content")}</span>
+    </button>
+    {tabs.map((tab, i) => (
+      <button
+        class="inspector-tab"
+        role="tab"
+        type="button"
+        data-pane={tab.id}
+        id={`tab-${tab.id}`}
+        aria-selected={i === 0 ? "true" : "false"}
+        aria-controls={`pane-${tab.id}`}
+        title={`${tab.label} (${i + 1})`}
+      >
+        <span class="icon">{tab.icon}</span><span>{tab.label}</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="inspector-empty" id="inspector-empty">
+    <span class="eyebrow">{t("ws.style")}</span>
+    <span>{t("ws.inspector_empty")}</span>
+  </div>
+
+  <div class="inspector-panes" id="inspector-panes">
+    <section class="inspector-pane" id="pane-color" role="tabpanel" aria-labelledby="tab-color" data-active="true">
+      <ColorPanel />
+    </section>
+    <section class="inspector-pane" id="pane-shapes" role="tabpanel" aria-labelledby="tab-shapes" data-active="false">
+      <ShapesPanel />
+      <p class="help-text" id="shapes-diamond-hint" hidden>{t("ws.diamond_hint")}</p>
+    </section>
+    <section class="inspector-pane" id="pane-effect" role="tabpanel" aria-labelledby="tab-effect" data-active="false">
+      <EffectPanel />
+    </section>
+    <section class="inspector-pane" id="pane-image" role="tabpanel" aria-labelledby="tab-image" data-active="false">
+      <ImagePanel />
+    </section>
+    <section class="inspector-pane" id="pane-frame" role="tabpanel" aria-labelledby="tab-frame" data-active="false">
+      <FramePanel />
+    </section>
+    <section class="inspector-pane" id="pane-advanced" role="tabpanel" aria-labelledby="tab-advanced" data-active="false">
+      <AdvancedPanel />
+      <p class="help-text">{t("ws.shortcuts")}</p>
+    </section>
+
+    <div class="share-card" id="share-card">
+      <div class="share-card-head">
+        <span>{t("ws.share_title")}</span>
+        <button class="ws-btn" type="button" id="btn-share-style-card">
+          <span class="icon">share</span>{t("ws.share_copy")}
+        </button>
+      </div>
+      <p>{t("ws.share_note")}</p>
+    </div>
+  </div>
+</aside>

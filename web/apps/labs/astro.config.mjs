@@ -1,8 +1,9 @@
 import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
-import { SUPPORTED_LANGS, DEFAULT_LANG } from "@holi/configs/i18n";
+import { DEFAULT_LANG, SUPPORTED_LANGS } from "@holi/configs/i18n";
 
 export default defineConfig({
+  site: "https://labs.holi.tools",
   integrations: [
     tailwind({
       applyBaseStyles: false,

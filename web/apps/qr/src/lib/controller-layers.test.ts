@@ -22,6 +22,17 @@ function makeConfig(overrides: Partial<QRConfig> = {}): QRConfig {
 }
 
 describe('controller-layers', () => {
+    describe('createDefaultLayersConfig', () => {
+        it('should use QR-relative layer bounds and logo contain fit by default', () => {
+            const layers = createDefaultLayersConfig();
+
+            expect(layers.ink.scale).toBe(1);
+            expect(layers.paper.boundsScale).toBe(1.1);
+            expect(layers.bg.boundsScale).toBe(1.25);
+            expect(layers.logo.fit).toBe('contain');
+        });
+    });
+
     // ─── importLegacyIntoLayers ──────────────────────────────────
 
     describe('importLegacyIntoLayers', () => {
@@ -104,10 +115,11 @@ describe('controller-layers', () => {
 
         it('should map logo to logo layer', () => {
             const layers = createDefaultLayersConfig();
-            importLegacyIntoLayers(makeConfig({ logo: 'logo.png' }), layers);
+            importLegacyIntoLayers(makeConfig({ logo: 'logo.png', logoFit: 'cover' }), layers);
 
             expect(layers.logo.image).toBe('logo.png');
             expect(layers.logo.enabled).toBe(true);
+            expect(layers.logo.fit).toBe('cover');
         });
 
         it('should disable logo layer when no logo', () => {
@@ -242,6 +254,20 @@ describe('controller-layers', () => {
             syncLegacyFromLayers(config, layers);
 
             expect(config.artEnabled).toBe(false);
+        });
+
+        it('should sync layer bounds and logo fit', () => {
+            const config = makeConfig();
+            const layers = createDefaultLayersConfig();
+            layers.bg.boundsScale = 1.25;
+            layers.paper.boundsScale = 1.1;
+            layers.logo.fit = 'fill';
+
+            syncLegacyFromLayers(config, layers);
+
+            expect(config.artBoundsScale).toBe(1.25);
+            expect(config.paperBoundsScale).toBe(1.1);
+            expect(config.logoFit).toBe('fill');
         });
 
         it('should sync liquid effect settings', () => {

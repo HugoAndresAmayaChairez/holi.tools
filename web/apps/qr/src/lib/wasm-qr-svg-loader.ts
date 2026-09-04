@@ -1,4 +1,4 @@
-type HoliQrSvgModule = typeof import('../../../../packages/wasm-qr-svg/pkg/holi_qr_svg.js');
+type HoliQrSvgModule = typeof import('@holi/wasm-qr-svg');
 
 let wasmModule: HoliQrSvgModule | null = null;
 let wasmInitPromise: Promise<HoliQrSvgModule> | null = null;
@@ -18,7 +18,7 @@ export async function getHoliQrSvg(): Promise<HoliQrSvgModule> {
 
     wasmInitPromise = (async () => {
         try {
-            const mod = await import('../../../../packages/wasm-qr-svg/pkg/holi_qr_svg.js');
+            const mod = await import('@holi/wasm-qr-svg');
             await mod.default();
             wasmModule = mod;
             return mod;
