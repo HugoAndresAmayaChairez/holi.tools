@@ -14,7 +14,7 @@ catalog:
 
   # React
   react: "^18.2.0"
-  "react-dom": "^18.2.0"
+  "react-dom": "^19.2.8"
 
   # Vite Plugins & Testing
   vite-plugin-top-level-await: "^1.6.0"
