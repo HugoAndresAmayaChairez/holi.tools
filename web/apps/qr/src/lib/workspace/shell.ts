@@ -60,6 +60,16 @@ function isTypingTarget(el: EventTarget | null): boolean {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || node.isContentEditable;
 }
 
+function syncCollapseToggle(button: HTMLElement | null, expanded: boolean): void {
+  if (!button) return;
+  button.setAttribute("aria-expanded", String(expanded));
+  const label = expanded ? button.dataset.lCollapse : button.dataset.lExpand;
+  if (label) {
+    button.setAttribute("aria-label", label);
+    button.title = label;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Collapse toggles
 // ---------------------------------------------------------------------------
@@ -71,21 +81,11 @@ function initCollapse(): void {
   const railBtn = document.getElementById("qr-rail-toggle");
   const inspBtn = document.getElementById("qr-inspector-toggle");
 
-  const syncToggle = (button: HTMLElement | null, expanded: boolean) => {
-    if (!button) return;
-    button.setAttribute("aria-expanded", String(expanded));
-    const label = expanded ? button.dataset.lCollapse : button.dataset.lExpand;
-    if (label) {
-      button.setAttribute("aria-label", label);
-      button.title = label;
-    }
-  };
-
   const sync = () => {
     const railOpen = root.dataset.rail !== "closed";
     const inspOpen = root.dataset.inspector !== "closed";
-    syncToggle(railBtn, railOpen);
-    syncToggle(inspBtn, inspOpen);
+    syncCollapseToggle(railBtn, railOpen);
+    syncCollapseToggle(inspBtn, inspOpen);
   };
 
   railBtn?.addEventListener("click", () => {
@@ -126,6 +126,7 @@ export function selectPane(pane: string): void {
   if (root.dataset.inspector === "closed") {
     root.dataset.inspector = "open";
     writePrefs({ inspector: "open" });
+    syncCollapseToggle(document.getElementById("qr-inspector-toggle"), true);
   }
   writePrefs({ pane });
 }
