@@ -78,7 +78,10 @@ function initCollapse(): void {
     inspBtn?.setAttribute("aria-expanded", String(inspOpen));
     if (railBtn) {
       const label = railOpen ? t("qr-rail-toggle", "data-l-collapse") : t("qr-rail-toggle", "data-l-expand");
-      if (label) railBtn.setAttribute("aria-label", label), (railBtn.title = label);
+      if (label) {
+        railBtn.setAttribute("aria-label", label);
+        railBtn.title = label;
+      }
     }
   };
 
