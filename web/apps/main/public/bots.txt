@@ -1,0 +1,31 @@
+# Holi.tools Bot Context
+
+This file is a human-readable companion to `/llms.txt` for crawlers, agents,
+and language models.
+
+## Crawl Policy
+
+- Public pages are allowed.
+- Do not treat public pages as evidence that user data is server-stored.
+- Core tools are designed to run locally in the browser when possible.
+
+## Canonical Model Files
+
+- `/llms.txt`: public summary for language models.
+- `/llm.txt`: short model summary.
+- Repository docs:
+  - `AGENTS.md`
+  - `docs/product.md`
+  - `docs/architecture.md`
+  - `docs/roadmap.md`
+  - `spec/README.md`
+
+## Project Map
+
+- `holi.tools`: ecosystem hub.
+- `image-holi.pages.dev`: local image workspace.
+- `qr.holi.tools`: offline QR studio.
+- `user.holi.tools`: local identity, vault, and P2P experiments.
+- `typst.holi.tools`: private Typst editor.
+- `labs.holi.tools`: tutorials, field notes, experiments, and papers in one publication.
+- `metadata.holi.tools`: local metadata inspection.

@@ -1,0 +1,162 @@
+---
+/**
+ * ShapesPanel.astro — module, eye-frame and eye-ball shapes.
+ * Tiles preview the exact renderer geometry (shape-previews.json is emitted
+ * by `cargo run --example shape_previews` in crates/core/holi-qr).
+ */
+import {
+  BODY_SHAPES,
+  EYE_FRAME_SHAPES,
+  EYE_BALL_SHAPES,
+} from "../../lib/qr-styles-config";
+import previews from "../../lib/constants/shape-previews.json";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const body = previews.body as Record<string, string>;
+const frame = previews.frame as Record<string, string>;
+const ball = previews.ball as Record<string, string>;
+---
+
+<div class="shapes-panel">
+  <div class="shape-section">
+    <span class="section-label">{t("shape.body")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.body")}>
+      {BODY_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-bodyshape={shape.id}
+          onclick={`setBodyShape('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.3 -0.3 5.6 5.6" aria-hidden="true"><path d={body[shape.id] || ""} /></svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <hr class="separator" />
+
+  <div class="shape-section">
+    <span class="section-label">{t("shape.eye")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.eye")}>
+      {EYE_FRAME_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-eyeframe={shape.id}
+          onclick={`setEyeFrame('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.4 -0.4 7.8 7.8" aria-hidden="true">
+            <path d={frame[shape.id] || ""} fill-rule="evenodd" />
+            <path d={ball["square"]} transform="translate(2 2)" />
+          </svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div class="shape-section">
+    <span class="section-label">{t("shape.eyeball")}</span>
+    <div class="shapes-grid" role="group" aria-label={t("shape.eyeball")}>
+      {EYE_BALL_SHAPES.map((shape) => (
+        <button
+          class:list={["shapes-btn", shape.id === "square" && "active"]}
+          type="button"
+          data-eyeball={shape.id}
+          onclick={`setEyeBall('${shape.id}')`}
+          title={t(shape.label as any)}
+          aria-label={t(shape.label as any)}
+        >
+          <svg viewBox="-0.4 -0.4 7.8 7.8" aria-hidden="true">
+            <path d={frame["square"]} fill-rule="evenodd" opacity="0.35" />
+            <path d={ball[shape.id] || ""} transform="translate(2 2)" />
+          </svg>
+          <span class="shapes-text">{t(shape.label as any)}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .shapes-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .shape-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shapes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .shapes-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 4px 6px;
+    border: 1px solid var(--control-border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+
+  .shapes-btn svg {
+    width: 34px;
+    height: 34px;
+    fill: currentColor;
+    display: block;
+  }
+
+  .shapes-text {
+    max-width: 100%;
+    font: 650 8.5px/1 var(--font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shapes-btn:hover {
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+
+  .shapes-btn.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+    color: var(--accent-primary);
+  }
+
+  .shapes-btn.active .shapes-text {
+    color: var(--text-main);
+  }
+
+  @media (max-width: 420px) {
+    .shapes-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

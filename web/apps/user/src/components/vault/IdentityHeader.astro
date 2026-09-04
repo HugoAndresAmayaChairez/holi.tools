@@ -1,0 +1,326 @@
+---
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const strings = {
+  loading: t("vault.loading"),
+  guest: t("vault.guest"),
+  permissionNeeded: t("vault.permission_needed"),
+  status: t("vault.status"),
+  status_label: t("vault.status_label"),
+  open_folder: t("vault.open_folder"),
+  edit_profile: t("vault.edit_profile"),
+  switch_vault: t("vault.switch_vault"),
+  statusIdle: t("vault.status_idle"),
+  statusConnected: t("vault.status_connected"),
+  trustedLocal: t("vault.trusted_local"),
+  opening: t("vault.opening"),
+  openError: t("vault.open_error"),
+};
+---
+
+<header
+  class="flex h-full flex-col items-center justify-center gap-4 rounded-3xl p-5 text-center sm:p-6"
+>
+  <!-- Identity Profile Image & Status -->
+  <div id="identity-section" class="relative group mt-2">
+    <button
+      type="button"
+      id="identity-menu-btn"
+      class="relative rounded-full"
+      aria-label={strings.edit_profile}
+      aria-haspopup="menu"
+      aria-expanded="false"
+      aria-controls="identity-menu"
+    >
+      <div
+        id="identity-avatar-display"
+        class="w-24 h-24 rounded-full bg-zinc-800 bg-cover bg-center border-4 border-white/10 group-hover:border-purple-500 transition-colors flex items-center justify-center text-3xl font-bold text-zinc-500 shadow-xl"
+      >
+        ?
+      </div>
+      <div
+        class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-[#18181b] rounded-full hidden"
+        id="online-indicator"
+      >
+      </div>
+    </button>
+
+    <!-- Dropdown Menu -->
+    <div
+      id="identity-menu"
+      role="menu"
+      class="absolute left-1/2 top-full z-50 mt-3 hidden w-52 -translate-x-1/2 overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/95 p-1.5 text-left shadow-2xl backdrop-blur-xl"
+    >
+      <button
+        type="button"
+        role="menuitem"
+        id="edit-identity-btn"
+        class="hidden w-full rounded-xl px-3 py-2.5 text-left text-sm text-zinc-200 transition-colors hover:bg-white/10"
+      >
+        {strings.edit_profile}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        id="select-vault-mobile-btn"
+        class="w-full rounded-xl px-3 py-2.5 text-left text-sm text-zinc-200 transition-colors hover:bg-white/10"
+      >
+        {strings.switch_vault}
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col items-center">
+    <p id="identity-status" class="text-xl font-bold text-white tracking-tight">
+      {strings.guest}
+    </p>
+    <p
+      id="identity-badge"
+      class="text-[10px] uppercase tracking-wider text-purple-400 font-mono hidden mt-1 bg-purple-500/10 px-2 py-0.5 rounded-full"
+    >
+      {strings.trustedLocal}
+    </p>
+  </div>
+
+  <div class="w-full h-px bg-white/10 my-2"></div>
+
+  <!-- Vault Connection Info -->
+  <div class="flex flex-col items-center gap-2 w-full">
+    <div class="flex items-center gap-2 text-zinc-300">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-folder-open text-purple-400"
+        ><path
+          d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v2"
+        ></path></svg
+      >
+      <h2 id="vault-path" class="text-sm font-semibold truncate max-w-[200px]">
+        {strings.status}
+      </h2>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span id="connection-status" class="w-2 h-2 rounded-full bg-zinc-500 shadow-[0_0_8px_rgba(255,255,255,0.2)]"></span>
+      <p id="vault-status-copy" class="text-[11px] text-zinc-500">
+        {strings.statusIdle}
+      </p>
+    </div>
+  </div>
+
+  <!-- Primary Vault Action -->
+  <button
+    type="button"
+    id="select-vault-btn"
+    class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-violet-950/30 transition hover:bg-violet-500 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
+    aria-describedby="vault-status-copy"
+  >
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h6l2 2h12v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/><path d="M2 7V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2"/></svg>
+    <span id="vault-action-label">{strings.open_folder}</span>
+  </button>
+</header>
+
+<script define:vars={{ strings }}>
+  window.vaultStrings = strings;
+</script>
+
+<script>
+  import { identityStore } from "../../lib/stores/identity";
+  import { toast } from "../../lib/ui/toast";
+  import {
+    getActiveHandle,
+    openWorkspace,
+    getLastVault,
+    checkAccess,
+    restoreSession,
+  } from "../../lib/workspace";
+
+  // Init Store
+  identityStore.init();
+
+  // DOM Elements
+  const statusEl = document.getElementById("identity-status");
+  const avatarEl = document.getElementById("identity-avatar-display");
+  const editBtn = document.getElementById("edit-identity-btn");
+  const onlineIndicator = document.getElementById("online-indicator");
+  const badgeEl = document.getElementById("identity-badge");
+
+  // Vault Elements
+  const vaultPath = document.getElementById("vault-path");
+  const connStatus = document.getElementById("connection-status");
+  const connectionCopy = document.getElementById("vault-status-copy");
+  const vaultAction = document.getElementById(
+    "select-vault-btn"
+  ) as HTMLButtonElement | null;
+  const vaultActionLabel = document.getElementById("vault-action-label");
+  const strings = (window as any).vaultStrings;
+
+  // Restore Session
+  (async () => {
+    try {
+      // 1. Try to restore last vault (only if permission is already granted)
+      const last = await getLastVault();
+      if (!last) return;
+
+      const access = await checkAccess(last.id);
+      if (access !== "granted") {
+        updateVaultUI(strings.permissionNeeded, false);
+        return;
+      }
+
+      const success = await restoreSession(last.id);
+      if (success) {
+        updateVaultUI(last.name, true);
+        window.dispatchEvent(new Event("workspace-restored")); // Notify other components
+
+        // Refresh identity UI after vault restore (identity may be auto-created).
+        identityStore.reload();
+      } else {
+        // Not found
+        updateVaultUI(strings.permissionNeeded, false);
+      }
+    } catch (e) {
+      console.error(e);
+      updateVaultUI(strings.permissionNeeded, false);
+    }
+  })();
+
+  function updateVaultUI(name: string, active: boolean) {
+    if (vaultPath) vaultPath.textContent = name;
+    if (connStatus) {
+      connStatus.classList.toggle("bg-green-500", active);
+      connStatus.classList.toggle("bg-zinc-500", !active);
+    }
+    if (connectionCopy) {
+      connectionCopy.textContent = active
+        ? strings.statusConnected
+        : strings.statusIdle;
+      connectionCopy.classList.toggle("text-emerald-300/70", active);
+      connectionCopy.classList.toggle("text-zinc-500", !active);
+    }
+    if (vaultActionLabel) {
+      vaultActionLabel.textContent = active
+        ? strings.switch_vault
+        : strings.open_folder;
+    }
+  }
+
+  // Subscribe to store updates
+  let avatarObjectUrl: string | null = null;
+  identityStore.subscribe(({ identity, loading }) => {
+    if (!statusEl || !avatarEl) return;
+
+    if (identity) {
+      statusEl.textContent = identity.alias;
+      if (badgeEl) badgeEl.classList.remove("hidden");
+
+      if (identity.avatar) {
+        if (avatarObjectUrl) URL.revokeObjectURL(avatarObjectUrl);
+        avatarObjectUrl = URL.createObjectURL(identity.avatar);
+        avatarEl.style.backgroundImage = `url(${avatarObjectUrl})`;
+        avatarEl.textContent = "";
+      } else {
+        avatarEl.style.backgroundImage = "";
+        avatarEl.textContent = (identity.alias || "??")
+          .slice(0, 2)
+          .toUpperCase();
+      }
+      if (editBtn) editBtn.classList.remove("hidden");
+      if (onlineIndicator) onlineIndicator.classList.remove("hidden"); // Assume "online" if identity exists for now
+    } else {
+      if (avatarObjectUrl) {
+        URL.revokeObjectURL(avatarObjectUrl);
+        avatarObjectUrl = null;
+      }
+      statusEl.textContent = loading ? strings.loading : strings.guest;
+      if (badgeEl) badgeEl.classList.add("hidden");
+      avatarEl.style.backgroundImage = "";
+      avatarEl.textContent = "?";
+      if (editBtn) editBtn.classList.add("hidden");
+      if (onlineIndicator) onlineIndicator.classList.add("hidden");
+    }
+  });
+
+  // Wire up events
+  const handleOpenFolder = async () => {
+    try {
+      if (vaultAction) {
+        vaultAction.disabled = true;
+        vaultAction.setAttribute("aria-busy", "true");
+      }
+      if (vaultActionLabel) vaultActionLabel.textContent = strings.opening;
+
+      const res = await openWorkspace();
+
+      if (res) {
+        updateVaultUI(res.name, true);
+        window.dispatchEvent(new Event("workspace-restored"));
+        // Also trigger identity reload in case identity is in the new folder
+        identityStore.reload();
+      }
+    } catch (e: any) {
+      console.error(e);
+      if (e.name !== "AbortError") toast.error(strings.openError);
+    } finally {
+      if (vaultAction) {
+        vaultAction.disabled = false;
+        vaultAction.removeAttribute("aria-busy");
+      }
+      if (vaultActionLabel) {
+        vaultActionLabel.textContent = getActiveHandle()
+          ? strings.switch_vault
+          : strings.open_folder;
+      }
+    }
+  };
+
+  document.getElementById("select-vault-btn")?.addEventListener("click", handleOpenFolder);
+  document.getElementById("select-vault-mobile-btn")?.addEventListener("click", handleOpenFolder);
+
+  // Dropdown Logic
+  const menuBtn = document.getElementById("identity-menu-btn");
+  const dropdown = menuBtn?.nextElementSibling;
+
+  if (menuBtn && dropdown) {
+    const closeMenu = () => {
+      dropdown.classList.add("hidden");
+      menuBtn.setAttribute("aria-expanded", "false");
+    };
+
+    menuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("hidden");
+      menuBtn.setAttribute(
+        "aria-expanded",
+        String(!dropdown.classList.contains("hidden"))
+      );
+    });
+
+    document.addEventListener("click", closeMenu);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMenu();
+    });
+    dropdown.addEventListener("click", (e) => e.stopPropagation());
+  }
+
+  // Edit/Create Dialog Triggers
+  document
+    .getElementById("edit-identity-btn")
+    ?.addEventListener("click", () => {
+      (document.getElementById("identity-dialog") as any)?.showModal();
+      window.dispatchEvent(new CustomEvent("edit-identity"));
+    });
+
+  document.addEventListener("astro:before-swap", () => {
+    if (avatarObjectUrl) URL.revokeObjectURL(avatarObjectUrl);
+  });
+</script>

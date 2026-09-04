@@ -1,0 +1,108 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import { LANGUAGES, DEFAULT_LANG, SUPPORTED_LANGS } from "@holi/configs/i18n";
+import { qrAppChangelog } from "@holi/configs/changelogs";
+import packageInfo from "../../package.json";
+import { getQrPrivacy } from "../privacy";
+import "@holi/ui/styles/fonts.css";
+
+interface Props {
+  title: string;
+  description: string;
+  lang: string;
+  version?: string;
+  changelog?: { version: string; date: string; changes: string[] }[];
+  hreflangLocales?: readonly string[];
+}
+
+const {
+  title,
+  description,
+  lang,
+  version,
+  changelog,
+  hreflangLocales = SUPPORTED_LANGS,
+} = Astro.props;
+
+const site = Astro.site ?? new URL("https://qr.holi.tools");
+const baseUrl = site.toString().replace(/\/$/, "");
+
+const pathname = Astro.url.pathname;
+const trailingSlash = pathname.endsWith("/");
+const segments = pathname.split("/").filter(Boolean);
+const hasLocalePrefix =
+  segments.length > 0 && hreflangLocales.includes(segments[0]);
+const restSegments = hasLocalePrefix ? segments.slice(1) : segments;
+const restPath = restSegments.join("/");
+
+function buildPath(locale: string) {
+  const prefix = locale === DEFAULT_LANG ? "" : `/${locale}`;
+  const middle = restPath ? `/${restPath}` : "/";
+  const path = `${prefix}${middle}`;
+  if (trailingSlash && !path.endsWith("/")) return `${path}/`;
+  if (!trailingSlash && path !== "/" && path.endsWith("/")) return path.slice(0, -1);
+  return path;
+}
+
+const canonicalUrl = `${baseUrl}${buildPath(lang)}`;
+const effectiveLanguages = LANGUAGES.filter((language) =>
+  hreflangLocales.includes(language.code),
+);
+
+const effectiveChangelog =
+  changelog ??
+  (qrAppChangelog as Record<string, { version: string; date: string; changes: string[] }[]>)[lang] ??
+  qrAppChangelog.en;
+const effectiveVersion = version ?? packageInfo.version;
+
+const privacySummary = getQrPrivacy(lang);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  languages={effectiveLanguages}
+  hreflangLanguages={effectiveLanguages}
+  defaultLang={DEFAULT_LANG}
+  colorScheme="qr"
+  showCanvasGrid={false}
+  productName="Holi QR"
+  productDescription={description}
+  version={effectiveVersion}
+  changelog={effectiveChangelog}
+  privacySummary={privacySummary}
+  showPapers={false}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: title,
+        description,
+        url: canonicalUrl,
+        applicationCategory: "UtilitiesApplication",
+        operatingSystem: "Web Browser",
+        isAccessibleForFree: true,
+        inLanguage: hreflangLocales,
+      })}
+    />
+  </slot>
+
+  <slot />
+</BaseLayout>

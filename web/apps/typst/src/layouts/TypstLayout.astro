@@ -1,0 +1,173 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import { DEFAULT_LANG, LANGUAGES } from "@holi/configs/i18n";
+import packageInfo from "../../package.json";
+import { typstChangelog } from "../changelog";
+import Icon from "@holi/ui/components/Icon.astro";
+import { getTypstCopy } from "../i18n/translations";
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: string;
+}
+
+const { title, description, lang = "en" } = Astro.props;
+const isDev = import.meta.env.DEV;
+const copy = getTypstCopy(lang);
+const privacyFacts = copy.privacyFacts.map(([label, value, tone]) => ({ label, value, tone }));
+const localizedRoot = lang === DEFAULT_LANG ? "" : `/${lang}`;
+const workspaceRuntimeCopy = JSON.stringify({
+  noDocument: copy.noDocument,
+  browserWorkspace: copy.browserWorkspace,
+  localFolder: copy.localFolder,
+  connected: copy.connected,
+  file: copy.file,
+  filesCount: copy.filesCount,
+  folderUnavailable: copy.folderUnavailable,
+});
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  languages={LANGUAGES}
+  hreflangLanguages={LANGUAGES}
+  defaultLang={DEFAULT_LANG}
+  prefixDefaultLocale={false}
+  colorScheme="typst"
+  showCanvasGrid={false}
+  showPapers={false}
+  productName="Holi Typst"
+  productDescription={copy.productDescription}
+  version={packageInfo.version}
+  changelog={typstChangelog}
+  privacySummary={{
+    id: "typst-privacy",
+    title: copy.privacyTitle,
+    summary: copy.privacySummary,
+    facts: privacyFacts,
+    detailsLabel: copy.privacyDetails,
+    detailsHref: `${localizedRoot}/privacy/`,
+  }}
+>
+  <slot name="head" slot="head">
+    <meta name="theme-color" content="#0b0b0f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <script is:inline define:vars={{ isDev }}>
+      // Enable “desktop-like” install/standalone via PWA.
+      // Disable SW in dev to avoid cross-app conflicts on localhost.
+      if (!isDev && "serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch((err) => {
+            console.warn("[typst] service worker registration failed", err);
+          });
+        });
+      }
+    </script>
+  </slot>
+
+  <section slot="utility-configuration" data-holi-dock-context data-workspace-copy={workspaceRuntimeCopy} aria-labelledby="typst-workspace-context-title">
+    <h3 id="typst-workspace-context-title">{copy.workspace}</h3>
+    <dl>
+      <div>
+        <dt>{copy.currentDocument}</dt>
+        <dd data-workspace-current>{copy.loading}</dd>
+      </div>
+      <div>
+        <dt>{copy.storage}</dt>
+        <dd data-workspace-source>{copy.browserWorkspace}</dd>
+      </div>
+      <div>
+        <dt>{copy.localFiles}</dt>
+        <dd data-workspace-count>—</dd>
+      </div>
+    </dl>
+    <div data-holi-dock-actions>
+      <button type="button" data-open-files><Icon name="file-text" size={15} />{copy.files}</button>
+      <button type="button" data-workspace-action="folder"><Icon name="home" size={15} />{copy.folder}</button>
+      <button type="button" data-workspace-action="browser"><Icon name="apps" size={15} />{copy.browser}</button>
+    </div>
+  </section>
+
+  <slot />
+</BaseLayout>
+
+<script>
+  const dock = document.querySelector<HTMLElement>("[data-dock-id='typst-privacy']");
+  if (dock && dock.dataset.typstWorkspaceWired !== "true") {
+    dock.dataset.typstWorkspaceWired = "true";
+    const context = dock.querySelector<HTMLElement>("[data-workspace-copy]");
+    const workspaceCopy = JSON.parse(context?.dataset.workspaceCopy || "{}") as {
+      noDocument: string;
+      browserWorkspace: string;
+      localFolder: string;
+      connected: string;
+      file: string;
+      filesCount: string;
+      folderUnavailable: string;
+    };
+
+    dock.querySelector<HTMLButtonElement>("[data-open-files]")?.addEventListener("click", () => {
+      document.dispatchEvent(new CustomEvent("holi:open-files"));
+      dock.querySelector<HTMLButtonElement>("[data-dock-tab='configuration']")?.click();
+    });
+
+    dock.querySelectorAll<HTMLButtonElement>("[data-workspace-action]").forEach((button) => {
+      if (button.dataset.workspaceAction === "folder" && !("showDirectoryPicker" in window)) {
+        button.disabled = true;
+        button.title = workspaceCopy.folderUnavailable;
+      }
+      button.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("holi:workspace-action", {
+          detail: { action: button.dataset.workspaceAction },
+        }));
+      });
+    });
+
+    const currentFile = document.getElementById("active-file-name");
+    const fileTree = document.getElementById("file-tree");
+    const workspaceLocation = document.getElementById("workspace-location");
+    const currentOutput = dock.querySelector<HTMLElement>("[data-workspace-current]");
+    const sourceOutput = dock.querySelector<HTMLElement>("[data-workspace-source]");
+    const countOutput = dock.querySelector<HTMLElement>("[data-workspace-count]");
+
+    const syncWorkspaceContext = () => {
+      if (currentOutput) currentOutput.textContent = currentFile?.textContent?.trim() || workspaceCopy.noDocument;
+      if (sourceOutput) {
+        const label = workspaceLocation?.textContent?.trim() || workspaceCopy.browserWorkspace;
+        sourceOutput.textContent = workspaceLocation?.dataset.kind === "folder"
+          ? `${workspaceCopy.localFolder} · ${label}`
+          : workspaceCopy.browserWorkspace;
+      }
+      const fileCount = fileTree?.querySelectorAll("[data-workspace-entry]").length ?? 0;
+      if (countOutput) countOutput.textContent = `${fileCount} ${fileCount === 1 ? workspaceCopy.file : workspaceCopy.filesCount}`;
+    };
+
+    document.addEventListener("holi:workspace-change", (event) => {
+      const detail = (event as CustomEvent<{ kind?: string; label?: string; count?: number }>).detail;
+      if (sourceOutput) {
+        sourceOutput.textContent = detail?.kind === "folder"
+          ? `${workspaceCopy.localFolder} · ${detail.label || workspaceCopy.connected}`
+          : workspaceCopy.browserWorkspace;
+      }
+      if (countOutput && typeof detail?.count === "number") {
+        countOutput.textContent = `${detail.count} ${detail.count === 1 ? workspaceCopy.file : workspaceCopy.filesCount}`;
+      }
+    });
+
+    const observer = new MutationObserver(syncWorkspaceContext);
+    if (currentFile) observer.observe(currentFile, { childList: true, subtree: true });
+    if (fileTree) observer.observe(fileTree, { childList: true, subtree: true });
+    if (workspaceLocation) observer.observe(workspaceLocation, {
+      attributes: true,
+      attributeFilter: ["data-kind"],
+      childList: true,
+      subtree: true,
+    });
+    syncWorkspaceContext();
+  }
+</script>

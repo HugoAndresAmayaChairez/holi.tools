@@ -1,0 +1,31 @@
+# Holi User
+
+Holi User is the local-first identity, vault, anonymous chat, and P2P
+collaboration surface for Holi.tools.
+
+## URL
+
+- https://user.holi.tools/
+
+## Mission
+
+Let users own identity and workspace data locally, then share or collaborate
+explicitly through cryptographic/P2P protocols instead of central accounts.
+
+## Implementation Parameters
+
+- App package: `holi-user`
+- App path: `web/apps/user`
+- Identity/store code: `web/apps/user/src/lib`
+- P2P and chat code: `web/apps/user/src/lib/p2p`
+- Friend handshake code: `web/apps/user/src/lib/friends`
+- Current architecture: `web/apps/user/about.md`
+- Privacy model: `docs/privacy.md`
+- Current priorities: `docs/roadmap.md`
+
+## Privacy And Security Notes
+
+- Treat this app as security-sensitive.
+- Do not claim production-grade cryptographic guarantees unless supported by
+  the current spec and implementation.
+- Default posture: local-first, explicit sharing, no unnecessary server trust.

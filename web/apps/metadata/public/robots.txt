@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://metadata.holi.tools/sitemap.xml
+LLMs: https://metadata.holi.tools/llms.txt

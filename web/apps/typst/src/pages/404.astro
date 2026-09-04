@@ -1,0 +1,23 @@
+---
+import NotFound from "@holi/ui/components/NotFound.astro";
+import { languages } from "../i18n/translations";
+
+import "../styles/app.css";
+
+const isDev = import.meta.env.DEV;
+---
+
+<head>
+	<meta name="theme-color" content="#0b0b0f" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="manifest" href="/manifest.webmanifest" />
+	<script is:inline define:vars={{ isDev }}>
+		if (!isDev && "serviceWorker" in navigator) {
+			window.addEventListener("load", () => {
+				navigator.serviceWorker.register("/sw.js").catch(() => {});
+			});
+		}
+	</script>
+</head>
+
+<NotFound colorScheme="typst" languages={languages} />

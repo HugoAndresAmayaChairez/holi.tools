@@ -1,0 +1,18 @@
+---
+import Editor from "../components/Editor.astro";
+import TypstLayout from "../layouts/TypstLayout.astro";
+import { getTypstCopy } from "../i18n/translations";
+import "../styles/app.css";
+const lang = "en";
+const copy = getTypstCopy(lang);
+---
+
+<TypstLayout
+  title={copy.metaTitle}
+  description={copy.metaDescription}
+  lang={lang}
+>
+  <main class="h-screen w-screen overflow-hidden bg-[var(--color-bg)]">
+    <Editor lang={lang} />
+  </main>
+</TypstLayout>

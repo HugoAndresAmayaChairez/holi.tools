@@ -1,0 +1,85 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import HeroTitle from "../components/HeroTitle.astro";
+import ToolsExplorer from "../components/ToolsExplorer.astro";
+import "../styles/app.css";
+import "@holi/ui/styles/fonts.css";
+import { getLangFromUrl, useTranslations, languages } from "../i18n/utils";
+import { getMainPrivacy } from "../privacy";
+import { toolIdentity } from "../i18n/editorial";
+
+interface Props {
+  version?: string;
+  changelog?: { version: string; date: string; changes: string[] }[];
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { version, changelog } = Astro.props;
+const privacySummary = getMainPrivacy(lang);
+const baseUrl = "https://holi.tools";
+const currentPath = lang === "en" ? "/" : `/${lang}/`;
+const canonicalUrl = `${baseUrl}${currentPath}`;
+---
+
+<BaseLayout
+  title={`Holi.tools - ${t("hero_slogan")}`}
+  description={t("seo_description")}
+  lang={lang}
+  languages={languages}
+  colorScheme="default"
+  showCanvasGrid={false}
+  productName="Holi.tools"
+  productDescription={t("seo_description")}
+  version={version}
+  changelog={changelog}
+  privacySummary={privacySummary}
+  showPapers={false}
+  changelogLabels={{ title: t("changelog_title"), current: t("changelog_current"), footer: t("changelog_footer"), support: t("changelog_support") }}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={`Holi.tools - ${t("hero_slogan")}`} />
+    <meta property="og:description" content={t("seo_description")} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:locale" content={lang} />
+    <meta property="og:site_name" content="Holi.tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`Holi.tools - ${t("hero_slogan")}`} />
+    <meta name="twitter:description" content={t("seo_description")} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+    <meta name="theme-color" content="#f4efe7" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Holi.tools",
+      description: t("seo_description"),
+      url: baseUrl,
+      inLanguage: languages.map((language) => language.code),
+      hasPart: Object.values(toolIdentity).map((tool) => ({ "@type": "WebApplication", name: tool.name, url: tool.href, isAccessibleForFree: true })),
+    })} />
+  </slot>
+
+  <a href="#ToolsExplorer" class="skip-link">{t("skip_to_content") || "Skip to main content"}</a>
+  <div class="main-home">
+    <header class="main-header"><HeroTitle /></header>
+    <ToolsExplorer />
+  </div>
+</BaseLayout>
+
+<style>
+  .skip-link { position: absolute; top: -100%; left: 50%; z-index: 10000; transform: translateX(-50%); padding: .75rem 1.5rem; border: 2px solid var(--color-border); background: var(--color-text); color: var(--color-bg); font-weight: 750; text-decoration: none; transition: top .2s ease; }
+  .skip-link:focus { top: 1rem; }
+  .main-home { min-height: 100dvh; }
+  .main-header { position: relative; width: 100%; }
+</style>
+
+<style is:global>
+  body.palette-default { --color-bg: #f4efe7; --color-text: #24211d; --color-border: rgba(52,45,36,.14); background: var(--color-bg); font-family: var(--holi-font-sans); }
+  :root[data-holi-theme="dark"] body.palette-default { --color-bg: #151311; --color-text: #f3ede5; --color-border: rgba(246,235,222,.14); }
+  @media (prefers-color-scheme: dark) { :root:not([data-holi-theme]) body.palette-default { --color-bg: #151311; --color-text: #f3ede5; --color-border: rgba(246,235,222,.14); } }
+</style>

@@ -1,0 +1,16 @@
+{
+  "name": "Holi Image",
+  "short_name": "Image",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4efe8",
+  "theme_color": "#c65431",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+/**
+ * Color Palettes - Holi.tools Design System
+ * 
+ * Each app can have its own color palette while maintaining consistency
+ * in the overall design language.
+ */
+
+/* ========================================
+   PALETTE DEFINITIONS
+   ======================================== */
+
+:root {
+    /* Default Palette (Main app) */
+    --palette-default-bg: #ffffff;
+    --palette-default-text: #1a1a1a;
+    --palette-default-border: rgba(0, 0, 0, 0.12);
+    --palette-default-accent: #7c3aed;
+
+    /* QR Palette */
+    --palette-qr-bg: #f4efe7;
+    --palette-qr-text: #24211d;
+    --palette-qr-border: rgba(52, 45, 36, 0.14);
+    --palette-qr-accent: #7467e8;
+
+    /* Paint Palette (Future) */
+    --palette-paint-bg: #fafafa;
+    --palette-paint-text: #1a1a1a;
+    --palette-paint-accent: #ff6b6b;
+
+    /* Calculator Palette (Future) */
+    --palette-calculator-bg: #ffffff;
+    --palette-calculator-text: #1a1a1a;
+    --palette-calculator-accent: #10b981;
+
+    /* Labs Palette */
+    --palette-labs-bg: #f3faf5;
+    --palette-labs-text: #102319;
+    --palette-labs-border: rgba(16, 35, 25, 0.14);
+    --palette-labs-accent: #087443;
+
+    /* Typst Palette */
+    --palette-typst-bg: #ffffff;
+    --palette-typst-text: #1a1a1a;
+    --palette-typst-border: rgba(0, 0, 0, 0.1);
+    --palette-typst-accent: #0284c7;
+    /* Sky-600 */
+
+    /* Image Palette */
+    --palette-image-bg: #f4efe8;
+    --palette-image-text: #24211d;
+    --palette-image-border: rgba(52, 45, 36, 0.14);
+    --palette-image-accent: #c65431;
+
+    /* Metadata Palette */
+    --palette-metadata-bg: #eef4ef;
+    --palette-metadata-text: #17211a;
+    --palette-metadata-border: rgba(23, 33, 26, 0.14);
+    --palette-metadata-accent: #157a50;
+}
+
+/* Dark mode palette variations */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-holi-theme]) {
+        /* Default Dark */
+        --palette-default-bg: #1a1a1a;
+        --palette-default-text: #f5f5f5;
+        --palette-default-border: #f5f5f5;
+        --palette-default-accent: #a855f7;
+
+        /* QR Dark */
+        --palette-qr-bg: #151311;
+        --palette-qr-text: #f3ede5;
+        --palette-qr-border: rgba(246, 235, 222, 0.14);
+        --palette-qr-accent: #8f85f0;
+
+        /* Paint Dark */
+        --palette-paint-bg: #1a1a1a;
+        --palette-paint-text: #f5f5f5;
+        --palette-paint-accent: #ff8787;
+
+        /* Calculator Dark */
+        --palette-calculator-bg: #1a1a1a;
+        --palette-calculator-text: #f5f5f5;
+        --palette-calculator-accent: #34d399;
+
+        /* Labs Dark */
+        --palette-labs-bg: #07110b;
+        --palette-labs-text: #eefbf3;
+        --palette-labs-border: rgba(255, 255, 255, 0.15);
+        --palette-labs-accent: #5ee090;
+
+        /* Typst Dark */
+        --palette-typst-bg: #1a1a1a;
+        --palette-typst-text: #f5f5f5;
+        --palette-typst-border: rgba(255, 255, 255, 0.15);
+        --palette-typst-accent: #38bdf8;
+        /* Sky-400 */
+
+        /* Image Dark */
+        --palette-image-bg: #12100e;
+        --palette-image-text: #f2ece3;
+        --palette-image-border: rgba(246, 235, 222, 0.13);
+        --palette-image-accent: #ff8b63;
+
+        /* Metadata Dark */
+        --palette-metadata-bg: #101713;
+        --palette-metadata-text: #edf7f0;
+        --palette-metadata-border: rgba(237, 247, 240, 0.13);
+        --palette-metadata-accent: #65d39b;
+    }
+}
+
+:root[data-holi-theme="dark"] {
+    --palette-default-bg: #1a1a1a;
+    --palette-default-text: #f5f5f5;
+    --palette-default-border: #f5f5f5;
+    --palette-default-accent: #a855f7;
+    --palette-qr-bg: #151311;
+    --palette-qr-text: #f3ede5;
+    --palette-qr-border: rgba(246, 235, 222, 0.14);
+    --palette-qr-accent: #8f85f0;
+    --palette-paint-bg: #1a1a1a;
+    --palette-paint-text: #f5f5f5;
+    --palette-paint-accent: #ff8787;
+    --palette-calculator-bg: #1a1a1a;
+    --palette-calculator-text: #f5f5f5;
+    --palette-calculator-accent: #34d399;
+    --palette-labs-bg: #07110b;
+    --palette-labs-text: #eefbf3;
+    --palette-labs-border: rgba(255, 255, 255, 0.15);
+    --palette-labs-accent: #5ee090;
+    --palette-typst-bg: #1a1a1a;
+    --palette-typst-text: #f5f5f5;
+    --palette-typst-border: rgba(255, 255, 255, 0.15);
+    --palette-typst-accent: #38bdf8;
+    --palette-image-bg: #12100e;
+    --palette-image-text: #f2ece3;
+    --palette-image-border: rgba(246, 235, 222, 0.13);
+    --palette-image-accent: #ff8b63;
+    --palette-metadata-bg: #101713;
+    --palette-metadata-text: #edf7f0;
+    --palette-metadata-border: rgba(237, 247, 240, 0.13);
+    --palette-metadata-accent: #65d39b;
+}
+
+/* ========================================
+   PALETTE APPLICATION
+   ======================================== */
+
+/* Apply palette to body by class */
+body.palette-default {
+    --color-bg: var(--palette-default-bg);
+    --color-text: var(--palette-default-text);
+    --color-border: var(--palette-default-border);
+    --color-accent: var(--palette-default-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-default-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-default-bg) 90%, var(--palette-default-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-default-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-default-bg) 93%, var(--palette-default-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-default-text) 14%, transparent);
+}
+
+body.palette-qr {
+    --color-bg: var(--palette-qr-bg);
+    --color-text: var(--palette-qr-text);
+    --color-border: var(--palette-qr-border);
+    --color-accent: var(--palette-qr-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-qr-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-qr-bg) 90%, var(--palette-qr-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-qr-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-qr-bg) 93%, var(--palette-qr-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-qr-text) 14%, transparent);
+}
+
+body.palette-paint {
+    --color-bg: var(--palette-paint-bg);
+    --color-text: var(--palette-paint-text);
+    --color-accent: var(--palette-paint-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-paint-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-paint-bg) 90%, var(--palette-paint-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-paint-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-paint-bg) 93%, var(--palette-paint-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-paint-text) 14%, transparent);
+}
+
+body.palette-calculator {
+    --color-bg: var(--palette-calculator-bg);
+    --color-text: var(--palette-calculator-text);
+    --color-accent: var(--palette-calculator-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-calculator-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-calculator-bg) 90%, var(--palette-calculator-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-calculator-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-calculator-bg) 93%, var(--palette-calculator-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-calculator-text) 14%, transparent);
+}
+
+body.palette-labs {
+    --color-bg: var(--palette-labs-bg);
+    --color-text: var(--palette-labs-text);
+    --color-border: var(--palette-labs-border);
+    --color-accent: var(--palette-labs-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-labs-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-labs-bg) 90%, var(--palette-labs-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-labs-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-labs-bg) 93%, var(--palette-labs-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-labs-text) 14%, transparent);
+}
+
+body.palette-typst {
+    --color-bg: var(--palette-typst-bg);
+    --color-text: var(--palette-typst-text);
+    --color-border: var(--palette-typst-border);
+    --color-accent: var(--palette-typst-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-typst-bg) 96%, transparent);
+    --color-dock-expanded-bg: var(--color-dock-compact-bg);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-typst-bg) 90%, var(--palette-typst-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-typst-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-typst-bg) 93%, var(--palette-typst-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-typst-text) 14%, transparent);
+}
+
+body.palette-image {
+    --color-bg: var(--palette-image-bg);
+    --color-text: var(--palette-image-text);
+    --color-border: var(--palette-image-border);
+    --color-accent: var(--palette-image-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-image-bg) 96%, transparent);
+    --color-dock-expanded-bg: color-mix(in srgb, var(--palette-image-bg) 98%, transparent);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-image-bg) 90%, var(--palette-image-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-image-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-image-bg) 93%, var(--palette-image-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-image-text) 14%, transparent);
+}
+
+body.palette-metadata {
+    --color-bg: var(--palette-metadata-bg);
+    --color-text: var(--palette-metadata-text);
+    --color-border: var(--palette-metadata-border);
+    --color-accent: var(--palette-metadata-accent);
+    --color-dock-compact-bg: color-mix(in srgb, var(--palette-metadata-bg) 96%, transparent);
+    --color-dock-expanded-bg: color-mix(in srgb, var(--palette-metadata-bg) 98%, transparent);
+    --color-dock-tabs-bg: color-mix(in srgb, var(--palette-metadata-bg) 90%, var(--palette-metadata-text) 10%);
+    --color-dock-card-bg: color-mix(in srgb, var(--palette-metadata-text) 4%, transparent);
+    --color-dock-control-bg: color-mix(in srgb, var(--palette-metadata-bg) 93%, var(--palette-metadata-text) 7%);
+    --color-dock-border: color-mix(in srgb, var(--palette-metadata-text) 14%, transparent);
+}
+
+/* Typst uses a blue-gray work surface in dark mode. Keep the utility shell in
+   that material family instead of deriving a neutral gray from the page ink. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-holi-theme]) body.palette-typst {
+        --color-dock-compact-bg: rgba(20, 23, 28, 0.98);
+        --color-dock-expanded-bg: rgba(17, 20, 25, 0.985);
+        --color-dock-tabs-bg: rgba(24, 27, 33, 0.98);
+        --color-dock-card-bg: rgba(231, 234, 240, 0.05);
+        --color-dock-control-bg: #20242b;
+        --color-dock-border: rgba(231, 234, 240, 0.11);
+    }
+}
+
+:root[data-holi-theme="dark"] body.palette-typst {
+    --color-dock-compact-bg: rgba(20, 23, 28, 0.98);
+    --color-dock-expanded-bg: rgba(17, 20, 25, 0.985);
+    --color-dock-tabs-bg: rgba(24, 27, 33, 0.98);
+    --color-dock-card-bg: rgba(231, 234, 240, 0.05);
+    --color-dock-control-bg: #20242b;
+    --color-dock-border: rgba(231, 234, 240, 0.11);
+}
+
+/* Ensure smooth transitions when palette changes */
+body {
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}

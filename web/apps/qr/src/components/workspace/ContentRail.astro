@@ -1,0 +1,126 @@
+---
+/**
+ * ContentRail.astro — left rail: content type list, the active form and
+ * the locally saved styles. Collapses to a 42px rail like Typst's Files.
+ */
+import ContentForms from "./ContentForms.astro";
+import { getIconSvg } from "../../lib/icons";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+type TypeItem = { id: string; icon: string; label: string };
+const basic: TypeItem[] = [
+  { id: "url", icon: "link", label: t("type.url") },
+  { id: "text", icon: "text_fields", label: t("type.text") },
+];
+const contact: TypeItem[] = [
+  { id: "phone", icon: "phone", label: t("type.phone") },
+  { id: "email", icon: "email", label: t("type.email") },
+  { id: "sms", icon: "sms", label: t("type.sms") },
+  { id: "vcard", icon: "contact_page", label: t("type.vcard") },
+];
+const utility: TypeItem[] = [
+  { id: "wifi", icon: "wifi", label: t("type.wifi") },
+  { id: "location", icon: "location_on", label: t("type.location") },
+  { id: "event", icon: "event", label: t("type.event") },
+  { id: "bitcoin", icon: "account_balance_wallet", label: t("type.bitcoin") },
+];
+const brand: TypeItem[] = [
+  { id: "facebook", icon: "facebook", label: t("type.facebook") },
+  { id: "twitter", icon: "twitter", label: t("type.twitter") },
+  { id: "youtube", icon: "youtube", label: t("type.youtube") },
+  { id: "appstore", icon: "apple", label: t("type.appstore") },
+  { id: "playstore", icon: "shop", label: t("type.playstore") },
+];
+
+const chevron = getIconSvg("chevron_right", 12);
+const collapseIcon = getIconSvg("chevron_left", 14);
+---
+
+<aside class="qr-rail" id="qr-rail" aria-label={t("ws.content")}>
+  <button
+    class="qr-rail-toggle"
+    id="qr-rail-toggle"
+    type="button"
+    title={t("ws.rail_collapse")}
+    aria-label={t("ws.rail_collapse")}
+    aria-expanded="true"
+    aria-controls="qr-rail-scroll"
+    set:html={collapseIcon}
+  />
+
+  <div class="qr-rail-collapsed" aria-hidden="true">
+    <span class="section-label">{t("ws.content")}</span>
+  </div>
+
+  <div class="qr-rail-scroll" id="qr-rail-scroll">
+    <div class="qr-rail-heading">
+      <div>
+        <div class="eyebrow">{t("ws.content")}</div>
+        <h2>{t("ws.type")}</h2>
+      </div>
+      <button class="ws-btn ghost type-option" type="button" data-type="scan" data-icon="qr_code_scanner">
+        <span class="icon">qr_code_scanner</span><span>{t("ws.scan")}</span>
+      </button>
+    </div>
+
+    <nav class="type-list" aria-label={t("ws.type")}>
+      {basic.map((item) => (
+        <button class:list={["type-option", item.id === "url" && "active"]} type="button" data-type={item.id} data-icon={item.icon}>
+          <span class="icon">{item.icon}</span><span>{item.label}</span>
+        </button>
+      ))}
+      {contact.map((item) => (
+        <button class="type-option" type="button" data-type={item.id} data-icon={item.icon}>
+          <span class="icon">{item.icon}</span><span>{item.label}</span>
+        </button>
+      ))}
+      {utility.map((item) => (
+        <button class="type-option" type="button" data-type={item.id} data-icon={item.icon}>
+          <span class="icon">{item.icon}</span><span>{item.label}</span>
+        </button>
+      ))}
+      <details class="type-group" id="type-group-brand">
+        <summary>
+          <span><span class="icon">public</span><span>{t("ws.brand_links")}</span></span>
+          <span class="type-group-meta">{brand.length} <span set:html={chevron} /></span>
+        </summary>
+        <div>
+          {brand.map((item) => (
+            <button class="type-option" type="button" data-type={item.id} data-icon={item.icon}>
+              <span class="icon">{item.icon}</span><span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </details>
+    </nav>
+
+    <section class="rail-section" aria-labelledby="rail-form-label">
+      <span class="section-label" id="rail-form-label">{t("editor.input")}</span>
+      <ContentForms />
+      <span class="rail-hint">{t("ws.hint_local")}</span>
+    </section>
+
+    <section class="rail-section" aria-labelledby="rail-presets-label">
+      <div class="rail-section-head">
+        <span class="section-label" id="rail-presets-label">{t("ws.saved_styles")}</span>
+        <button class="ws-btn ghost" type="button" id="preset-save-btn" title={t("ws.save")} data-l-prompt={t("ws.preset_name_prompt")} data-l-saved={t("ws.preset_saved")}>
+          <span class="icon">plus</span>{t("ws.save")}
+        </button>
+      </div>
+      <div class="preset-chips" id="preset-chips" role="list" data-l-delete={t("ws.preset_delete")} data-l-applied={t("ws.preset_applied")}></div>
+      <span class="preset-empty" id="preset-empty">{t("ws.no_presets")}</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ws-btn ghost" type="button" id="preset-import-btn" data-l-imported={t("ws.preset_imported")} data-l-invalid={t("ws.preset_invalid")}>
+          <span class="icon">file_upload</span>{t("ws.import_json")}
+        </button>
+        <button class="ws-btn ghost" type="button" id="preset-export-btn">
+          <span class="icon">file_download</span>{t("ws.export_json")}
+        </button>
+        <input type="file" id="preset-import-input" accept="application/json,.json" hidden />
+      </div>
+    </section>
+  </div>
+</aside>

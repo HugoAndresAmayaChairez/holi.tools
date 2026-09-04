@@ -1,0 +1,153 @@
+---
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { getEditorialCopy, toolIdentity, toolSlugs } from "../i18n/editorial";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const editorial = getEditorialCopy(lang);
+const explorerCopy = {
+  en: { eyebrow: "Tool library", title: "Choose the job, not a maze.", intro: "Search by what you want to create, transform, inspect, or learn.", search: "Search tools and operations", shortcut: "Quick open", all: "All", create: "Create", transform: "Transform", inspect: "Inspect", learn: "Learn", recent: "Recent", noResults: "No tool matches that search.", available: "Available" },
+  es: { eyebrow: "Biblioteca de herramientas", title: "Elige el trabajo, no un laberinto.", intro: "Busca por lo que quieres crear, transformar, inspeccionar o aprender.", search: "Buscar herramientas y operaciones", shortcut: "Apertura rápida", all: "Todas", create: "Crear", transform: "Transformar", inspect: "Inspeccionar", learn: "Aprender", recent: "Recientes", noResults: "Ninguna herramienta coincide.", available: "Disponible" },
+  zh: { eyebrow: "工具库", title: "选择任务，不走迷宫。", intro: "按创建、转换、检查或学习目标搜索。", search: "搜索工具和操作", shortcut: "快速打开", all: "全部", create: "创建", transform: "转换", inspect: "检查", learn: "学习", recent: "最近", noResults: "没有匹配的工具。", available: "可用" },
+  hi: { eyebrow: "टूल लाइब्रेरी", title: "काम चुनें, भूलभुलैया नहीं।", intro: "बनाने, बदलने, जाँचने या सीखने के लक्ष्य से खोजें।", search: "टूल और काम खोजें", shortcut: "जल्दी खोलें", all: "सभी", create: "बनाएँ", transform: "बदलें", inspect: "जाँचें", learn: "सीखें", recent: "हाल के", noResults: "कोई टूल नहीं मिला।", available: "उपलब्ध" },
+  ar: { eyebrow: "مكتبة الأدوات", title: "اختر المهمة، لا المتاهة.", intro: "ابحث حسب ما تريد إنشاءه أو تحويله أو فحصه أو تعلمه.", search: "ابحث عن الأدوات والعمليات", shortcut: "فتح سريع", all: "الكل", create: "إنشاء", transform: "تحويل", inspect: "فحص", learn: "تعلم", recent: "الأخيرة", noResults: "لا توجد أداة مطابقة.", available: "متاحة" },
+  bn: { eyebrow: "টুল লাইব্রেরি", title: "কাজ বাছুন, গোলকধাঁধা নয়।", intro: "তৈরি, বদল, পরীক্ষা বা শেখার লক্ষ্য দিয়ে খুঁজুন।", search: "টুল ও কাজ খুঁজুন", shortcut: "দ্রুত খুলুন", all: "সব", create: "তৈরি", transform: "রূপান্তর", inspect: "পরীক্ষা", learn: "শিখুন", recent: "সাম্প্রতিক", noResults: "কোনো টুল মেলেনি।", available: "উপলভ্য" },
+  pt: { eyebrow: "Biblioteca de ferramentas", title: "Escolha o trabalho, não um labirinto.", intro: "Busque pelo que quer criar, transformar, inspecionar ou aprender.", search: "Buscar ferramentas e operações", shortcut: "Abertura rápida", all: "Todas", create: "Criar", transform: "Transformar", inspect: "Inspecionar", learn: "Aprender", recent: "Recentes", noResults: "Nenhuma ferramenta corresponde.", available: "Disponível" },
+} as const;
+const c = explorerCopy[lang as keyof typeof explorerCopy] ?? explorerCopy.en;
+const names = { image: "Holi Image", typst: t("tool3_name"), qr: t("tool_qr_name"), metadata: t("tool_metadata_name"), labs: t("tool2_name") };
+const filters = [["all", c.all], ["create", c.create], ["transform", c.transform], ["inspect", c.inspect], ["learn", c.learn]] as const;
+const tools = toolSlugs.map((id) => {
+  const identity = toolIdentity[id];
+  return { id, ...identity, name: names[id], desc: editorial.tools[id].intro, featured: id === "image", guideHref: lang === "en" ? `/tools/${id}/` : `/${lang}/tools/${id}/` };
+});
+---
+
+<main id="ToolsExplorer" class="tools-explorer">
+  <header class="explorer-heading">
+    <div><p>{c.eyebrow}</p><h2>{c.title}</h2><span>{c.intro}</span></div>
+    <button id="command-open" type="button"><span>{c.shortcut}</span><kbd>Ctrl K</kbd></button>
+  </header>
+
+  <div class="explorer-controls">
+    <label class="search-field">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg>
+      <span class="sr-only">{c.search}</span><input id="tool-search" type="search" placeholder={c.search} autocomplete="off" />
+    </label>
+    <div class="category-filters" role="group" aria-label={c.eyebrow}>{filters.map(([id, label], index) => <button type="button" data-filter={id} aria-pressed={index === 0 ? "true" : "false"}>{label}</button>)}</div>
+  </div>
+
+  <section id="recent-section" class="recent-section" hidden aria-labelledby="recent-heading">
+    <h3 id="recent-heading">{c.recent}</h3>
+    <div id="recent-list"></div>
+  </section>
+  <div class="tools-grid">
+    {tools.map((tool) => (
+      <article
+        class:list={["tool-card", tool.featured && "is-featured"]}
+        data-tool-id={tool.id}
+        data-tool-name={tool.name}
+        data-tool-href={tool.href}
+        data-category={tool.category}
+        data-search={`${tool.name} ${tool.desc} ${editorial.tools[tool.id].headline}`}
+        style={`--tool-color:${tool.color};--creature-color:${tool.color}`}
+      >
+        <ProductCreature name={tool.creature} variant="icon" class="tool-creature" />
+        <div class="tool-copy">
+          <span class="tool-kicker">{tool.featured ? c.available : filters.find(([id]) => id === tool.category)?.[1]}</span>
+          <h3>{tool.name}</h3>
+          <p>{tool.desc}</p>
+          <div class="tool-actions">
+            <a href={tool.href} data-open-tool>{editorial.openTool}<span aria-hidden="true">↗</span></a>
+            <a href={tool.guideHref}>{editorial.learnMore}<span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+  <p id="no-results" class="no-results" hidden>{c.noResults}</p>
+
+  <dialog id="command-dialog" class="command-dialog">
+    <div class="command-box">
+      <label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg><span class="sr-only">{c.search}</span><input id="command-search" type="search" placeholder={c.search} autocomplete="off" /></label>
+      <div id="command-results" class="command-results">{tools.map((tool) => <a href={tool.href} data-command-search={`${tool.name} ${tool.desc}`}><ProductCreature name={tool.creature} variant="icon" class="mini-creature" /><span><strong>{tool.name}</strong><small>{tool.desc}</small></span><kbd>↵</kbd></a>)}</div>
+      <button id="command-close" class="command-close" type="button">Esc</button>
+    </div>
+  </dialog>
+</main>
+
+<script>
+  const explorer = document.querySelector<HTMLElement>("#ToolsExplorer");
+  if (!explorer) throw new Error("Tool explorer is missing");
+  const cards = [...explorer.querySelectorAll<HTMLElement>("[data-tool-id]")];
+  const search = document.querySelector<HTMLInputElement>("#tool-search")!;
+  const noResults = document.querySelector<HTMLElement>("#no-results")!;
+  let filter = "all";
+  const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  function updateCards() { const query = normalize(search.value.trim()); let visible = 0; cards.forEach((card) => { const matchesFilter = filter === "all" || card.dataset.category === filter; const matchesSearch = !query || normalize(card.dataset.search || "").includes(query); card.hidden = !(matchesFilter && matchesSearch); if (!card.hidden) visible++; }); noResults.hidden = visible > 0; }
+  search.addEventListener("input", updateCards);
+  explorer.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => button.addEventListener("click", () => { filter = button.dataset.filter || "all"; explorer.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button))); updateCards(); }));
+
+  const recentKey = "holi:recent-tools:v1";
+  function recentIds() { try { return JSON.parse(localStorage.getItem(recentKey) || "[]") as string[]; } catch { return []; } }
+  function renderRecent() { const section = document.querySelector<HTMLElement>("#recent-section")!; const list = document.querySelector<HTMLElement>("#recent-list")!; list.replaceChildren(); const recent = recentIds().map((id) => cards.find((card) => card.dataset.toolId === id)).filter(Boolean) as HTMLElement[]; section.hidden = recent.length === 0; recent.forEach((card) => { const link = document.createElement("a"); const label = document.createElement("span"); const arrow = document.createElement("span"); link.href = card.dataset.toolHref || "#"; link.dataset.recentTool = card.dataset.toolId || ""; label.textContent = card.dataset.toolName || card.dataset.toolId || ""; arrow.textContent = "\u2197"; arrow.setAttribute("aria-hidden", "true"); link.append(label, arrow); list.append(link); }); }
+  cards.forEach((card) => card.querySelector("[data-open-tool]")?.addEventListener("click", () => { try { const id = card.dataset.toolId || ""; localStorage.setItem(recentKey, JSON.stringify([id, ...recentIds().filter((item) => item !== id)].slice(0, 3))); } catch {} }));
+  renderRecent();
+
+  const dialog = document.querySelector<HTMLDialogElement>("#command-dialog")!; const commandSearch = document.querySelector<HTMLInputElement>("#command-search")!; const commandItems = [...dialog.querySelectorAll<HTMLAnchorElement>("[data-command-search]")];
+  function openCommand() { dialog.showModal(); commandSearch.value = ""; commandItems.forEach((item) => item.hidden = false); requestAnimationFrame(() => commandSearch.focus()); }
+  document.querySelector("#command-open")?.addEventListener("click", openCommand); document.querySelector("#command-close")?.addEventListener("click", () => dialog.close()); dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }); document.addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openCommand(); } }); commandSearch.addEventListener("input", () => { const query = normalize(commandSearch.value); commandItems.forEach((item) => item.hidden = Boolean(query) && !normalize(item.dataset.commandSearch || "").includes(query)); });
+</script>
+
+<style>
+  .tools-explorer { width: min(100% - 2rem,92rem); margin: 0 auto; padding: clamp(4rem,8vw,8rem) 0 10rem; }
+  .explorer-heading { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2rem; }
+  .explorer-heading p { margin: 0 0 .55rem; color: #c64e2b; font: 850 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .14em; text-transform: uppercase; }
+  .explorer-heading h2 { max-width: 12ch; margin: 0; font-size: clamp(2.8rem,6.5vw,6.3rem); font-weight: 450; line-height: .9; letter-spacing: -.07em; }
+  .explorer-heading div > span { display: block; max-width: 42rem; margin-top: 1rem; color: color-mix(in srgb,var(--color-text) 64%,transparent); }
+  #command-open { display: flex; align-items: center; gap: 1.2rem; padding: .72rem .82rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .75rem; background: color-mix(in srgb,var(--color-bg) 92%,var(--color-text) 8%); color: var(--color-text); cursor: pointer; }
+  kbd { padding: .2rem .4rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .35rem; color: color-mix(in srgb,var(--color-text) 62%,transparent); font: 650 .67rem ui-monospace,monospace; }
+  .explorer-controls { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.2rem; }
+  .search-field { display: flex; flex: 1; min-width: 12rem; align-items: center; gap: .6rem; padding: .1rem .8rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .8rem; background: color-mix(in srgb,var(--color-bg) 94%,var(--color-text) 6%); }
+  .search-field svg { width: 1.1rem; fill: none; stroke: currentColor; stroke-width: 1.7; opacity: .55; }
+  .search-field input { width: 100%; padding: .78rem 0; border: 0; outline: 0; background: transparent; color: var(--color-text); }
+  .category-filters { display: flex; gap: .35rem; overflow-x: auto; padding: .2rem; }
+  .category-filters button { padding: .58rem .78rem; border: 1px solid transparent; border-radius: 999px; background: transparent; color: color-mix(in srgb,var(--color-text) 66%,transparent); font-size: .76rem; font-weight: 800; cursor: pointer; }
+  .category-filters button[aria-pressed="true"] { border-color: color-mix(in srgb,var(--color-text) 14%,transparent); background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); color: var(--color-text); }
+  .recent-section { display: flex; align-items: center; gap: 1rem; min-height: 3.75rem; margin: .2rem 0 1rem; padding: .65rem .15rem; border-top: 1px solid color-mix(in srgb,var(--color-text) 11%,transparent); border-bottom: 1px solid color-mix(in srgb,var(--color-text) 11%,transparent); }
+  .recent-section h3 { margin: 0; color: color-mix(in srgb,var(--color-text) 52%,transparent); font: 750 .66rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .08em; text-transform: uppercase; }
+  #recent-list { display: flex; min-width: 0; flex-wrap: wrap; gap: .45rem; }
+  :global(#recent-list a) { display: inline-flex; align-items: center; gap: .65rem; min-height: 2.15rem; padding: .42rem .65rem .42rem .75rem; border: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); border-radius: .6rem; background: color-mix(in srgb,var(--color-bg) 93%,var(--color-text) 7%); color: var(--color-text); font-size: .73rem; font-weight: 700; text-decoration: none; }
+  :global(#recent-list a span:last-child) { color: color-mix(in srgb,var(--color-text) 50%,transparent); font-size: .85rem; }
+  :global(#recent-list a:hover), :global(#recent-list a:focus-visible) { border-color: color-mix(in srgb,var(--color-text) 30%,transparent); background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); opacity: 1; }
+  .tools-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+  .tool-card { position: relative; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 1.15rem; min-height: 13rem; padding: clamp(1.25rem,2.5vw,2rem); overflow: hidden; border: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); border-radius: 1.2rem; background: color-mix(in srgb,var(--color-bg) 95%,var(--color-text) 5%); transition: border-color .2s,transform .2s,background .2s; }
+  .tool-card:hover { border-color: color-mix(in srgb,var(--tool-color) 58%,transparent); transform: translateY(-2px); background: color-mix(in srgb,var(--color-bg) 94%,var(--tool-color) 6%); }
+  .tool-card.is-featured { grid-column: 1/-1; min-height: 14rem; }
+  :global(.tool-creature) { width: 3.35rem; height: 3.35rem; color: var(--tool-color); }
+  .tool-card::after { position: absolute; inset-inline-end: -3rem; bottom: -4rem; width: 16rem; height: 16rem; border-radius: 50%; background: color-mix(in srgb,var(--tool-color) 8%,transparent); content: ""; pointer-events: none; }
+  .tool-copy { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; }
+  .tool-kicker { color: var(--tool-color); font-size: .65rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+  .tool-copy h3 { margin: .55rem 0 .5rem; font-size: clamp(1.7rem,3vw,2.8rem); font-weight: 520; letter-spacing: -.045em; }
+  .tool-copy p { max-width: 42rem; margin: 0; color: color-mix(in srgb,var(--color-text) 66%,transparent); font-size: .92rem; line-height: 1.55; }
+  .tool-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: auto; padding-top: 1.5rem; }
+  .tool-actions a { display: inline-flex; align-items: center; gap: .65rem; min-height: 2.35rem; padding: .58rem .75rem; border: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); border-radius: .65rem; color: var(--color-text); font-size: .75rem; font-weight: 800; text-decoration: none; }
+  .tool-actions a:first-child { border-color: var(--tool-color); background: var(--tool-color); color: white; }
+  .tool-actions a:hover { transform: translateY(-1px); }
+  .no-results { padding: 3rem; color: color-mix(in srgb,var(--color-text) 62%,transparent); text-align: center; }
+  .command-dialog { width: min(100% - 2rem,42rem); max-height: min(38rem,80dvh); padding: 0; border: 1px solid color-mix(in srgb,var(--color-text) 16%,transparent); border-radius: 1.1rem; background: var(--color-bg); color: var(--color-text); box-shadow: 0 30px 100px rgba(0,0,0,.3); }
+  .command-dialog::backdrop { background: rgba(0,0,0,.48); backdrop-filter: blur(5px); }
+  .command-box { position: relative; padding: .8rem; }
+  .command-results { display: grid; gap: .3rem; max-height: 28rem; margin-top: .7rem; overflow-y: auto; }
+  .command-results a { display: flex; align-items: center; gap: .8rem; padding: .6rem; border-radius: .7rem; color: inherit; text-decoration: none; }
+  .command-results a:hover,.command-results a:focus { background: color-mix(in srgb,var(--color-bg) 88%,var(--color-text) 12%); }
+  .command-results a > span:nth-child(2) { display: flex; flex: 1; min-width: 0; flex-direction: column; }
+  .command-results small { overflow: hidden; color: color-mix(in srgb,var(--color-text) 62%,transparent); text-overflow: ellipsis; white-space: nowrap; }
+  :global(.mini-creature) { width: 2.4rem; height: 2.4rem; }
+  .command-close { position: absolute; top: 1.3rem; inset-inline-end: 1.3rem; border: 0; background: transparent; color: transparent; pointer-events: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; border: 0; clip: rect(0,0,0,0); white-space: nowrap; }
+  [hidden] { display: none !important; }
+  @media (max-width:760px) { .tools-explorer { width: min(100% - 1.35rem,92rem); } .explorer-heading { align-items: start; flex-direction: column; } #command-open { align-self: stretch; justify-content: space-between; } .explorer-controls { align-items: stretch; flex-direction: column; } .category-filters { width: 100%; } .recent-section { align-items: flex-start; flex-direction: column; gap: .55rem; } .tools-grid { grid-template-columns: 1fr; } .tool-card.is-featured { grid-column: auto; } }
+  @media (max-width:480px) { .tool-card { grid-template-columns: 1fr; min-height: 17rem; } :global(.tool-creature) { width: 3rem; height: 3rem; } }
+</style>

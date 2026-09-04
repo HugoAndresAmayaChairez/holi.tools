@@ -1,0 +1,73 @@
+---
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/**
+ * AdvancedPanel.astro - Advanced configuration for QR Code
+ *
+ * Includes:
+ * - Error Correction Level (ECC)
+ * - Mask Pattern selection
+ */
+---
+
+<div class="option-row">
+  <label>{t("advanced.ecc")}</label>
+  <select id="ecc-select" onchange="window.setEcc && window.setEcc(this.value)">
+    <option value="L">{t("advanced.ecc.low")}</option>
+    <option value="M" selected>{t("advanced.ecc.medium")}</option>
+    <option value="Q">{t("advanced.ecc.quartile")}</option>
+    <option value="H">{t("advanced.ecc.high")}</option>
+  </select>
+</div>
+<div class="option-row">
+  <label>{t("advanced.mask")}</label>
+  <select
+    id="mask-select"
+    onchange="window.setMaskPattern && window.setMaskPattern(this.value)"
+  >
+    <option value="auto" selected>{t("advanced.mask.auto")} (Auto)</option>
+    <option value="0">0 - Checkerboard (Ajedrez)</option>
+    <option value="1">1 - Horizontal Stripes (Rayas Horizontales)</option>
+    <option value="2">2 - Vertical Stripes (Rayas Verticales)</option>
+    <option value="3">3 - Diagonal Stripes (Líneas Diagonales)</option>
+    <option value="4">4 - Large Checkerboard (Ajedrez Ancho)</option>
+    <option value="5">5 - Diamond Grid (Romboides)</option>
+    <option value="6">6 - Complex Cross (Cruces)</option>
+    <option value="7">7 - Dense Cross (Cruces Densas)</option>
+  </select>
+</div>
+
+<style>
+  /* Advanced Panel Styles */
+  .option-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .option-row > label:first-child {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .option-row select {
+    padding: 10px 12px;
+    background: var(--surface-soft);
+    border: 1px solid var(--control-border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .option-row select option {
+    background: var(--bg-card);
+    color: var(--text-main);
+    padding: 8px;
+  }
+</style>

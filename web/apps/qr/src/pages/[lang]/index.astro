@@ -1,0 +1,34 @@
+---
+import { DEFAULT_LANG, SUPPORTED_LANGS } from "@holi/configs/i18n";
+import { qrAppChangelog } from "@holi/configs/changelogs";
+import QrWorkspace from "../../components/QrWorkspace.astro";
+import QrLayout from "../../layouts/QrLayout.astro";
+import { useTranslations } from "../../i18n/utils";
+
+import "../../styles/app.css";
+
+export function getStaticPaths() {
+  return SUPPORTED_LANGS.filter((lang) => lang !== DEFAULT_LANG).map((lang) => ({
+    params: { lang },
+  }));
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
+const history = (qrAppChangelog as any)[lang as any] || qrAppChangelog.en;
+const currentVersion = history[0]?.version || "0.0.0";
+---
+
+<QrLayout
+  title={t("seo.title")}
+  description={t("seo.description")}
+  lang={lang}
+  version={currentVersion}
+  changelog={history}
+>
+  <QrWorkspace />
+
+  <script>
+    import "../../lib/boot";
+  </script>
+</QrLayout>

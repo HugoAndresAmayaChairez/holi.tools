@@ -1,0 +1,146 @@
+---
+import { ViewTransitions } from "astro:transitions";
+import "../styles/global.css";
+
+import ProductUtilityDock from "@holi/ui/components/ProductUtilityDock.astro";
+import OverlayRuntime from "@holi/ui/components/OverlayRuntime.astro";
+import DonateOverlay from "@holi/ui/components/DonateOverlay.astro";
+import SupportOverlay from "@holi/ui/components/SupportOverlay.astro";
+import ToastContainer from "../components/ui/ToastContainer.astro";
+
+import InfoOverlay from "../components/InfoOverlay.astro";
+
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { userAppChangelog } from "@holi/configs/changelogs";
+import pkg from "../../package.json";
+import { languages as languagesObj } from "../i18n/ui";
+import { getUserPrivacy } from "../privacy";
+
+const languages = Object.entries(languagesObj).map(([code, name]) => ({
+  code,
+  name,
+}));
+
+interface Props {
+  title?: string;
+  description?: string;
+  socialImage?: boolean;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const {
+  title = t("nav.vault"),
+  description = t("vault.subtitle"),
+  socialImage = true,
+} = Astro.props;
+const pageTitle = title === "Holi User" ? title : `${title} · Holi User`;
+const canonicalUrl = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).toString()
+  : undefined;
+const socialImageUrl = socialImage && Astro.site
+  ? new URL("/og.png", Astro.site).toString()
+  : undefined;
+
+const homeHref = lang === "en" ? "/en/" : `/${lang}/`;
+
+const version = (pkg as any).version as string | undefined;
+const history = (userAppChangelog as any)[lang] || userAppChangelog.en;
+
+const privacySummary = getUserPrivacy(lang);
+---
+
+<!doctype html>
+<html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} class="dark bg-zinc-950 text-white">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#08080c" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Holi User" />
+    {socialImageUrl && <meta property="og:image" content={socialImageUrl} />}
+    {socialImageUrl && <meta property="og:image:width" content="1200" />}
+    {socialImageUrl && <meta property="og:image:height" content="630" />}
+    {socialImageUrl && <meta property="og:image:alt" content={privacySummary.socialAlt} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
+    {socialImageUrl && <meta name="twitter:image:alt" content={privacySummary.socialAlt} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <title>{pageTitle}</title>
+    <ViewTransitions />
+    <script is:inline>
+      try {
+        const savedTheme = localStorage.getItem("holi:theme:v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.holiTheme = savedTheme;
+        }
+      } catch {
+        // The system preference remains active when storage is unavailable.
+      }
+    </script>
+    <script is:inline>
+      // Avoid stale workers when switching between local Holi apps on one origin.
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then(function (registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          })
+          .catch(function () {});
+      }
+    </script>
+  </head>
+  <body
+    class="min-h-screen flex flex-col antialiased selection:bg-purple-500/30"
+  >
+    <a class="skip-link" href="#main-content">{privacySummary.skip}</a>
+    <ToastContainer />
+    <div class="holi-atmosphere" aria-hidden="true"></div>
+    <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <slot />
+    </main>
+
+    {
+      version && history && (
+        <ProductUtilityDock
+          id="user-privacy"
+          productName="Holi User"
+          productDescription={description}
+          version={version}
+          history={history}
+          privacyTitle={privacySummary.title}
+          privacySummary={privacySummary.summary}
+          privacyFacts={privacySummary.facts}
+          currentLang={lang}
+          languages={languages}
+          defaultLang="en"
+          prefixDefaultLocale={true}
+          homeHref={homeHref}
+          showPapers={false}
+        />
+      )
+    }
+
+    <footer
+      class="border-t border-white/10 py-6 text-center text-sm text-zinc-500"
+    >
+      <p>{t("shared.copyright")} &copy; {new Date().getFullYear()}</p>
+    </footer>
+
+    <InfoOverlay lang={lang} />
+    <DonateOverlay id="holi" currentLang={lang} />
+    <SupportOverlay id="holi" currentLang={lang} />
+    <OverlayRuntime />
+  </body>
+</html>

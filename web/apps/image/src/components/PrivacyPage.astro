@@ -1,0 +1,17 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { getImageCopy, type ImageLanguage } from "../i18n/ui";
+import "../styles/app.css";
+interface Props { lang: ImageLanguage }
+const { lang } = Astro.props;
+const copy = getImageCopy(lang);
+const home = lang === "en" ? "/" : `/${lang}/`;
+---
+<AppLayout title={`${copy.privacyPageTitle} · Holi Image`} description={copy.privacySummary} lang={lang}>
+  <main id="main-content" class="prose-page">
+    <a href={home}>← {copy.back}</a>
+    <h1>{copy.privacyPageTitle}</h1>
+    <p>{copy.privacyPageIntro}</p>
+    {copy.privacySections.map(([title, body]) => <section class="privacy-section"><h2>{title}</h2><p>{body}</p></section>)}
+  </main>
+</AppLayout>

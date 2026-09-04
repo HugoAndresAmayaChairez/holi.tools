@@ -1,0 +1,23 @@
+---
+import QrLayout from "../../../layouts/QrLayout.astro";
+import RustSvgEngine from "../../../components/papers/RustSvgEngine.astro";
+import { DEFAULT_LANG, SUPPORTED_LANGS } from "@holi/configs/i18n";
+import { getPaperCopy, type PaperLocale } from "../../../i18n/papers";
+
+export function getStaticPaths() {
+  return SUPPORTED_LANGS.filter((locale) => locale !== DEFAULT_LANG).map((locale) => ({
+    params: { lang: locale },
+  }));
+}
+
+const lang = (Astro.params.lang ?? DEFAULT_LANG) as PaperLocale;
+const copy = getPaperCopy(lang);
+---
+
+<QrLayout
+  title={`${copy.articleTitle} — Holi Papers`}
+  description={copy.articleDescription}
+  lang={lang}
+>
+  <RustSvgEngine lang={lang} />
+</QrLayout>

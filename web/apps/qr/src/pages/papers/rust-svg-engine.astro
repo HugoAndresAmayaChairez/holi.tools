@@ -1,0 +1,16 @@
+---
+import QrLayout from "../../layouts/QrLayout.astro";
+import RustSvgEngine from "../../components/papers/RustSvgEngine.astro";
+import { getPaperCopy } from "../../i18n/papers";
+
+const lang = "en";
+const copy = getPaperCopy(lang);
+---
+
+<QrLayout
+  title={`${copy.articleTitle} — Holi Papers`}
+  description={copy.articleDescription}
+  lang={lang}
+>
+  <RustSvgEngine lang="en" />
+</QrLayout>

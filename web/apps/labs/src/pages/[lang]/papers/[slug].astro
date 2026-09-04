@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import ArticlePage from "../experiments/[slug].astro";
+import { languages } from "../../../i18n/utils";
+
+export async function getStaticPaths() {
+  const articles = await getCollection("experiments");
+  return languages.flatMap((language) =>
+    articles
+      .filter((entry) => entry.data.lang === language.code && entry.data.format === "paper")
+      .map((entry) => ({
+        params: { lang: language.code, slug: entry.slug.replace(/-[a-z]{2}$/, "") },
+        props: { entry },
+      })),
+  );
+}
+
+const { entry } = Astro.props;
+---
+
+<ArticlePage entry={entry} />

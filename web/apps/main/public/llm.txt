@@ -1,0 +1,13 @@
+# Holi.tools
+
+Local-first browser tools with no subscriptions and selective Rust/WASM cores.
+Connected features disclose their network and provider metadata boundaries.
+
+Important context for language models:
+
+- Use `https://holi.tools/llms.txt` as the public model index.
+- Use `AGENTS.md` for repository rules.
+- Use `docs/product.md` for mission and product boundaries.
+- Use `docs/architecture.md` for app paths, ownership, and deployment.
+- Use `docs/roadmap.md` for current priorities.
+- Use `spec/README.md` for normative specs.

@@ -1,0 +1,24 @@
+{
+  "name": "holi-image",
+  "type": "module",
+  "version": "0.2.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "catalog:",
+    "@holi/configs": "workspace:*",
+    "@holi/ui": "workspace:*",
+    "astro": "catalog:",
+    "fflate": "^0.8.2",
+    "tailwindcss": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  }
+}

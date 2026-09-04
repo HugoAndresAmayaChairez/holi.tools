@@ -1,0 +1,90 @@
+---
+/**
+ * Legacy Join Page
+ *
+ * Holi has migrated project collaboration to Trystero-based Vault links:
+ *   /vault#<projectId>.<secret>
+ *
+ * This route is kept for backward compatibility. If the hash looks like a
+ * vault invite, we redirect. If it looks like a legacy ns= invite, we show a
+ * clear error telling the user to request a new Instant Link.
+ */
+import VaultLayout from "../../layouts/VaultLayout.astro";
+import HoliCard from "../../components/ui/HoliCard.astro";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+import { SUPPORTED_LANGS } from "@holi/configs/i18n";
+
+export function getStaticPaths() {
+  return SUPPORTED_LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const basePath = lang === "en" ? "/en" : `/${lang}`;
+---
+
+<VaultLayout title={t("join.title")}>
+  <HoliCard class="holi-center max-w-xl mx-auto space-y-6 text-center" padding="lg" rounded="lg">
+    <div id="loading" class="py-12 space-y-3">
+      <div
+        class="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"
+      >
+      </div>
+      <p class="text-zinc-400">{t("join.checking")}</p>
+    </div>
+
+    <div id="message" class="hidden space-y-4">
+      <h1 class="text-3xl font-bold text-white">{t("join.title")}</h1>
+      <p id="message-text" class="text-zinc-400"></p>
+      <div class="flex justify-center gap-3">
+        <a
+          href={`${basePath}/`}
+          class="inline-block px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-colors"
+        >
+          {t("nav.home")}
+        </a>
+        <a
+          href={`${basePath}/vault`}
+          class="inline-block px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
+        >
+          {t("join.open_vault")}
+        </a>
+      </div>
+    </div>
+  </HoliCard>
+
+  <script
+    define:vars={{
+      basePath,
+      legacyError: t("join.legacy_error"),
+      movedError: t("join.moved_error"),
+    }}
+  >
+    function showMessage(text) {
+      document.getElementById("loading")?.classList.add("hidden");
+      const msg = document.getElementById("message");
+      if (msg) msg.classList.remove("hidden");
+      const textEl = document.getElementById("message-text");
+      if (textEl) textEl.textContent = text;
+    }
+
+    function normalize(raw) {
+      const trimmed = (raw || "").trim().replace(/^#/, "");
+      if (!trimmed) return "";
+      if (trimmed.startsWith("vault#")) return trimmed.slice("vault#".length);
+      return trimmed;
+    }
+
+    const rawHash = decodeURIComponent(window.location.hash || "").slice(1);
+    const token = normalize(rawHash);
+
+    // New format: <projectId>.<secret>
+    if (token.includes(".") && !token.startsWith("ns=")) {
+      window.location.replace(`${basePath}/vault#${token}`);
+    } else if (token.startsWith("ns=")) {
+      showMessage(legacyError);
+    } else {
+      showMessage(movedError);
+    }
+  </script>
+</VaultLayout>

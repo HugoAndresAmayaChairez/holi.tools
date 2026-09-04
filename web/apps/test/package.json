@@ -1,0 +1,26 @@
+{
+  "name": "holi-test",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "astro": "catalog:",
+    "@astrojs/tailwind": "catalog:",
+    "@holi/ui": "workspace:*",
+    "@holi/configs": "workspace:*",
+    "@holi/wasm-core": "workspace:*",
+    "tailwindcss": "catalog:"
+  }
+}

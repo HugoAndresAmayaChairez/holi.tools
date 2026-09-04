@@ -1,0 +1,27 @@
+---
+import { qrAppChangelog } from "@holi/configs/changelogs";
+import QrWorkspace from "../components/QrWorkspace.astro";
+import QrLayout from "../layouts/QrLayout.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+import "../styles/app.css";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const history = (qrAppChangelog as any)[lang as any] || qrAppChangelog.en;
+const currentVersion = history[0]?.version || "0.0.0";
+---
+
+<QrLayout
+	title={t("seo.title")}
+	description={t("seo.description")}
+	lang={lang}
+	version={currentVersion}
+	changelog={history}
+>
+	<QrWorkspace />
+
+	<script>
+		import "../lib/boot";
+	</script>
+</QrLayout>

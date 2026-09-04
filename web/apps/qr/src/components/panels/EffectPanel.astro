@@ -1,0 +1,447 @@
+---
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+import { PRESETS } from "../../lib/qr-styles-config";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/**
+ * EffectPanel.astro - Effect customization (Liquid, Noise, Presets)
+ * Formerly StylePanel.astro
+ */
+---
+
+<!-- Level 1: Presets -->
+<div class="shape-section">
+  <label class="section-label">{t("effect.presets")}</label>
+  <div class="preset-grid">
+    {
+      PRESETS.map((preset: any) => (
+        <button
+          class="preset-btn"
+          onclick={`applyPreset('${preset.config.body}', '${preset.config.frame}', '${preset.config.ball}', ${preset.config.effectLiquid || false})`}
+          title={t(preset.label as any)}
+        >
+          <div class="preset-icon">
+            <svg viewBox="0 0 20 20" set:html={preset.icon} />
+          </div>
+          <span class="preset-label">{t(preset.label as any)}</span>
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<hr class="separator" />
+
+<!-- Level 2: Effects -->
+<div class="advanced-section">
+  <div class="advanced-content">
+    <div class="layer-hint">{t("color.foreground")}</div>
+    <!-- Liquid Toggle -->
+    <div class="effect-row">
+      <label class="switch-label">
+        <span>{t("effect.liquid")}</span>
+        <small>{t("effect.liquid_desc")}</small>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="effect-liquid-toggle" />
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <!-- Liquid Parameters (Only if Liquid ON) -->
+    <div
+      id="liquid-controls"
+      style="display:none; flex-direction: column; gap: 12px; margin-top: 8px;"
+    >
+      <div class="effect-presets" aria-label="Liquid presets">
+        <button onclick="applyLiquidPreset(0.25, 10.5)" title="Sharp">
+          Sharp
+        </button>
+        <button onclick="applyLiquidPreset(0.55, 8)" title="Melt">
+          Melt
+        </button>
+        <button onclick="applyLiquidPreset(0.95, 6)" title="Soft">
+          Soft
+        </button>
+      </div>
+      <div class="range-control">
+        <label>{t("effect.fluidity")}</label>
+        <input
+          id="liquid-blur"
+          type="range"
+          min="0.05"
+          max="1.4"
+          step="0.05"
+          value="0.55"
+          oninput="updateLiquidParam('blur', this.value)"
+        />
+      </div>
+      <div class="range-control">
+        <label>{t("effect.adhesion")}</label>
+        <input
+          id="liquid-thresh"
+          type="range"
+          min="1"
+          max="18"
+          step="0.5"
+          value="8"
+          oninput="updateLiquidParam('thresh', this.value)"
+        />
+      </div>
+    </div>
+
+    <!-- Noise Toggle -->
+    <div class="effect-row" style="margin-top: 16px;">
+      <label class="switch-label">
+        <span>{t("effect.noise")}</span>
+        <small>{t("effect.noise_desc")}</small>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="effect-noise-toggle" />
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <!-- Noise Parameters (Only if Noise ON) -->
+    <div
+      id="noise-controls"
+      style="display:none; flex-direction: column; gap: 12px; margin-top: 8px;"
+    >
+      <div class="range-control">
+        <label>{t("effect.intensity")}</label>
+        <input
+          type="range"
+          id="noise-amount"
+          min="0"
+          max="100"
+          step="5"
+          value="30"
+          oninput="updateNoiseParam('amount', this.value)"
+        />
+      </div>
+      <div class="range-control">
+        <label>{t("effect.grain_size")}</label>
+        <input
+          type="range"
+          id="noise-scale"
+          min="10"
+          max="500"
+          step="10"
+          value="100"
+          oninput="updateNoiseParam('scale', this.value)"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Global State for Effects to persist
+  let currentEffects = { liquid: false, blur: 0.55, thresh: 8 };
+
+  // Init function to attach listeners
+  function initLiquidToggle() {
+    const toggle = document.getElementById("effect-liquid-toggle");
+    console.log(
+      "EffectPanel: initLiquidToggle running. Toggle found:",
+      !!toggle
+    );
+
+    if (toggle) {
+      // Clone to strip old listeners
+      const newToggle = toggle.cloneNode(true);
+      if (toggle.parentNode) toggle.parentNode.replaceChild(newToggle, toggle);
+
+      newToggle.addEventListener("change", (e) => {
+        const isChecked = e.target.checked;
+        console.log("Toggle Switch Clicked:", isChecked);
+        window.toggleLiquid(isChecked);
+      });
+
+      // Restore state from currentEffects
+      newToggle.checked = currentEffects.liquid;
+    }
+  }
+
+  // Run immediately (script is at bottom of body)
+  initLiquidToggle();
+
+  // Also catch View Transitions navigation
+  document.addEventListener("astro:page-load", initLiquidToggle);
+
+  // Helper to apply entire preset
+  window.applyPreset = (body, frame, ball, effectLiquid) => {
+    console.log("Applying Preset:", { body, frame, ball, effectLiquid });
+
+    // Call the global setters defined in parent
+    if (typeof window.setBodyShape === "function") window.setBodyShape(body);
+    if (typeof window.setEyeFrame === "function") window.setEyeFrame(frame);
+    if (typeof window.setEyeBall === "function") window.setEyeBall(ball);
+
+    // Update internal state
+    const toggle = document.getElementById("effect-liquid-toggle");
+    const shouldEnable = !!effectLiquid;
+
+    // Force update toggle state visual
+    if (toggle) toggle.checked = shouldEnable;
+
+    // Force logic update
+    window.toggleLiquid(shouldEnable);
+  };
+
+  // Effect Handlers
+  window.toggleLiquid = (enabled) => {
+    console.log("Execution toggleLiquid:", enabled);
+    currentEffects.liquid = enabled;
+    const controls = document.getElementById("liquid-controls");
+    if (controls) controls.style.display = enabled ? "flex" : "none";
+
+    window.dispatchEvent(
+      new CustomEvent("qr-effect-change", { detail: currentEffects })
+    );
+  };
+
+  // Throttle helper to limit event firing - uses LIVE update (no full re-render)
+  let liquidThrottleTimer = null;
+  function throttledFilterTweak() {
+    if (liquidThrottleTimer) return; // Already scheduled
+    liquidThrottleTimer = setTimeout(() => {
+      // Use qr-filter-tweak for instant DOM filter updates (60fps)
+      window.dispatchEvent(
+        new CustomEvent("qr-filter-tweak", {
+          detail: { blur: currentEffects.blur, thresh: currentEffects.thresh },
+        })
+      );
+      liquidThrottleTimer = null;
+    }, 16); // ~60fps
+  }
+
+  window.updateLiquidParam = (key, val) => {
+    if (key === "blur") currentEffects.blur = parseFloat(val);
+    if (key === "thresh") currentEffects.thresh = parseFloat(val);
+    throttledFilterTweak();
+  };
+
+  window.applyLiquidPreset = (blur, thresh) => {
+    currentEffects.liquid = true;
+    currentEffects.blur = Number(blur);
+    currentEffects.thresh = Number(thresh);
+    const toggle = document.getElementById("effect-liquid-toggle");
+    const controls = document.getElementById("liquid-controls");
+    const blurInput = document.getElementById("liquid-blur");
+    const threshInput = document.getElementById("liquid-thresh");
+    if (toggle) toggle.checked = true;
+    if (controls) controls.style.display = "flex";
+    if (blurInput) blurInput.value = String(currentEffects.blur);
+    if (threshInput) threshInput.value = String(currentEffects.thresh);
+    window.dispatchEvent(
+      new CustomEvent("qr-effect-change", { detail: currentEffects })
+    );
+  };
+
+  // ===== NOISE EFFECT =====
+  let currentNoise = { enabled: false, amount: 30, scale: 100 };
+
+  function initNoiseToggle() {
+    const toggle = document.getElementById("effect-noise-toggle");
+    if (toggle) {
+      const newToggle = toggle.cloneNode(true);
+      if (toggle.parentNode) toggle.parentNode.replaceChild(newToggle, toggle);
+
+      newToggle.addEventListener("change", (e) => {
+        window.toggleNoise(e.target.checked);
+      });
+
+      newToggle.checked = currentNoise.enabled;
+    }
+  }
+
+  initNoiseToggle();
+  document.addEventListener("astro:page-load", initNoiseToggle);
+
+  window.toggleNoise = (enabled) => {
+    currentNoise.enabled = enabled;
+    const controls = document.getElementById("noise-controls");
+    if (controls) controls.style.display = enabled ? "flex" : "none";
+
+    window.dispatchEvent(
+      new CustomEvent("qr-noise-change", { detail: currentNoise })
+    );
+  };
+
+  window.updateNoiseParam = (key, val) => {
+    if (key === "amount") currentNoise.amount = parseFloat(val);
+    if (key === "scale") currentNoise.scale = parseFloat(val);
+
+    window.dispatchEvent(
+      new CustomEvent("qr-noise-change", { detail: currentNoise })
+    );
+  };
+</script>
+
+<style>
+  .layer-hint {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text-muted, rgba(127, 127, 127, 0.8));
+    margin-bottom: 4px;
+  }
+
+  /* Effects Controls */
+  .effect-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .switch-label span {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .switch-label small {
+    font-size: 11px;
+    color: var(--text-muted, #888);
+  }
+
+  /* Switch Toggle */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(127, 127, 127, 0.2);
+    transition: 0.4s;
+    border-radius: 22px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: var(--accent-primary, #6366f1);
+  }
+  input:checked + .slider:before {
+    transform: translateX(18px);
+  }
+
+  /* Range Input */
+  .range-control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .range-control label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted, #ccc);
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-primary, #6366f1);
+    height: 4px;
+    background: rgba(127, 127, 127, 0.2);
+    border-radius: 2px;
+  }
+
+  .effect-presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .effect-presets button {
+    min-height: 28px;
+    border-radius: 7px;
+    border: 1px solid rgba(127, 127, 127, 0.18);
+    background: rgba(127, 127, 127, 0.08);
+    color: var(--text-main, white);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .effect-presets button:hover {
+    border-color: rgba(127, 127, 127, 0.36);
+    background: rgba(127, 127, 127, 0.16);
+  }
+
+  /* Presets */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 8px;
+    background: rgba(127, 127, 127, 0.08);
+    border: 1px solid rgba(127, 127, 127, 0.15);
+    color: var(--text-muted, #888);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .preset-btn:hover {
+    background: rgba(127, 127, 127, 0.15);
+    color: var(--text-main, white);
+  }
+
+  .preset-icon {
+    width: 24px;
+    height: 24px;
+    opacity: 0.8;
+  }
+
+  .preset-label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .separator {
+    border: 0;
+    height: 1px;
+    background: rgba(127, 127, 127, 0.15);
+    margin: 12px 0;
+  }
+
+  /* Advanced Content (Cleaned up) */
+  .advanced-section {
+    /* Removed border and detials styles since it's no longer collapsible or needs to look like one */
+  }
+  .advanced-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+</style>

@@ -1,0 +1,218 @@
+---
+import Manual from "../components/Manual.astro";
+import { getTranslations, languages } from "../i18n/translations";
+import SimpleBackground from "@holi/ui/components/SimpleBackground.astro";
+import DraggablePanel from "@holi/ui/components/DraggablePanel.astro";
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import "../styles/app.css";
+
+const lang = Astro.currentLocale || "en";
+const t = getTranslations(lang);
+import { testAppChangelog } from "@holi/configs/changelogs";
+
+const changelog = testAppChangelog;
+---
+
+<BaseLayout
+  title={t.meta_title}
+  description={t.meta_description}
+  lang={lang}
+  languages={languages}
+  colorScheme="default"
+  showCanvasGrid={false}
+  version="0.0.1"
+  changelog={changelog}
+>
+  <SimpleBackground />
+
+  <div class="test-toolbar">
+    <div class="test-toolbar__left">
+      <span class="test-toolbar__badge">holi-test</span>
+      <span class="test-toolbar__muted">UI lab / sandbox</span>
+    </div>
+    <div class="test-toolbar__right">
+      <a class="test-toolbar__link" href="/webgpu">WebGPU</a>
+      <a class="test-toolbar__link" href="/p2p">P2P</a>
+      <a class="test-toolbar__link" href="/vault">Vault</a>
+      <a class="test-toolbar__link" href="/ui-lab">UI</a>
+      <button id="toggle-panels" class="test-toolbar__btn" type="button">
+        Floating panels
+      </button>
+    </div>
+  </div>
+
+  <div id="floating-panels" class="floating-panels" hidden>
+    <DraggablePanel id="intro" title="✨ System Status" initialX={50} initialY={100} sticky={true}>
+      <p><strong>Bio-Minimalism Active</strong></p>
+      <p style="margin-top: 8px; color: var(--text-secondary); font-size: 11px;">
+        All layers are now synchronized. The void is stable.
+      </p>
+      <div style="margin-top: 12px; height: 1px; background: rgba(255,255,255,0.05);"></div>
+      <p style="margin-top: 12px; font-size: 10px; opacity: 0.5; font-mono">Kernel: 2.4.0-VOID</p>
+    </DraggablePanel>
+
+    <DraggablePanel
+      id="backgrounds"
+      title="🎨 Visual DNA"
+      initialX={400}
+      initialY={150}
+      sticky={true}
+    >
+      <ul style="padding-left: 0; list-style: none; margin: 0; font-size: 11px; space-y-2;">
+        <li style="margin-bottom: 6px;">→ Deep Blur (24px)</li>
+        <li style="margin-bottom: 6px;">→ Solid Void Background</li>
+        <li>→ Window Control Logic</li>
+      </ul>
+    </DraggablePanel>
+
+    <DraggablePanel
+      id="qr-clean"
+      title="🧹 Maintenance"
+      initialX={50}
+      initialY={300}
+      sticky={false}>
+      <p style="font-size: 11px;">Redesigning the floating panel headers was successful. Centering in <code>GlassCard</code> has been restored.</p>
+      <p style="margin-top: 8px; color: var(--color-accent); font-size: 10px;">Note: This panel is <strong>Unpinned</strong> (it scrolls with content).</p>
+    </DraggablePanel>
+
+    <DraggablePanel
+      id="navigation"
+      title="🧭 System Pages"
+      initialX={400}
+      initialY={300}
+      sticky={true}
+    >
+      <div style="display: flex; gap: 8px; flex-direction: column;">
+        <a href="/404" class="btn-nav">View 404 Page</a>
+        <a href="/coming-soon" class="btn-nav">View Coming Soon</a>
+      </div>
+    </DraggablePanel>
+  </div>
+
+  <Manual t={t} />
+
+  <script is:inline>
+    const PANELS_KEY = "holi-test-floating-panels";
+    const container = document.getElementById("floating-panels");
+    const btn = document.getElementById("toggle-panels");
+
+    function setPanelsVisible(visible) {
+      if (!container || !btn) return;
+      container.hidden = !visible;
+      btn.setAttribute("aria-pressed", visible ? "true" : "false");
+      btn.textContent = visible ? "Hide panels" : "Floating panels";
+      try {
+        localStorage.setItem(PANELS_KEY, visible ? "1" : "0");
+      } catch {}
+    }
+
+    function getPanelsVisible() {
+      try {
+        return localStorage.getItem(PANELS_KEY) === "1";
+      } catch {
+        return false;
+      }
+    }
+
+    if (container && btn) {
+      setPanelsVisible(getPanelsVisible());
+      btn.addEventListener("click", () => setPanelsVisible(container.hidden));
+    }
+  </script>
+
+  <style>
+    .test-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      margin: 12px auto 0;
+      width: min(1080px, calc(100% - 24px));
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .test-toolbar__left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .test-toolbar__badge {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+    }
+    .test-toolbar__muted {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+    }
+    .test-toolbar__right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .test-toolbar__link {
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+    }
+    .test-toolbar__link:hover {
+      color: rgba(255,255,255,0.9);
+      border-color: rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+    }
+    .test-toolbar__btn {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .test-toolbar__btn[aria-pressed="true"] {
+      border-color: rgba(var(--color-accent-rgb, 99, 102, 241), 0.35);
+      background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.18);
+    }
+    .floating-panels {
+      position: relative;
+      z-index: 55;
+    }
+    .btn-nav {
+      display: block;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover {
+      background: var(--color-accent);
+      color: white;
+      border-color: var(--color-accent);
+    }
+  </style>
+</BaseLayout>

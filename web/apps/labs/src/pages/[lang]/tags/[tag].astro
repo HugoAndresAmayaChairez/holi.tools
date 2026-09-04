@@ -1,0 +1,152 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import GlassCard from "@holi/ui/components/GlassCard.astro";
+import SimpleBackground from "@holi/ui/components/SimpleBackground.astro";
+import {
+  getLangFromUrl,
+  useTranslations,
+  languages,
+} from "../../../i18n/utils";
+import { getLabsChangelog, labsVersion } from "../../../release";
+import { getLabsPrivacy } from "../../../privacy";
+
+import "/src/styles/app.css";
+
+export async function getStaticPaths() {
+  const experiments = await getCollection("experiments");
+  return languages.flatMap((l) => {
+    const localizedExperiments = experiments.filter((entry) => entry.data.lang === l.code);
+    const localizedTags = [...new Set(localizedExperiments.flatMap((entry) => entry.data.tags))];
+    return localizedTags.map((tag) => ({
+      params: { lang: l.code, tag },
+      props: {
+        tag,
+        experiments: localizedExperiments.filter((entry) => entry.data.tags.includes(tag)),
+      },
+    }));
+  });
+}
+
+const { tag, experiments } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const history = getLabsChangelog(lang);
+
+const site = Astro.site ?? new URL("https://labs.holi.tools");
+const baseUrl = site.toString().replace(/\/$/, "");
+const canonicalUrl = `${baseUrl}${Astro.url.pathname}`;
+
+const title = `#${tag} - ${t("meta_title")}`;
+const description = t("meta_description");
+const privacySummary = getLabsPrivacy(lang);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  languages={languages}
+  prefixDefaultLocale={true}
+  colorScheme="labs"
+  productName="Holi Labs"
+  productDescription={t("meta_description")}
+  version={labsVersion}
+  changelog={history}
+  privacySummary={privacySummary}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:site_name" content="Holi Labs" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+  </slot>
+
+  <SimpleBackground />
+
+  <main class="container mx-auto px-4 py-20 relative z-10">
+    <section class="max-w-4xl mx-auto text-center mb-16">
+      <a
+        href="/"
+        class="back-link inline-flex items-center gap-2 text-sm uppercase tracking-widest mb-8"
+      >
+        <span class="material-icons text-sm">arrow_back</span>
+        Labs
+      </a>
+      <h1 class="tag-title text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+        <span>#</span>{tag}
+      </h1>
+      <p class="tag-count text-lg">
+        {experiments.length}
+        {experiments.length === 1 ? t("read_singular") : t("read_plural")}
+      </p>
+    </section>
+
+    <section class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {
+          experiments.map((exp: any) => (
+            <GlassCard
+              clickable
+              padding="lg"
+              rounded="lg"
+              accentColor={exp.data.color}
+              href={`/${lang}/${exp.data.format === "paper" ? "papers" : "experiments"}/${exp.slug.replace(/-[a-z]{2}$/, "")}`}
+              target="_self"
+              class="group h-full"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3"
+                style={`background: ${exp.data.color}20; border: 1px solid ${exp.data.color}40; color: ${exp.data.color};`}
+              >
+                <span class="material-icons text-3xl">{exp.data.icon}</span>
+              </div>
+              <h3 class="card-title text-2xl font-semibold mb-3">
+                {exp.data.title}
+              </h3>
+              <p class="card-description leading-relaxed font-light mb-4">
+                {exp.data.description}
+              </p>
+              <div class="flex flex-wrap gap-2 mt-auto">
+                {exp.data.tags.map((t: string) => (
+                  <span
+                    class:list={[
+                      "text-xs px-2 py-1 rounded-full",
+                      t === tag ? "tag-chip tag-chip--active" : "tag-chip",
+                    ]}
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            </GlassCard>
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    min-height: 100vh;
+  }
+  .back-link { color: color-mix(in srgb, var(--color-text) 58%, transparent); text-decoration: none; }
+  .back-link:hover { color: var(--color-text); }
+  .tag-title { color: var(--color-text); }
+  .tag-title span { color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+  .tag-count,
+  .card-description { color: color-mix(in srgb, var(--color-text) 58%, transparent); }
+  .card-title { color: color-mix(in srgb, var(--color-text) 92%, transparent); }
+  .tag-chip { color: color-mix(in srgb, var(--color-text) 52%, transparent); background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+  .tag-chip--active { color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+</style>

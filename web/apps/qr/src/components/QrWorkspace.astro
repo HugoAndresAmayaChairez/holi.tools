@@ -1,0 +1,34 @@
+---
+/**
+ * QrWorkspace.astro — the Holi QR 1.0 shell.
+ *
+ * Layout: toolbar on top; then rail (content) · stage (preview) · inspector
+ * (style). The controller toggles `.generating` on #canvas-container, which
+ * is this root, so the whole shell switches between the empty editorial
+ * state and the workspace.
+ */
+import WorkspaceToolbar from "./workspace/WorkspaceToolbar.astro";
+import ContentRail from "./workspace/ContentRail.astro";
+import Stage from "./workspace/Stage.astro";
+import Inspector from "./workspace/Inspector.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<a class="skip-link" href="#qr-stage">{t("ws.skip")}</a>
+<div
+  class="qr-root canvas-container"
+  id="canvas-container"
+  data-rail="open"
+  data-inspector="open"
+  data-mobile-pane="color"
+>
+  <WorkspaceToolbar />
+  <div class="qr-body">
+    <ContentRail />
+    <Stage />
+    <Inspector />
+  </div>
+</div>

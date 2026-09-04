@@ -1,0 +1,34 @@
+{
+  "name": "holi-typst",
+  "type": "module",
+  "version": "0.7.2",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build && node scripts/patch-pages-compiler-wasm.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "catalog:",
+    "@codemirror/commands": "^6.10.1",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/language": "^6.12.1",
+    "@codemirror/state": "^6.5.4",
+    "@codemirror/view": "^6.39.11",
+    "@holi/configs": "workspace:*",
+    "@holi/ui": "workspace:*",
+    "@lezer/highlight": "^1.2.3",
+    "@myriaddreamin/typst-ts-renderer": "0.7.0-rc2",
+    "@myriaddreamin/typst-ts-web-compiler": "0.7.0-rc2",
+    "@myriaddreamin/typst.ts": "0.7.0-rc2",
+    "astro": "catalog:",
+    "codemirror-lang-typst": "^0.4.0",
+    "codemirror": "^6.0.2",
+    "tailwindcss": "catalog:"
+  },
+  "devDependencies": {
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:"
+  }
+}

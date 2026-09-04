@@ -1,0 +1,66 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import { DEFAULT_LANG, LANGUAGES } from "@holi/configs/i18n";
+import { metadataAppChangelog } from "@holi/configs/changelogs";
+import MetadataApp from "./MetadataApp";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { getMetadataCopy } from "../i18n/translations";
+import "../styles/app.css";
+import "@holi/ui/styles/fonts.css";
+
+interface Props { lang: string; }
+const { lang } = Astro.props;
+const copy = getMetadataCopy(lang);
+const history = metadataAppChangelog;
+const currentVersion = history[0]?.version || "0.0.0";
+const site = Astro.site ?? new URL("https://metadata.holi.tools");
+const baseUrl = site.toString().replace(/\/$/, "");
+const canonicalUrl = `${baseUrl}${Astro.url.pathname}`;
+const privacyFacts = copy.facts.map(([label, value, tone]) => ({ label, value, tone }));
+---
+
+<BaseLayout
+  title={copy.title}
+  description={copy.description}
+  lang={lang}
+  languages={LANGUAGES}
+  hreflangLanguages={LANGUAGES}
+  defaultLang={DEFAULT_LANG}
+  prefixDefaultLocale={false}
+  colorScheme="metadata"
+  showCanvasGrid={false}
+  productName="Holi Metadata"
+  productDescription={copy.description}
+  version={currentVersion}
+  changelog={history}
+  privacySummary={{ id: "metadata-privacy", title: copy.privacyTitle, summary: copy.privacySummary, facts: privacyFacts }}
+  showPapers={false}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={copy.title} />
+    <meta property="og:description" content={copy.description} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:site_name" content="holi.tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={copy.title} />
+    <meta name="twitter:description" content={copy.description} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+    <script type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@type": "WebApplication", name: copy.title, description: copy.description, url: canonicalUrl, applicationCategory: "UtilitiesApplication", operatingSystem: "Web Browser", isAccessibleForFree: true, inLanguage: [lang] })} />
+  </slot>
+  <main class="metadata-shell min-h-[100dvh] w-full">
+    <div class="metadata-creature-wrap">
+      <ProductCreature name="lynx" variant="mark" class="metadata-creature" />
+    </div>
+    <MetadataApp client:load lang={lang} />
+  </main>
+</BaseLayout>
+
+<style>
+  .metadata-shell { position: relative; isolation: isolate; }
+  .metadata-creature-wrap { position: fixed; right: clamp(-4rem, -2vw, -1rem); bottom: clamp(5rem, 10vh, 9rem); z-index: 45; width: clamp(16rem, 28vw, 30rem); pointer-events: none; }
+  :global(.metadata-creature) { width: 100%; opacity: .075; --creature-color: var(--color-accent); }
+  @media (max-width: 760px) { .metadata-creature-wrap { right: -7rem; bottom: 6rem; width: 21rem; } }
+</style>

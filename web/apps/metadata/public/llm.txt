@@ -1,0 +1,9 @@
+# Holi Metadata
+
+Local metadata inspection for files before sharing.
+
+- URL: https://metadata.holi.tools/
+- App path: `web/apps/metadata`
+- Package: `holi-metadata`
+- Privacy: files are intended to be processed locally in the browser.
+- Focus: privacy-sensitive signals, normalized exports, and SHA-256 checks.

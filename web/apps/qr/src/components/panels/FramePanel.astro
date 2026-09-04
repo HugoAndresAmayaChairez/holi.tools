@@ -1,0 +1,61 @@
+---
+/**
+ * FramePanel.astro — optional text frame ("Scan me") under the QR.
+ * State lives in lib/workspace/frame.ts; the frame is part of the style
+ * (saved presets, style links) and of every export.
+ */
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="frame-panel">
+  <label class="color-row" for="frame-enabled">
+    <span class="label-text">{t("ws.frame_enable")}</span>
+    <span class="switch">
+      <input type="checkbox" id="frame-enabled" />
+      <span class="slider round"></span>
+    </span>
+  </label>
+
+  <div class="frame-controls" id="frame-controls">
+    <label class="section-label" for="frame-text">{t("ws.frame_text")}</label>
+    <input
+      type="text"
+      id="frame-text"
+      class="input-field"
+      maxlength="40"
+      placeholder={t("ws.frame_placeholder")}
+      value={t("ws.frame_placeholder")}
+    />
+
+    <div class="color-row">
+      <span class="label-text">{t("ws.frame_bg")}</span>
+      <input type="color" id="frame-bg" value="#24211d" />
+    </div>
+    <div class="color-row">
+      <span class="label-text">{t("ws.frame_fg")}</span>
+      <input type="color" id="frame-fg" value="#ffffff" />
+    </div>
+
+    <p class="help-text">{t("ws.frame_note")}</p>
+  </div>
+</div>
+
+<style>
+  .frame-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .frame-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .frame-controls[data-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>

@@ -1,0 +1,502 @@
+---
+/**
+ * ConfigMenu.astro - Floating configuration orb with settings menu
+ *
+ * Props:
+ * - currentLang: Current language code
+ * - languages: Available languages
+ * - homeHref: Link to home (default: "/")
+ */
+
+interface Language {
+  readonly code: string;
+  readonly name: string;
+}
+
+interface Props {
+  currentLang: string;
+  languages: readonly Language[];
+  defaultLang?: string;
+  prefixDefaultLocale?: boolean;
+  homeHref?: string;
+  changelogId?: string;
+  showPapers?: boolean;
+  placement?: "floating" | "dock";
+  triggerLabel?: string;
+  labels?: Partial<{
+    menu: string;
+    navigation: string;
+    home: string;
+    moreTools: string;
+    holiTools: string;
+    papers: string;
+    about: string;
+    donate: string;
+    support: string;
+    language: string;
+  }>;
+}
+
+const {
+  currentLang,
+  languages,
+  defaultLang = "en",
+  prefixDefaultLocale = false,
+  homeHref = "/",
+  changelogId,
+  showPapers = true,
+  placement = "floating",
+  triggerLabel,
+  labels: customLabels = {},
+} = Astro.props;
+
+import { getProductShellCopy } from "../lib/product-shell-copy";
+const shellCopy = getProductShellCopy(currentLang);
+const localizedTriggerLabel = triggerLabel ?? shellCopy.configuration;
+
+const labels = {
+  menu: shellCopy.menu,
+  navigation: shellCopy.navigation,
+  home: shellCopy.home,
+  moreTools: shellCopy.moreTools,
+  holiTools: "Holi.tools",
+  papers: shellCopy.papers,
+  about: shellCopy.about,
+  donate: shellCopy.donate,
+  support: shellCopy.supportSuggestions,
+  language: shellCopy.language,
+  ...customLabels,
+};
+
+import GlassCard from "./GlassCard.astro";
+import Icon from "./Icon.astro";
+---
+
+<!-- Orb Container (Draggable) -->
+<div
+  class="orb-container"
+  data-placement={placement}
+  data-draggable={placement === "floating" ? "true" : undefined}
+  data-persist-id="main-orb"
+  data-default-lang={defaultLang}
+  data-prefix-default-locale={prefixDefaultLocale ? "true" : "false"}
+>
+  <!-- Orb Button -->
+  <GlassCard
+    as="button"
+    class="orb-btn"
+    padding="none"
+    rounded="full"
+    shadow={false}
+    toggleable={true}
+    toggleId="main-menu"
+    aria-label={labels.menu}
+    aria-haspopup="menu"
+    aria-expanded="false"
+  >
+    <Icon name="settings" class="settings-icon" />
+    {placement === "dock" && <span class="orb-label">{localizedTriggerLabel}</span>}
+  </GlassCard>
+
+  <!-- Dropdown Menu -->
+  <nav class="orb-menu" aria-label={labels.menu}>
+    <!-- Navigation -->
+    <section class="menu-section">
+      <h3 class="menu-label">{labels.navigation}</h3>
+      <a href={homeHref} class="menu-item">
+        <Icon name="home" size={16} />
+        <span>{labels.home}</span>
+      </a>
+      <a href="https://holi.tools" class="menu-item">
+        <Icon name="apps" size={16} />
+        <span>{labels.moreTools}</span>
+      </a>
+    </section>
+
+    <hr class="menu-divider" />
+
+    <!-- Actions -->
+    <section class="menu-section">
+      <h3 class="menu-label">{labels.holiTools}</h3>
+      {
+        showPapers && (
+          <a
+            href={
+              prefixDefaultLocale || currentLang !== defaultLang
+                ? `/${currentLang}/papers`
+                : "/papers"
+            }
+            class="menu-item"
+          >
+            <Icon name="article" size={16} />
+            <span>{labels.papers}</span>
+          </a>
+        )
+      }
+      {
+        changelogId && (
+          <></>
+        )
+      }
+      <button
+        type="button"
+        class="menu-item"
+        onclick="window.openOverlay && window.openOverlay('info', 'about')"
+      >
+        <Icon name="info" size={16} />
+        <span>{labels.about}</span>
+      </button>
+      <button
+        type="button"
+        class="menu-item"
+        onclick="window.openOverlay && window.openOverlay('donate', 'holi')"
+      >
+        <Icon name="favorite" size={16} />
+        <span>{labels.donate}</span>
+      </button>
+      <button
+        type="button"
+        class="menu-item"
+        onclick="window.openOverlay && window.openOverlay('support', 'holi')"
+      >
+        <Icon name="message-square" size={16} />
+        <span>{labels.support}</span>
+      </button>
+    </section>
+
+    <hr class="menu-divider" />
+
+    <!-- Languages -->
+    <section class="menu-section">
+      <h3 class="menu-label">{labels.language}</h3>
+      <div class="lang-grid">
+        {
+          languages.map((l: Language) => (
+            <a
+              href={
+                prefixDefaultLocale || l.code !== defaultLang
+                  ? `/${l.code}/`
+                  : "/"
+              }
+              class={`lang-chip ${l.code === currentLang ? "active" : ""}`}
+              data-lang={l.code}
+              title={l.name}
+            >
+              {l.code.toUpperCase()}
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </nav>
+</div>
+
+<!-- Draggable Script Import -->
+<script>
+  import "../scripts/draggable.ts";
+
+  // Close menu on outside click
+  document.addEventListener("click", (e) => {
+    const container = document.querySelector(".orb-container");
+    const orbBtn = document.querySelector(".orb-btn") as HTMLElement | null;
+    if (!container || !orbBtn) return;
+
+    if (
+      !container.contains(e.target as Node) &&
+      orbBtn.dataset.toggled === "true"
+    ) {
+      orbBtn.dataset.toggled = "false";
+      orbBtn.classList.remove("glass-card--toggled");
+      orbBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  document.addEventListener("card-toggled", (event) => {
+    const detail = (event as CustomEvent).detail;
+    if (detail?.id !== "main-menu") return;
+    detail.card?.setAttribute("aria-expanded", String(Boolean(detail.toggled)));
+  });
+
+  // Save language preference and handle path-aware routing
+  document.addEventListener("click", (e) => {
+    const container = document.querySelector(".orb-container") as HTMLElement | null;
+    const defaultLang = container?.dataset.defaultLang || "en";
+    const prefixDefaultLocale = container?.dataset.prefixDefaultLocale === "true";
+
+    const chip = (e.target as HTMLElement).closest(
+      ".lang-chip"
+    ) as HTMLAnchorElement | null;
+    if (chip) {
+      e.preventDefault();
+      const lang = chip.getAttribute("data-lang");
+
+      if (lang) {
+        localStorage.setItem("selectedLang", lang);
+
+        const currentPath = window.location.pathname;
+        const segments = currentPath.split("/").filter(Boolean);
+
+        // Dynamically find supported codes from chips
+        const chips = document.querySelectorAll(".lang-chip");
+        const supported = Array.from(chips)
+          .map((c) => c.getAttribute("data-lang"))
+          .filter(Boolean) as string[];
+
+        const hasLangPrefix =
+          segments.length > 0 && supported.includes(segments[0]);
+        const newSegments = [...segments];
+
+        // Default locale uses root URLs unless the app prefixes default locale too.
+        if (!prefixDefaultLocale && lang === defaultLang) {
+          if (hasLangPrefix) newSegments.shift();
+        } else {
+          if (hasLangPrefix) newSegments[0] = lang;
+          else newSegments.unshift(lang);
+        }
+
+        let newPath = "/" + newSegments.join("/");
+        if (newPath === "/") {
+          // keep root as-is
+        }
+
+        // Preserve trailing slash if present
+        if (currentPath.endsWith("/") && !newPath.endsWith("/")) {
+          newPath += "/";
+        }
+
+        // Clean up double slashes just in case
+        newPath = newPath.replace(/\/+/g, "/");
+
+        window.location.href = newPath;
+      }
+    }
+  });
+</script>
+
+<style>
+  /* ========== ORB CONTAINER ========== */
+  .orb-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9000;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .orb-container.is-dragging {
+    cursor: grabbing;
+  }
+
+  .orb-container[data-placement="dock"] {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    cursor: default;
+    touch-action: auto;
+  }
+
+  /* ========== ORB BUTTON ========== */
+  :global(.orb-btn) {
+    width: 48px !important;
+    height: 48px !important;
+    min-height: 0 !important;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn) {
+    width: auto !important;
+    height: 26px !important;
+    padding: 4px 8px !important;
+    flex-direction: row;
+    gap: 5px;
+    border-radius: 6px;
+    color: var(--color-text, inherit);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.76;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn:hover),
+  .orb-container[data-placement="dock"] :global(.orb-btn:focus-visible),
+  .orb-container[data-placement="dock"] :global(.orb-btn.glass-card--toggled) {
+    opacity: 1;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn:focus-visible) {
+    outline: 2px solid var(--color-accent, #6366f1);
+    outline-offset: 3px;
+  }
+
+  .orb-label {
+    white-space: nowrap;
+  }
+
+  :global(.orb-btn .icon) {
+    transition: transform 0.3s ease;
+  }
+
+  :global(.orb-btn.glass-card--toggled .icon) {
+    transform: rotate(90deg);
+  }
+
+  /* ========== DROPDOWN MENU ========== */
+  .orb-menu {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    width: 200px;
+
+    color: var(--color-text, #1a1a1a);
+    background: color-mix(in srgb, var(--color-bg, #ffffff) 94%, transparent);
+    backdrop-filter: blur(24px) saturate(1.15);
+    -webkit-backdrop-filter: blur(24px) saturate(1.15);
+    border: 1px solid var(--color-border, rgba(0, 0, 0, 0.12));
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95) translateY(-8px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .orb-container[data-placement="dock"] .orb-menu {
+    top: auto;
+    right: 0;
+    bottom: calc(100% + 10px);
+    transform: scale(0.96) translateY(8px);
+    transform-origin: bottom right;
+  }
+
+  :global(.orb-btn.glass-card--toggled) + .orb-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+
+  .orb-container[data-placement="dock"] :global(.orb-btn.glass-card--toggled) + .orb-menu {
+    transform: scale(1) translateY(0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .orb-menu {
+      background: color-mix(in srgb, var(--color-bg, #18181b) 94%, transparent);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  /* ========== MENU CONTENT ========== */
+  .menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .menu-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.5;
+    margin: 0 0 4px 8px;
+    font-weight: 600;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: inherit;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+
+  .menu-item:hover {
+    background: rgba(127, 127, 127, 0.1);
+  }
+
+  .menu-item .icon {
+    opacity: 0.7;
+  }
+
+  .menu-divider {
+    border: none;
+    height: 1px;
+    background: rgba(127, 127, 127, 0.15);
+    margin: 4px 0;
+  }
+
+  /* ========== LANGUAGE GRID ========== */
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .lang-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .lang-chip:hover {
+    background: rgba(127, 127, 127, 0.15);
+  }
+
+  .lang-chip.active {
+    background: var(--color-accent, #6366f1);
+    color: white;
+    border-color: var(--color-accent, #6366f1);
+  }
+
+  /* ========== MOBILE ========== */
+  @media (max-width: 640px) {
+    .orb-container {
+      top: 12px;
+      right: 12px;
+    }
+
+    .orb-container[data-placement="dock"] {
+      inset: auto;
+    }
+
+    :global(.orb-btn) {
+      width: 40px !important;
+      height: 40px !important;
+    }
+
+    .orb-container[data-placement="dock"] :global(.orb-btn) {
+      width: auto !important;
+      height: 26px !important;
+    }
+
+    .orb-menu {
+      width: 180px;
+    }
+  }
+</style>

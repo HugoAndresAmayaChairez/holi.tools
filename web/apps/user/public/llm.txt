@@ -1,0 +1,9 @@
+# Holi User
+
+Local-first identity, vault, anonymous chat, and P2P collaboration app.
+
+- URL: https://user.holi.tools/
+- App path: `web/apps/user`
+- Package: `holi-user`
+- Architecture: `web/apps/user/about.md`
+- Security-sensitive: add or update a normative spec before changing protocol behavior.

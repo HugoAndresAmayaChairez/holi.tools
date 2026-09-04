@@ -1,0 +1,103 @@
+---
+import GlassCard from "@holi/ui/components/GlassCard.astro";
+import Icon from "@holi/ui/components/Icon.astro";
+import { getPaperCopy, type PaperLocale } from "../../i18n/papers";
+
+interface Props {
+  lang: PaperLocale;
+}
+
+const { lang } = Astro.props;
+const copy = getPaperCopy(lang);
+const date = "2024-01-08";
+const papersHref = lang === "en" ? "/papers" : `/${lang}/papers`;
+---
+
+<div
+  class="fixed top-0 left-0 h-1 bg-[var(--color-accent)] z-[100] w-full origin-left scale-x-0 transition-transform duration-100"
+  id="reading-progress"
+></div>
+
+<article class="max-w-3xl mx-auto px-4 pt-32 pb-32">
+  <header class="mb-16 text-center">
+    <div
+      class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-mono text-white/60 mb-6"
+    >
+      <span>{date}</span>
+      <span>•</span>
+      <span>{copy.category}</span>
+    </div>
+    <h1 class="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-tight text-white">
+      {copy.articleTitle}
+    </h1>
+    <p class="text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
+      {copy.articleDescription}
+    </p>
+  </header>
+
+  <div
+    class="prose prose-invert prose-lg mx-auto prose-headings:font-bold prose-headings:tracking-tight prose-a:text-[var(--color-accent)] prose-pre:bg-black/30 prose-pre:backdrop-blur prose-pre:border prose-pre:border-white/10"
+  >
+    <p>{copy.intro}</p>
+    <p><strong>{copy.cost}</strong></p>
+
+    <GlassCard class="my-8 font-mono text-sm leading-relaxed" padding="md">
+      <>
+        <span class="text-red-400">- wgpu_core.wasm (2.1 MB)</span>
+        <br />
+      </>
+      <span class="text-green-400">+ holi_qr_svg.wasm (0.02 MB)</span>
+    </GlassCard>
+
+    <h3>{copy.problemTitle}</h3>
+    <p>{copy.problemAnalogy}</p>
+    <p>{copy.pixels}</p>
+
+    <h3>{copy.solutionTitle}</h3>
+    <p>{copy.solutionIntro}</p>
+    <p>{copy.matrix}</p>
+
+    <pre class="language-rust rounded-xl overflow-hidden" dir="ltr"><code>{`// Rust (${copy.codeComment})
+pub fn generate_svg(matrix: &[bool], size: usize) -> String {
+    let mut path = String::new();
+
+    for y in 0..size {
+        for x in 0..size {
+            if matrix[y][x] {
+                path.push_str(&format!("M{},{}h1v1h-1z ", x, y));
+            }
+        }
+    }
+
+    format!("<svg ...><path d='{}'/></svg>", path)
+}`}</code></pre>
+
+    <h3>{copy.resultsTitle}</h3>
+    <ul>
+      <li><strong>{copy.weight}:</strong> {copy.weightValue}</li>
+      <li><strong>{copy.quality}:</strong> {copy.qualityValue}</li>
+      <li><strong>{copy.speed}:</strong> {copy.speedValue}</li>
+    </ul>
+
+    <p>{copy.conclusion}</p>
+  </div>
+
+  <div class="mt-20 pt-10 border-t border-white/10 flex justify-between items-center">
+    <a
+      href={papersHref}
+      class="text-white/40 hover:text-white transition-colors flex items-center gap-2"
+    >
+      <Icon name="arrow_back" size={16} />
+      {copy.back}
+    </a>
+  </div>
+</article>
+
+<script>
+  window.addEventListener("scroll", () => {
+    const scraped = window.scrollY;
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = document.getElementById("reading-progress");
+    if (progress) progress.style.transform = `scaleX(${scraped / total})`;
+  });
+</script>

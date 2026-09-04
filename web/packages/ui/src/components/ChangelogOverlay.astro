@@ -1,0 +1,356 @@
+---
+/**
+ * ChangelogOverlay.astro - A glassmorphic overlay for version history
+ * 
+ * Props:
+ * - id: Unique ID for this changelog overlay
+ * - currentVersion: The currently active version
+ * - history: Array of version objects { version, date, changes: string[] }
+ */
+import GlassCard from "./GlassCard.astro";
+import Icon from "./Icon.astro";
+
+interface VersionInfo {
+  version: string;
+  date: string;
+  changes: string[];
+}
+
+interface ChangelogLabels {
+  title?: string;
+  current?: string;
+  footer?: string;
+  support?: string;
+}
+
+interface Props {
+  id: string;
+  currentVersion: string;
+  history: VersionInfo[];
+  labels?: ChangelogLabels;
+  supportEmail?: string;
+}
+
+const {
+  id,
+  currentVersion,
+  history,
+  labels = {},
+  supportEmail = "holi@holi.tools",
+} = Astro.props;
+
+const t = {
+  title: labels.title || "Version Log",
+  current: labels.current || "Current",
+  footer: labels.footer || "Unified Sovereign Suite",
+  support: labels.support || "Errors / suggestions:",
+};
+---
+
+<div class="version-log-overlay" id={`overlay-changelog-${id}`} style="display: none;">
+  <div class="log-backdrop" onclick={`window.closeOverlay && window.closeOverlay('changelog', '${id}')`}></div>
+  
+  <aside class="log-drawer">
+    <header class="log-header">
+      <h2 class="log-title">{t.title}</h2>
+      <button 
+        class="log-close-btn" 
+        onclick={`window.closeOverlay && window.closeOverlay('changelog', '${id}')`}
+        aria-label="Close log"
+      >
+        <Icon name="x" size={18} />
+      </button>
+    </header>
+
+    <div class="log-body">
+      <div class="version-stack">
+        {history.map((item) => (
+          <div class={`version-card ${item.version === currentVersion ? 'is-current' : ''}`}>
+            <div class="card-header">
+              <div class="version-badge">v{item.version}</div>
+              <span class="version-date">{item.date}</span>
+            </div>
+            <ul class="version-changes">
+              {item.changes.map(change => (
+                <li>{change}</li>
+              ))}
+            </ul>
+            {item.version === currentVersion && (
+              <div class="current-indicator" style="display:none;" aria-hidden="true">{t.current}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <footer class="log-footer">
+      <p class="log-footer-brand">{t.footer}</p>
+      <div class="log-support">
+        <Icon name="mail" size={12} />
+        <span class="log-support-label">{t.support}</span>
+        <a class="log-support-link" href={`mailto:${supportEmail}`}>{supportEmail}</a>
+      </div>
+    </footer>
+  </aside>
+</div>
+
+<script>
+  // Global overlay control logic
+  if (!window.openOverlay) {
+    window.openOverlay = (type: string, id: string) => {
+      const el = document.getElementById(`overlay-${type}-${id}`);
+      if (el) {
+        el.style.display = 'flex';
+        const drawer = el.querySelector('.log-drawer');
+        const backdrop = el.querySelector('.log-backdrop');
+        
+        if (backdrop) {
+          backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards' });
+        }
+        
+        if (drawer) {
+          drawer.animate([
+            { transform: 'translateX(-100%)', opacity: 0 },
+            { transform: 'translateX(0)', opacity: 1 }
+          ], { duration: 400, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' });
+        }
+      }
+    };
+  }
+
+  if (!window.closeOverlay) {
+    window.closeOverlay = (type: string, id: string) => {
+      const el = document.getElementById(`overlay-${type}-${id}`);
+      if (el) {
+        const drawer = el.querySelector('.log-drawer');
+        const backdrop = el.querySelector('.log-backdrop');
+        
+        if (backdrop) {
+          backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+        }
+        
+        if (drawer) {
+          const animation = drawer.animate([
+            { transform: 'translateX(0)', opacity: 1 },
+            { transform: 'translateX(-100%)', opacity: 0 }
+          ], { duration: 300, easing: 'ease-in', fill: 'forwards' });
+          
+          animation.onfinish = () => el.style.display = 'none';
+        } else {
+          el.style.display = 'none';
+        }
+      }
+    };
+  }
+</script>
+
+<style>
+  .version-log-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+  }
+
+  .log-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .log-drawer {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    background: var(--depth-glass, rgba(255, 255, 255, 0.03));
+    backdrop-filter: blur(var(--depth-blur, 24px));
+    -webkit-backdrop-filter: blur(var(--depth-blur, 24px));
+    border-right: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    display: flex;
+    flex-direction: column;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Header */
+  .log-header {
+    padding: 40px 30px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid transparent;
+  }
+
+  .log-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--text-main, #1a1a1a);
+  }
+
+  .log-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, rgba(26, 26, 26, 0.5));
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    margin-right: -8px;
+  }
+
+  .log-close-btn:hover {
+    color: var(--color-accent, #6366f1);
+    background: rgba(127, 127, 127, 0.1);
+  }
+
+  /* Body */
+  .log-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 30px;
+    scrollbar-width: none;
+  }
+
+  .log-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .version-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Card Style */
+  .version-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--depth-border, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s ease;
+  }
+
+  .version-card.is-current {
+    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.05);
+    border-color: rgba(var(--color-accent-rgb, 99, 102, 241), 0.3);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .version-badge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-main, #1a1a1a);
+    background: rgba(127, 127, 127, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  .is-current .version-badge {
+    color: var(--color-accent, #6366f1);
+    background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+  }
+
+  .version-date {
+    font-size: 10px;
+    color: var(--text-muted, rgba(26, 26, 26, 0.5));
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .version-changes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .version-changes li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary, rgba(26, 26, 26, 0.7));
+    position: relative;
+    padding-left: 12px;
+  }
+
+  .version-changes li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted, rgba(26, 26, 26, 0.3));
+  }
+
+  /* Footer */
+  .log-footer {
+    padding: 20px 30px 30px;
+    text-align: center;
+    border-top: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .log-footer-brand {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-muted, rgba(26, 26, 26, 0.3));
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .log-support {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted, rgba(26, 26, 26, 0.6));
+  }
+
+  .log-support-label {
+    white-space: nowrap;
+  }
+
+  .log-support-link {
+    color: var(--color-accent, #6366f1);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .log-support-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Dark mode specific tweak for cards */
+  @media (prefers-color-scheme: dark) {
+    .version-card {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .log-drawer {
+      max-width: 100%;
+    }
+    
+    .log-header, .log-body, .log-footer {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
+</style>

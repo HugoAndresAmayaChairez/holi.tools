@@ -1,0 +1,9 @@
+# Holi Image
+
+Status: public local-first image workspace.
+URL: https://image-holi.pages.dev/
+App path: web/apps/image
+Capabilities: optimize, resize, centered crop, JPEG/PNG/WebP conversion, fresh pixel-only encoding, and batch ZIP export.
+Data flow: selected image bytes stay in volatile browser memory and are processed with Canvas APIs. Holi does not receive files, filenames, previews, or settings.
+Provider boundary: Cloudflare serves the static app and can process IP address, request time, requested path, traffic volume, routing, and security metadata.
+Languages: English, Spanish, Chinese, Hindi, Arabic, Bengali, and Portuguese.

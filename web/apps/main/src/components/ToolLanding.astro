@@ -1,0 +1,150 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { mainAppChangelog } from "@holi/configs/changelogs";
+import { LANGUAGES, DEFAULT_LANG } from "@holi/configs/i18n";
+import packageInfo from "../../package.json";
+import { getMainPrivacy } from "../privacy";
+import { getEditorialCopy, toolIdentity, type ToolSlug } from "../i18n/editorial";
+import "../styles/app.css";
+import "@holi/ui/styles/fonts.css";
+
+interface Props { lang: string; tool: ToolSlug; }
+const { lang, tool } = Astro.props;
+const copy = getEditorialCopy(lang);
+const story = copy.tools[tool];
+const identity = toolIdentity[tool];
+const history = mainAppChangelog[lang] ?? mainAppChangelog.en;
+const homeHref = lang === DEFAULT_LANG ? "/" : `/${lang}/`;
+const localePrefix = lang === DEFAULT_LANG ? "" : "/" + lang;
+const canonicalUrl = `https://holi.tools${localePrefix}/tools/${tool}/`;
+const title = `${identity.name} — ${story.headline}`;
+const schemaType = tool === "labs" ? "CollectionPage" : "WebApplication";
+const structuredData = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": schemaType,
+  name: identity.name,
+  headline: story.headline,
+  description: story.intro,
+  url: canonicalUrl,
+  inLanguage: lang,
+  isAccessibleForFree: true,
+  ...(tool === "labs" ? {} : { applicationCategory: "UtilitiesApplication", operatingSystem: "Web Browser" }),
+});
+---
+
+<BaseLayout
+  title={title}
+  description={story.intro}
+  lang={lang}
+  languages={LANGUAGES}
+  hreflangLanguages={LANGUAGES}
+  defaultLang={DEFAULT_LANG}
+  colorScheme="default"
+  showCanvasGrid={false}
+  productName="Holi.tools"
+  productDescription={story.intro}
+  version={packageInfo.version}
+  changelog={history}
+  privacySummary={getMainPrivacy(lang)}
+  showPapers={false}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={story.intro} />
+    <meta property="og:image" content="https://holi.tools/og-image.svg" />
+    <meta property="og:site_name" content="Holi.tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={story.intro} />
+    <meta name="twitter:image" content="https://holi.tools/og-image.svg" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
+    <script type="application/ld+json" set:html={structuredData} />
+  </slot>
+
+  <main class="tool-landing" style={`--tool-color:${identity.color};--creature-color:${identity.color}`}>
+    <nav class="landing-nav" aria-label={copy.back}>
+      <a href={homeHref}><span aria-hidden="true">←</span>{copy.back}</a>
+      <span class="mini-brand">holi tools</span>
+    </nav>
+
+    <section class="landing-hero">
+      <div class="landing-title">
+        <p>{copy.landingsLabel}</p>
+        <h1>{story.headline}</h1>
+      </div>
+      <div class="landing-aside">
+        <ProductCreature name={identity.creature} variant="mark" eager class="landing-creature" />
+        <strong>{identity.name}</strong>
+        <p>{story.intro}</p>
+        <div class="hero-actions">
+          <a class="primary-action" href={identity.href}>{copy.openTool}<span aria-hidden="true">↗</span></a>
+          <span><i aria-hidden="true"></i>{copy.noAccount}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="details-section" aria-labelledby="details-title">
+      <h2 id="details-title">{copy.whatItDoes}</h2>
+      <div class="detail-grid">
+        {story.details.map((detail, index) => (
+          <article><span>0{index + 1}</span><h3>{detail.title}</h3><p>{detail.body}</p></article>
+        ))}
+      </div>
+    </section>
+
+    <section class="privacy-strip">
+      <div><p>{copy.privacyTitle}</p><h2>{story.privacy}</h2></div>
+      <p>{copy.privacyNote}</p>
+    </section>
+
+    <section class="final-action">
+      <ProductCreature name={identity.creature} variant="icon" />
+      <div><span>{identity.name}</span><h2>{copy.startNow}</h2></div>
+      <a href={identity.href}>{copy.openTool}<span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .tool-landing { min-height: 100dvh; background: var(--color-bg); color: var(--color-text); }
+  .landing-nav { display: flex; align-items: center; justify-content: space-between; width: min(100% - 2rem,92rem); margin: 0 auto; padding: 1.25rem 0; border-bottom: 1px solid color-mix(in srgb,var(--color-text) 14%,transparent); }
+  .landing-nav a { display: inline-flex; align-items: center; gap: .65rem; color: var(--color-text); font-size: .78rem; font-weight: 800; text-decoration: none; }
+  .mini-brand { color: transparent; background: linear-gradient(110deg,#f45d5d,#e7a927,#24a86a,#2b91d4,#9b5fd3); background-clip: text; -webkit-background-clip: text; font-weight: 900; letter-spacing: -.04em; }
+  .landing-hero { display: grid; grid-template-columns: minmax(0,1.7fr) minmax(18rem,.75fr); align-items: center; gap: clamp(2rem,8vw,9rem); width: min(100% - 2rem,92rem); min-height: min(44rem,76dvh); margin: 0 auto; padding: clamp(4rem,9vw,8rem) 0; }
+  .landing-title > p,.privacy-strip > div > p { margin: 0 0 1.1rem; color: var(--tool-color); font: 850 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .15em; text-transform: uppercase; }
+  .landing-title h1 { max-width: 10.5ch; margin: 0; font-size: clamp(3.8rem,7vw,7.5rem); font-weight: 450; letter-spacing: -.075em; line-height: .88; }
+  .landing-aside { position: relative; padding: 4rem 0 5rem; }
+  :global(.landing-creature) { position: absolute; top: -6rem; right: -1rem; z-index: 0; opacity: .14; transform: rotate(3deg); }
+  .landing-aside > strong,.landing-aside > p,.hero-actions { position: relative; z-index: 1; }
+  .landing-aside > strong { display: block; margin-bottom: .65rem; color: var(--tool-color); font-size: .78rem; letter-spacing: .07em; text-transform: uppercase; }
+  .landing-aside > p { margin: 0 0 1.7rem; color: color-mix(in srgb,var(--color-text) 68%,transparent); font-size: clamp(1.05rem,1.6vw,1.35rem); line-height: 1.55; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+  .primary-action,.final-action > a { display: inline-flex; align-items: center; gap: .8rem; padding: .78rem 1rem; border-radius: .7rem; background: var(--tool-color); color: white; font-size: .8rem; font-weight: 850; text-decoration: none; }
+  .hero-actions > span { display: inline-flex; align-items: center; gap: .55rem; color: color-mix(in srgb,var(--color-text) 65%,transparent); font-size: .72rem; font-weight: 750; }
+  .hero-actions i { width: .52rem; height: .52rem; border-radius: 50%; background: #2bae70; }
+  .details-section { padding: clamp(4rem,8vw,8rem) max(1rem,calc((100vw - 92rem)/2)); background: color-mix(in srgb,var(--color-bg) 95%,var(--color-text) 5%); border-block: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); }
+  .details-section > h2 { margin: 0 0 2.8rem; font-size: clamp(3rem,7vw,7rem); font-weight: 430; letter-spacing: -.07em; line-height: .9; }
+  .detail-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+  .detail-grid article { display: flex; min-height: 17rem; flex-direction: column; padding: clamp(1.4rem,3vw,2.3rem); border: 1px solid color-mix(in srgb,var(--color-text) 13%,transparent); border-radius: 1rem; background: var(--color-bg); }
+  .detail-grid article > span { color: var(--tool-color); font: 850 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .detail-grid h3 { margin: auto 0 .75rem; font-size: clamp(1.35rem,2.5vw,2rem); font-weight: 520; letter-spacing: -.04em; }
+  .detail-grid p { margin: 0; color: color-mix(in srgb,var(--color-text) 66%,transparent); line-height: 1.6; }
+  .privacy-strip { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(16rem,.7fr); gap: clamp(2rem,7vw,7rem); width: min(100% - 2rem,92rem); margin: 0 auto; padding: clamp(5rem,10vw,9rem) 0; }
+  .privacy-strip h2 { max-width: 20ch; margin: 0; font-size: clamp(2rem,4vw,4rem); font-weight: 470; letter-spacing: -.055em; line-height: 1.05; }
+  .privacy-strip > p { align-self: end; margin: 0; color: color-mix(in srgb,var(--color-text) 62%,transparent); line-height: 1.65; }
+  .final-action { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 1.2rem; width: min(100% - 2rem,92rem); margin: 0 auto 9rem; padding: clamp(1.25rem,3vw,2rem); border: 1px solid color-mix(in srgb,var(--tool-color) 36%,var(--color-border)); border-radius: 1.1rem; background: color-mix(in srgb,var(--tool-color) 8%,var(--color-bg)); }
+  .final-action span { color: var(--tool-color); font-size: .7rem; font-weight: 850; text-transform: uppercase; }
+  .final-action h2 { margin: .2rem 0 0; font-size: clamp(1.5rem,3vw,2.5rem); font-weight: 520; letter-spacing: -.045em; }
+  @media (max-width:800px) { .landing-hero,.privacy-strip { grid-template-columns: 1fr; } .landing-hero { min-height: auto; } .detail-grid { grid-template-columns: 1fr; } .detail-grid article { min-height: 13rem; } .landing-aside { max-width: 36rem; } }
+  @media (max-width:540px) { .landing-nav,.landing-hero,.privacy-strip,.final-action { width: min(100% - 1.35rem,92rem); } .landing-title h1 { font-size: clamp(3.5rem,18vw,5.3rem); } :global(.landing-creature) { width: 9rem; top: -3rem; } .final-action { grid-template-columns: auto minmax(0,1fr); } .final-action > a { grid-column: 1/-1; justify-content: center; } }
+</style>
+
+<style is:global>
+  body.palette-default { --color-bg: #f4efe7; --color-text: #24211d; --color-border: rgba(52,45,36,.14); background: var(--color-bg); }
+  :root[data-holi-theme="dark"] body.palette-default { --color-bg: #151311; --color-text: #f3ede5; --color-border: rgba(246,235,222,.14); }
+  @media (prefers-color-scheme: dark) { :root:not([data-holi-theme]) body.palette-default { --color-bg: #151311; --color-text: #f3ede5; --color-border: rgba(246,235,222,.14); } }
+</style>

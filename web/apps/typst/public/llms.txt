@@ -1,0 +1,33 @@
+# Holi Typst
+
+Holi Typst is a local-first Typst editor focused on writing, preview, export,
+and future encrypted collaboration. The current editor does not require an
+account or upload document contents to Holi.
+
+## URL
+
+- https://typst.holi.tools/
+
+## Capabilities
+
+- Edit Typst documents in the browser.
+- Persist work locally.
+- Preview/render through browser-side tooling.
+- Export document artifacts.
+
+## Implementation Parameters
+
+- App package: `holi-typst`
+- App path: `web/apps/typst`
+- Product brief: `web/apps/typst/product.md`
+- Roadmap: `docs/roadmap.md`
+- Collaboration decision: `docs/decisions/0002-private-collaboration.md`
+
+## Privacy Notes
+
+- No account is required for the current core workflow.
+- Documents are processed and persisted on the device by default.
+- Cloudflare can process IP address, request time, routing data, and traffic
+  volume when it serves application resources.
+- Collaboration is planned, not enabled in the current release, and must use
+  explicit sharing plus application-layer end-to-end encryption.

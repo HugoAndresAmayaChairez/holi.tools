@@ -1,0 +1,125 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SimpleBackground from "./SimpleBackground.astro";
+
+interface Props {
+  lang?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  languages?: any[];
+  colorScheme?: "default" | "qr" | "paint" | "calculator" | "labs" | "typst";
+}
+
+const { lang = "en", languages = [], colorScheme = "default" } = Astro.props;
+const copy = {
+  en: { title: "404 - Page not found", message: "page not found", desc: "The page you're looking for doesn't exist or was moved.", link: "back to home" },
+  es: { title: "404 - Página no encontrada", message: "página no encontrada", desc: "La página que buscas no existe o fue movida.", link: "volver al inicio" },
+  zh: { title: "404 - 找不到页面", message: "找不到页面", desc: "你查找的页面不存在或已被移动。", link: "返回首页" },
+  hi: { title: "404 - पेज नहीं मिला", message: "पेज नहीं मिला", desc: "आप जिस पेज को खोज रहे हैं वह मौजूद नहीं है या उसे स्थानांतरित कर दिया गया है।", link: "होम पर वापस जाएँ" },
+  ar: { title: "404 - الصفحة غير موجودة", message: "الصفحة غير موجودة", desc: "الصفحة التي تبحث عنها غير موجودة أو نُقلت.", link: "العودة إلى الرئيسية" },
+  bn: { title: "404 - পেজ পাওয়া যায়নি", message: "পেজ পাওয়া যায়নি", desc: "আপনি যে পেজটি খুঁজছেন সেটি নেই বা সরানো হয়েছে।", link: "হোমে ফিরে যান" },
+  pt: { title: "404 - Página não encontrada", message: "página não encontrada", desc: "A página que você procura não existe ou foi movida.", link: "voltar ao início" },
+} as const;
+const t = copy[lang as keyof typeof copy] ?? copy.en;
+---
+
+<BaseLayout
+  title={t.title}
+  lang={lang}
+  languages={languages}
+  colorScheme={colorScheme}
+  showCanvasGrid={false}
+>
+  <slot name="head" slot="head">
+    <meta name="robots" content="noindex,nofollow" />
+  </slot>
+
+  <SimpleBackground />
+  <main
+    class="flex flex-col items-center justify-center min-h-[100dvh] p-4 text-center"
+  >
+    <div
+      class="relative p-12 rounded-3xl border border-[var(--color-border)] bg-[rgba(255,255,255,0.02)] backdrop-blur-md overflow-hidden max-w-2xl w-full"
+    >
+      <!-- Decoratiive glow -->
+      <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[var(--color-accent)] opacity-20 blur-[100px] pointer-events-none rounded-full"
+      >
+      </div>
+
+      <div class="relative z-10 flex flex-col items-center">
+        <div class="glitch mb-4">
+          <h1
+            class="text-6xl md:text-9xl font-black lowercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-text)]"
+          >
+            404
+          </h1>
+        </div>
+
+        <p
+          class="text-2xl md:text-3xl font-bold mb-6 lowercase tracking-tight"
+          id="errorMessage"
+        >
+          {t.message}
+        </p>
+
+        <p
+          class="text-lg opacity-80 max-w-md mb-10 leading-relaxed text-balance"
+          id="errorDesc"
+        >
+          {t.desc}
+        </p>
+
+        <a
+          href={lang === "en" ? "/" : `/${lang}/`}
+          id="homeLink"
+          class="group relative inline-flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl bg-[var(--color-text)] text-[var(--color-bg)] hover:scale-105 transition-all duration-300"
+        >
+          <span>{t.link}</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="transition-transform group-hover:translate-x-1"
+            ><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg
+          >
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .glitch {
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+      92% {
+        transform: translate(-2px, 2px);
+      }
+      94% {
+        transform: translate(2px, -2px);
+      }
+      96% {
+        transform: translate(-2px, -2px);
+      }
+      98% {
+        transform: translate(2px, 2px);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .glitch {
+        animation: none;
+      }
+    }
+  </style>
+</BaseLayout>

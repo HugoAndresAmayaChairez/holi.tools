@@ -1,0 +1,28 @@
+{
+  "name": "holi-user",
+  "type": "module",
+  "version": "0.3.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "catalog:",
+    "@holi/configs": "workspace:*",
+    "@holi/ui": "workspace:*",
+    "@holi/wasm-crypto": "workspace:*",
+    "@holi/wasm-p2p": "workspace:*",
+    "astro": "catalog:",
+    "tailwindcss": "catalog:",
+    "trystero": "^0.25.4"
+  },
+  "devDependencies": {
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:",
+    "vitest": "catalog:"
+  }
+}

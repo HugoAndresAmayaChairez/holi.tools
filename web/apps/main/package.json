@@ -1,0 +1,23 @@
+{
+  "name": "holi-main",
+  "type": "module",
+  "version": "0.8.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "catalog:",
+    "@holi/configs": "workspace:*",
+    "@holi/ui": "workspace:*",
+    "astro": "catalog:",
+    "tailwindcss": "catalog:"
+  },
+  "devDependencies": {
+    "vite-plugin-top-level-await": "catalog:",
+    "vite-plugin-wasm": "catalog:"
+  }
+}

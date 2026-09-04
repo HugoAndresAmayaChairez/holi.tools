@@ -1,0 +1,10 @@
+# Holi Typst
+
+Local-first browser Typst editor with an explicit privacy disclosure.
+
+- URL: https://typst.holi.tools/
+- App path: `web/apps/typst`
+- Package: `holi-typst`
+- Product brief: `web/apps/typst/product.md`
+- Roadmap: `docs/roadmap.md`
+- Collaboration decision: `docs/decisions/0002-private-collaboration.md`

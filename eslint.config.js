@@ -11,8 +11,9 @@ export default tseslint.config(
       "**/target/**",
       "**/node_modules/**",
       "**/.astro/**",
-      "apps/**/scripts/**",
-      "apps/**/test-output/**"
+      "**/.wrangler/**",
+      "web/apps/**/scripts/**",
+      "web/apps/**/test-output/**",
     ],
   },
   {
@@ -27,11 +28,14 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-unsafe-function-type": "warn",
       "no-case-declarations": "warn",
-      "no-empty": ["warn", { "allowEmptyCatch": true }],
+      "no-empty": ["warn", { allowEmptyCatch: true }],
       "no-undef": "off", // TypeScript handles this better
       "prefer-const": "warn",
-      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-      "@typescript-eslint/ban-ts-comment": "off"
-    }
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/ban-ts-comment": "off",
+    },
   }
 );

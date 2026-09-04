@@ -1,0 +1,121 @@
+---
+import Icon from "@holi/ui/components/Icon.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+interface Props {
+  categories?: string[];
+  formats?: { id: string; label: string }[];
+}
+
+const { categories = [], formats = [] } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="library-tools" aria-label={t("filter_library")}>
+  <label class="search-field" for="experiment-search">
+    <Icon name="search" size={19} />
+    <span class="sr-only">{t("search_placeholder")}</span>
+    <input type="search" id="experiment-search" placeholder={t("search_placeholder")} autocomplete="off" />
+    <kbd>Ctrl K</kbd>
+  </label>
+
+  <div class="format-list" role="group" aria-label={t("library_description")}>
+    <button type="button" data-format-filter="" aria-pressed="true">{t("all_label")}</button>
+    {formats.map((format) => (
+      <button type="button" data-format-filter={format.id} aria-pressed="false">{format.label}</button>
+    ))}
+  </div>
+
+  <div class="category-list" role="group" aria-label={t("categories_label")}>
+    {categories.map((category) => (
+      <button type="button" data-category-filter={category.toLowerCase()} aria-pressed="false">{category}</button>
+    ))}
+  </div>
+</div>
+
+<script>
+  function initSearch() {
+    const searchInput = document.querySelector<HTMLInputElement>("#experiment-search");
+    const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-category-filter]"));
+    const formatButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-format-filter]"));
+    const cards = Array.from(document.querySelectorAll<HTMLElement>(".experiment-card"));
+    if (!searchInput || searchInput.dataset.wired === "true") return;
+    searchInput.dataset.wired = "true";
+
+    let activeCategory = "";
+    let activeFormat = "";
+    const performSearch = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      cards.forEach((card) => {
+        const searchable = [card.dataset.title, card.dataset.desc, card.dataset.tags]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        const matchesText = !query || searchable.includes(query);
+        const matchesCategory = !activeCategory || card.dataset.category === activeCategory;
+        const matchesFormat = !activeFormat || card.dataset.format === activeFormat;
+        card.hidden = !(matchesText && matchesCategory && matchesFormat);
+      });
+    };
+
+    searchInput.addEventListener("input", performSearch);
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activeCategory = button.dataset.categoryFilter || "";
+        filterButtons.forEach((candidate) => {
+          candidate.setAttribute("aria-pressed", String(candidate === button));
+        });
+        performSearch();
+      });
+    });
+
+    formatButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFormat = button.dataset.formatFilter || "";
+        formatButtons.forEach((candidate) => {
+          candidate.setAttribute("aria-pressed", String(candidate === button));
+        });
+        performSearch();
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInput.focus();
+      }
+      if (event.key === "Escape" && document.activeElement === searchInput) {
+        searchInput.value = "";
+        performSearch();
+        searchInput.blur();
+      }
+    });
+  }
+
+  initSearch();
+  document.addEventListener("astro:page-load", initSearch);
+</script>
+
+<style>
+  .library-tools { width: min(920px, 100%); margin: 0 auto 42px; }
+  .search-field { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 15px; color: color-mix(in srgb, var(--color-text) 58%, transparent); background: color-mix(in srgb, var(--color-text) 4%, transparent); border: 1px solid var(--color-border); border-radius: 14px; }
+  .search-field:focus-within { color: var(--color-accent); border-color: var(--color-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 14%, transparent); }
+  .search-field input { min-width: 0; flex: 1; color: var(--color-text); background: transparent; border: 0; outline: 0; font: 500 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .search-field input::placeholder { color: color-mix(in srgb, var(--color-text) 46%, transparent); }
+  .search-field kbd { padding: 4px 6px; color: color-mix(in srgb, var(--color-text) 48%, transparent); background: color-mix(in srgb, var(--color-text) 5%, transparent); border: 1px solid var(--color-border); border-radius: 6px; font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+  .format-list,
+  .category-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+  .category-list { margin-top: 8px; }
+  .format-list button,
+  .category-list button { min-height: 31px; padding: 6px 11px; color: color-mix(in srgb, var(--color-text) 68%, transparent); background: transparent; border: 1px solid var(--color-border); border-radius: 999px; font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; cursor: pointer; }
+  .format-list button:hover,
+  .format-list button:focus-visible,
+  .format-list button[aria-pressed="true"],
+  .category-list button:hover,
+  .category-list button:focus-visible,
+  .category-list button[aria-pressed="true"] { color: var(--color-bg); background: var(--color-text); border-color: var(--color-text); }
+  .format-list button:focus-visible,
+  .category-list button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  @media (max-width: 520px) { .search-field kbd { display: none; } .format-list,.category-list { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; } .format-list button,.category-list button { flex: 0 0 auto; } }
+</style>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import packageInfo from "../../package.json";
+import { imageChangelog } from "../changelog";
+import { getImageCopy, languages, type ImageLanguage } from "../i18n/ui";
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: ImageLanguage;
+}
+
+const { title, description, lang = "en" } = Astro.props;
+const copy = getImageCopy(lang);
+const privacyPath = lang === "en" ? "/privacy/" : `/${lang}/privacy/`;
+const baseUrl = "https://image-holi.pages.dev";
+const history = imageChangelog[lang] ?? imageChangelog.en;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  languages={languages}
+  hreflangLanguages={languages}
+  colorScheme="image"
+  showPapers={false}
+  version={packageInfo.version}
+  changelog={history}
+  productName="Holi Image"
+  productDescription={description}
+  privacySummary={{ id: "image-privacy", title: copy.privacyTitle, summary: copy.privacySummary, facts: copy.privacyFacts.map(([label, value, tone]) => ({ label, value, tone })), detailsHref: privacyPath, detailsLinkLabel: copy.details }}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:site_name" content="Holi Image" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+    <meta name="theme-color" content="#c65431" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
+    <script type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@type": "WebApplication", name: "Holi Image", description, url: lang === "en" ? `${baseUrl}/` : `${baseUrl}/${lang}/`, applicationCategory: "MultimediaApplication", operatingSystem: "Web Browser", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, isAccessibleForFree: true, inLanguage: lang, featureList: Object.values(copy.modes).map((mode) => mode.label) })} />
+  </slot>
+
+  <slot />
+</BaseLayout>

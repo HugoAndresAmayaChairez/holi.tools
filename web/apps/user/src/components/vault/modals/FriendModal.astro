@@ -1,0 +1,258 @@
+---
+import { getLangFromUrl, useTranslations } from "../../../i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const strings = {
+  add_title: t("friends.add_title"),
+  edit_title: t("friends.edit_title"),
+  label_pubkey: t("friends.label_pubkey"),
+  label_alias: t("friends.label_alias"),
+  placeholder_pk: t("friends.placeholder_pk"),
+  placeholder_alias: t("friends.placeholder_alias"),
+  info_add: t("friends.info_add"),
+  btn_cancel: t("friends.btn_cancel"),
+  btn_save: t("friends.btn_save"),
+  btn_connecting: t("friends.btn_connecting"),
+  msg_connecting: t("friends.msg_connecting"),
+  error_handshake: t("friends.error_handshake"),
+  error_invalid_code: t("friends.error_invalid_code"),
+  success_added: t("friends.success_added"),
+  local_added: t("friends.local_added"),
+  local_added_simple: t("friends.local_added_simple"),
+  bound_pk: t("friends.bound_pk"),
+  contact_updated: t("friends.contact_updated"),
+};
+---
+
+<dialog
+  id="friend-dialog"
+  class="bg-zinc-900 rounded-2xl p-6 backdrop:bg-black/60 max-w-md w-full"
+>
+  <form id="friend-form" class="space-y-4">
+    <h3 id="friend-dialog-title" class="text-xl font-bold text-white">
+      {strings.add_title}
+    </h3>
+    <input type="hidden" id="friend-id" name="id" />
+    <div>
+      <label for="friend-nostr-pubkey" class="block text-sm text-zinc-400 mb-1"
+        >{strings.label_pubkey}</label
+      >
+      <input
+        type="text"
+        id="friend-nostr-pubkey"
+        name="nostrPubkey"
+        class="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/10 text-white focus:border-purple-500 focus:outline-none font-mono text-xs"
+        placeholder={strings.placeholder_pk}
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <div>
+      <label for="friend-alias" class="block text-sm text-zinc-400 mb-1"
+        >{strings.label_alias}</label
+      >
+      <input
+        type="text"
+        id="friend-alias"
+        name="alias"
+        required
+        class="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+        placeholder={strings.placeholder_alias}
+      />
+    </div>
+
+    <p class="text-xs text-zinc-500">
+      {strings.info_add}
+    </p>
+    <div class="flex gap-3 justify-end">
+      <button
+        type="button"
+        id="cancel-friend-btn"
+        class="px-4 py-2 text-zinc-400 hover:text-white transition-colors"
+      >
+        {strings.btn_cancel}
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
+      >
+        {strings.btn_save}
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<script define:vars={{ strings }}>
+  window.friendModalStrings = strings;
+</script>
+
+<script>
+  import {
+    addContact,
+    addContactWithNostrPubkey,
+    bindContactToNostrPubkey,
+    renameContact,
+    setContactDmByNostrPubkey,
+  } from "../../../lib/contacts/store";
+  import { getPrimaryIdentity } from "../../../lib/identity/manager";
+  import { toast } from "../../../lib/ui/toast";
+  import {
+    isFriendCode,
+    joinFriendRoom,
+    type ContactInfo,
+  } from "../../../lib/friends/friend-handshake";
+
+  const strings = (window as any).friendModalStrings;
+  const dialog = document.getElementById("friend-dialog") as HTMLDialogElement;
+  const form = document.getElementById("friend-form") as HTMLFormElement;
+  const title = document.getElementById("friend-dialog-title");
+  const idInput = document.getElementById("friend-id") as HTMLInputElement;
+  const aliasContainer = document.getElementById("friend-alias")?.parentElement;
+  const aliasInput = document.getElementById(
+    "friend-alias"
+  ) as HTMLInputElement;
+  const pkInput = document.getElementById(
+    "friend-nostr-pubkey"
+  ) as HTMLInputElement;
+  const submitBtn = form?.querySelector(
+    'button[type="submit"]'
+  ) as HTMLButtonElement;
+
+  function extractFriendCode(raw: string): string {
+    const t = (raw || "").trim();
+    const idx = t.indexOf("holi-fr-");
+    return idx >= 0 ? t.slice(idx).trim() : t;
+  }
+
+  // Open Handler
+  window.addEventListener("open-friend-modal", ((e: CustomEvent) => {
+    const { mode, contact } = e.detail;
+
+    form.reset();
+    submitBtn.disabled = false;
+    submitBtn.textContent = strings.btn_save;
+
+    if (mode === "edit" && contact) {
+      if (title) title.textContent = strings.edit_title;
+      idInput.value = contact.id;
+      aliasInput.value = contact.alias || "";
+      pkInput.value = contact.nostrPubkey || "";
+      pkInput.disabled = !!contact.nostrPubkey;
+      if (aliasContainer) aliasContainer.classList.remove("hidden");
+    } else {
+      if (title) title.textContent = strings.add_title;
+      idInput.value = "";
+      pkInput.disabled = false;
+      if (aliasContainer) aliasContainer.classList.remove("hidden");
+    }
+    dialog.showModal();
+  }) as EventListener);
+
+  // Dynamic UI: Hide Alias if Code is entered (Add Mode only)
+  pkInput?.addEventListener("input", () => {
+    const hasCode = !!pkInput.value.trim();
+    const isAdd = !idInput.value;
+    if (isAdd && aliasContainer) {
+      if (hasCode) {
+        aliasContainer.classList.add("hidden");
+        aliasInput.required = false;
+      } else {
+        aliasContainer.classList.remove("hidden");
+        aliasInput.required = true;
+      }
+    }
+  });
+
+  document
+    .getElementById("cancel-friend-btn")
+    ?.addEventListener("click", () => dialog.close());
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = idInput.value.trim();
+    let alias = aliasInput.value.trim();
+    const code = extractFriendCode((pkInput?.value || "").trim());
+
+    try {
+      if (!id) {
+        // ADD MODE
+        if (code) {
+          // Check if it's a Trystero Friend Code (holi-fr-...)
+          if (isFriendCode(code)) {
+            // Joining a friend's room
+            submitBtn.disabled = true;
+            submitBtn.textContent = strings.btn_connecting;
+            toast.info(strings.msg_connecting);
+
+            const myself = await getPrimaryIdentity();
+            const myPk = myself?.id || "";
+            if (!/^[0-9a-f]{64}$/i.test(myPk)) {
+              throw new Error("Missing identity. Open your vault first.");
+            }
+
+            const myInfo: ContactInfo = {
+              pubkey: myPk,
+              name: myself?.alias || "Friend",
+            };
+
+            const peerInfo = await joinFriendRoom(code, myInfo, 60000); // 60s timeout
+
+            if (!peerInfo?.dm?.sessionId || !peerInfo?.dm?.keyB64Url) {
+              throw new Error(strings.error_handshake);
+            }
+
+            // Success! Add the contact
+            await addContactWithNostrPubkey(peerInfo.name, peerInfo.pubkey);
+            await setContactDmByNostrPubkey(peerInfo.pubkey, peerInfo.dm);
+
+            toast.success(
+              strings.success_added.replace("{name}", peerInfo.name)
+            );
+            dialog.close();
+            window.dispatchEvent(new Event("reload-contacts"));
+            return;
+          } else {
+            // Assume it's a 64-hex pubkey (legacy/fallback, local-only add)
+            const pk = code.toLowerCase();
+            const hexRegex = /^[0-9a-f]{64}$/;
+            if (!hexRegex.test(pk)) {
+              throw new Error(
+                "Invalid code. Use a Friend Code (holi-fr-...) or 64-char hex key."
+              );
+            }
+            const short = pk.slice(0, 4).toUpperCase();
+            const autoAlias = `Pending (${short})`;
+            await addContactWithNostrPubkey(autoAlias, pk);
+            toast.success(strings.local_added);
+          }
+        } else {
+          // No code, just a name (local-only)
+          if (!alias) throw new Error("Name is required");
+          await addContact(alias);
+          toast.success(strings.local_added_simple);
+        }
+      } else {
+        // EDIT MODE
+        if (!alias) throw new Error("Name is required");
+        await renameContact(id, alias);
+        const pk = code.toLowerCase();
+        if (pk && !pkInput.disabled) {
+          await bindContactToNostrPubkey(id, pk);
+          toast.success(strings.bound_pk);
+        } else {
+          toast.success(strings.contact_updated);
+        }
+      }
+
+      dialog.close();
+      window.dispatchEvent(new Event("reload-contacts"));
+    } catch (err) {
+      console.error(err);
+      toast.error((err as Error).message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = strings.btn_save;
+    }
+  });
+</script>

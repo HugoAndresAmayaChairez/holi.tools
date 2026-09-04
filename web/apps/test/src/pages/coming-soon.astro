@@ -1,0 +1,21 @@
+---
+import ComingSoon from "@holi/ui/components/ComingSoon.astro";
+import "../styles/app.css";
+
+const languages = [
+  { code: "en", name: "English" },
+  { code: "es", name: "Español" },
+];
+---
+
+<ComingSoon 
+  appName="Tools"
+  slogan="More free tools are coming."
+  metaTitle="Holi Tools - Coming Soon"
+  metaDescription="More free Holi tools are coming soon."
+  lang="en"
+  languages={languages}
+  comingSoonText="Coming Soon"
+  backHomeText="Back Home"
+  colorScheme="default"
+/>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Offline - Holi Typst</title>
+  <style>
+    :root {
+      --color-bg: #0b0b0f;
+      --color-text: #f5f5f5;
+      --color-accent: #22c55e;
+      --color-muted: #7a7a7a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .title {
+      font-size: clamp(1.5rem, 5vw, 2.25rem);
+      font-weight: 900;
+      text-transform: lowercase;
+      margin-bottom: 0.75rem;
+    }
+    .desc {
+      font-size: 1rem;
+      color: var(--color-muted);
+      max-width: 360px;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+    .retry-btn {
+      background: var(--color-text);
+      color: var(--color-bg);
+      border: 2px solid var(--color-text);
+      padding: 0.9rem 1.4rem;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      text-transform: lowercase;
+      transition: all 0.15s ease;
+      border-radius: 10px;
+    }
+    .retry-btn:hover {
+      background: var(--color-accent);
+      color: #0b0b0f;
+      border-color: var(--color-accent);
+    }
+    .cached-note {
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">📄</div>
+  <h1 class="title">you’re offline</h1>
+  <p class="desc">
+    No internet connection detected. Your last opened Holi Typst session may still work.
+  </p>
+  <button class="retry-btn" onclick="window.location.reload()">retry connection →</button>
+  <p class="cached-note">Tip: install the app for a more desktop-like experience.</p>
+</body>
+</html>

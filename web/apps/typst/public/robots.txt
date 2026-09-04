@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://typst.holi.tools/sitemap.xml
+LLMs: https://typst.holi.tools/llms.txt

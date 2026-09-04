@@ -1,0 +1,570 @@
+---
+import Icon from "./Icon.astro";
+import { getProductShellCopy } from "../lib/product-shell-copy";
+
+interface Language {
+  readonly code: string;
+  readonly name: string;
+}
+
+interface VersionInfo {
+  version: string;
+  date: string;
+  changes: string[];
+}
+
+interface PrivacyFact {
+  label: string;
+  value: string;
+  tone?: "local" | "connected" | "warning";
+}
+
+interface Props {
+  id: string;
+  productName: string;
+  productDescription?: string;
+  version: string;
+  history: VersionInfo[];
+  privacyTitle: string;
+  privacySummary: string;
+  privacyFacts: readonly PrivacyFact[];
+  privacyHref?: string;
+  privacyLinkLabel?: string;
+  currentLang: string;
+  languages: readonly Language[];
+  defaultLang?: string;
+  prefixDefaultLocale?: boolean;
+  homeHref?: string;
+  showPapers?: boolean;
+}
+
+const {
+  id,
+  productName,
+  productDescription,
+  version,
+  history,
+  privacyTitle,
+  privacySummary,
+  privacyFacts,
+  privacyHref,
+  privacyLinkLabel,
+  currentLang,
+  languages,
+  defaultLang = "en",
+  prefixDefaultLocale = false,
+  homeHref = "/",
+  showPapers = true,
+} = Astro.props;
+
+const shellCopy = getProductShellCopy(currentLang);
+const copy = {
+  ...shellCopy,
+  aria: `${productName} · ${shellCopy.configuration}`,
+  versionsEyebrow: `${shellCopy.currentVersion} v${version}`,
+};
+
+const pathname = Astro.url.pathname;
+const trailingSlash = pathname.endsWith("/");
+const languageCodes = languages.map((language) => language.code);
+const segments = pathname.split("/").filter(Boolean);
+const hasLocalePrefix = segments.length > 0 && languageCodes.includes(segments[0]);
+const restPath = (hasLocalePrefix ? segments.slice(1) : segments).join("/");
+
+function languageHref(locale: string) {
+  const needsPrefix = prefixDefaultLocale || locale !== defaultLang;
+  const prefix = needsPrefix ? `/${locale}` : "";
+  const middle = restPath ? `/${restPath}` : "/";
+  const path = `${prefix}${middle}`;
+  if (trailingSlash && !path.endsWith("/")) return `${path}/`;
+  if (!trailingSlash && path !== "/" && path.endsWith("/")) return path.slice(0, -1);
+  return path;
+}
+
+const papersHref = prefixDefaultLocale || currentLang !== defaultLang
+  ? `/${currentLang}/papers`
+  : "/papers";
+const isMainHub = productName.toLowerCase().replace(/\s/g, "") === "holi.tools";
+---
+
+<aside
+  class="holi-product-dock"
+  data-holi-product-dock
+  data-active=""
+  data-dock-id={id}
+  aria-label={copy.aria}
+>
+  <div class="dock-content">
+    <section
+      class="dock-panel"
+      id={`${id}-dock-configuration`}
+      data-dock-panel="configuration"
+      role="tabpanel"
+      aria-labelledby={`${id}-dock-tab-configuration`}
+      hidden
+    >
+      <header class="panel-header">
+        <div>
+          <p class="panel-eyebrow">{copy.configurationEyebrow}</p>
+          <h2>{copy.configurationTitle}</h2>
+        </div>
+        <button class="panel-close" type="button" data-dock-close aria-label={copy.closeConfiguration}>
+          <Icon name="x" size={17} />
+        </button>
+      </header>
+
+      <p class="panel-lead">{copy.configurationLead}</p>
+
+      {Astro.slots.has("configuration") && <slot name="configuration" />}
+
+      <section class="panel-section" aria-labelledby={`${id}-appearance-title`}>
+        <h3 id={`${id}-appearance-title`}>{copy.appearance}</h3>
+        <div class="setting-row">
+          <div>
+            <strong>{copy.theme}</strong>
+            <span>{copy.themeHint}</span>
+          </div>
+          <div class="segmented-control" role="group" aria-label={copy.theme}>
+            <button type="button" data-theme-option="system" aria-pressed="true">{copy.auto}</button>
+            <button type="button" data-theme-option="light" aria-pressed="false">{copy.light}</button>
+            <button type="button" data-theme-option="dark" aria-pressed="false">{copy.dark}</button>
+          </div>
+        </div>
+        <label class="setting-row" for={`${id}-dock-language`}>
+          <div>
+            <strong>{copy.language}</strong>
+            <span>{copy.languageHint}</span>
+          </div>
+          <select id={`${id}-dock-language`} data-language-select aria-label={copy.language}>
+            {languages.map((language) => (
+              <option value={languageHref(language.code)} selected={language.code === currentLang}>
+                {language.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </section>
+
+      <section class="panel-section" aria-labelledby={`${id}-navigation-title`}>
+        <h3 id={`${id}-navigation-title`}>{copy.navigation}</h3>
+        <div class="link-grid">
+          <a href={homeHref}><Icon name="home" size={15} />{copy.home}</a>
+          {!isMainHub && <a href="https://holi.tools"><Icon name="apps" size={15} />Holi.tools</a>}
+          {showPapers && <a href={papersHref}><Icon name="article" size={15} />{copy.papers}</a>}
+        </div>
+      </section>
+
+      <section class="panel-section session-section" aria-label={copy.session}>
+        <span>{copy.session}</span>
+        <strong>{copy.sessionValue}</strong>
+      </section>
+    </section>
+
+    <section
+      class="dock-panel"
+      id={`${id}-dock-versions`}
+      data-dock-panel="versions"
+      role="tabpanel"
+      aria-labelledby={`${id}-dock-tab-versions`}
+      hidden
+    >
+      <header class="panel-header">
+        <div>
+          <p class="panel-eyebrow">{copy.versionsEyebrow}</p>
+          <h2>{copy.versionsTitle}</h2>
+        </div>
+        <button class="panel-close" type="button" data-dock-close aria-label={copy.closeVersions}>
+          <Icon name="x" size={17} />
+        </button>
+      </header>
+
+      <section class="support-card" aria-labelledby={`${id}-support-title`}>
+        <p class="panel-eyebrow">{copy.supportEyebrow}</p>
+        <h3 id={`${id}-support-title`}>{copy.supportTitle}</h3>
+        <p>{copy.supportBody}</p>
+        <div class="support-actions">
+          <button type="button" data-open-overlay="donate">{copy.donate}</button>
+          <button type="button" data-open-overlay="support">{copy.support}</button>
+          <a href="mailto:holi@holi.tools">{copy.contact}</a>
+        </div>
+      </section>
+
+      <div class="version-stack">
+        {history.map((item) => (
+          <article class:list={["version-card", { "is-current": item.version === version }]}>
+            <header>
+              <strong>v{item.version}</strong>
+              <time datetime={item.date}>{item.date}</time>
+            </header>
+            <ul>{item.changes.map((change) => <li>{change}</li>)}</ul>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section
+      class="dock-panel"
+      id={`${id}-dock-privacy`}
+      data-dock-panel="privacy"
+      role="tabpanel"
+      aria-labelledby={`${id}-dock-tab-privacy`}
+      hidden
+    >
+      <header class="panel-header">
+        <div>
+          <p class="panel-eyebrow">{copy.privacyEyebrow}</p>
+          <h2>{privacyTitle}</h2>
+        </div>
+        <button class="panel-close" type="button" data-dock-close aria-label={copy.closePrivacy}>
+          <Icon name="x" size={17} />
+        </button>
+      </header>
+
+      <p class="panel-lead">{privacySummary}</p>
+      <dl class="privacy-facts">
+        {privacyFacts.map((fact) => (
+          <div data-tone={fact.tone ?? "local"}>
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <section class="about-card" aria-labelledby={`${id}-about-title`}>
+        <p class="panel-eyebrow">{copy.about}</p>
+        <h3 id={`${id}-about-title`}>{productName}</h3>
+        <p>{productDescription || copy.aboutFallback}</p>
+        <div class="about-links">
+          {privacyHref && <a href={privacyHref}>{privacyLinkLabel || copy.privacyDetails}</a>}
+          {!isMainHub && <a href="https://holi.tools">{copy.explore}</a>}
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <nav class="dock-tabs" role="tablist" aria-label={copy.aria}>
+    <button
+      id={`${id}-dock-tab-configuration`}
+      type="button"
+      role="tab"
+      aria-controls={`${id}-dock-configuration`}
+      aria-selected="false"
+      aria-expanded="false"
+      data-dock-tab="configuration"
+    >
+      <Icon name="settings" size={17} />
+      <span>{copy.configuration}</span>
+    </button>
+    <button
+      id={`${id}-dock-tab-versions`}
+      type="button"
+      role="tab"
+      aria-controls={`${id}-dock-versions`}
+      aria-selected="false"
+      aria-expanded="false"
+      data-dock-tab="versions"
+    >
+      <Icon name="history" size={15} />
+      <span>v{version}</span>
+    </button>
+    <button
+      id={`${id}-dock-tab-privacy`}
+      type="button"
+      role="tab"
+      aria-controls={`${id}-dock-privacy`}
+      aria-selected="false"
+      aria-expanded="false"
+      data-dock-tab="privacy"
+    >
+      <Icon name="shield-check" size={16} />
+      <span>{copy.privacy}</span>
+    </button>
+  </nav>
+</aside>
+
+<noscript>
+  <details class="privacy-no-script">
+    <summary>{privacyTitle}</summary>
+    <p>{privacySummary}</p>
+    <dl>
+      {privacyFacts.map((fact) => (
+        <div><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
+      ))}
+    </dl>
+    {privacyHref && <a href={privacyHref}>{privacyLinkLabel || copy.privacyDetails}</a>}
+  </details>
+</noscript>
+
+<script>
+  const THEME_KEY = "holi:theme:v1";
+
+  document.querySelectorAll<HTMLElement>("[data-holi-product-dock]").forEach((dock) => {
+    if (dock.dataset.wired === "true") return;
+    dock.dataset.wired = "true";
+
+    const tabs = Array.from(dock.querySelectorAll<HTMLButtonElement>("[data-dock-tab]"));
+    const panels = Array.from(dock.querySelectorAll<HTMLElement>("[data-dock-panel]"));
+
+    const setActive = (requested: string) => {
+      const active = dock.dataset.active === requested ? "" : requested;
+      dock.dataset.active = active;
+      tabs.forEach((tab) => {
+        const selected = tab.dataset.dockTab === active;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.setAttribute("aria-expanded", String(selected));
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.dockPanel !== active;
+      });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => setActive(tab.dataset.dockTab ?? ""));
+    });
+    dock.querySelectorAll<HTMLButtonElement>("[data-dock-close]").forEach((button) => {
+      button.addEventListener("click", () => setActive(dock.dataset.active ?? ""));
+    });
+
+    const themeButtons = Array.from(dock.querySelectorAll<HTMLButtonElement>("[data-theme-option]"));
+    const applyTheme = (theme: string) => {
+      const resolvedTheme =
+        theme === "light" || theme === "dark"
+          ? theme
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+      document.documentElement.dataset.holiTheme = resolvedTheme;
+      themeButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.themeOption === theme));
+      });
+      try {
+        localStorage.setItem(THEME_KEY, theme);
+      } catch {
+        // Storage can be unavailable; the preference remains active for this page.
+      }
+      window.dispatchEvent(new CustomEvent("holi:theme-change", { detail: { theme } }));
+    };
+
+    let storedTheme = "system";
+    try {
+      storedTheme = localStorage.getItem(THEME_KEY) || "system";
+    } catch {
+      storedTheme = "system";
+    }
+    applyTheme(storedTheme);
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeOption || "system"));
+    });
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      let preference = "system";
+      try {
+        preference = localStorage.getItem(THEME_KEY) || "system";
+      } catch {
+        preference = "system";
+      }
+      if (preference === "system") applyTheme("system");
+    });
+
+    dock.querySelector<HTMLSelectElement>("[data-language-select]")?.addEventListener("change", (event) => {
+      const select = event.currentTarget as HTMLSelectElement;
+      window.location.assign(select.value);
+    });
+
+    dock.querySelectorAll<HTMLButtonElement>("[data-open-overlay]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const type = button.dataset.openOverlay;
+        if (type && typeof window.openOverlay === "function") {
+          setActive(dock.dataset.active ?? "");
+          window.openOverlay(type, "holi");
+        }
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && dock.dataset.active) setActive(dock.dataset.active);
+    });
+  });
+</script>
+
+<style>
+  .holi-product-dock {
+    --dock-footer-height: 40px;
+    --dock-product-bg: var(--color-bg, #ffffff);
+    --dock-product-text: var(--color-text, #18181b);
+    --dock-accent: var(--color-accent, #6366f1);
+    --dock-compact-bg: var(--color-dock-compact-bg, color-mix(in srgb, var(--dock-product-bg) 96%, transparent));
+    --dock-expanded-bg: var(--color-dock-expanded-bg, var(--dock-compact-bg));
+    --dock-text: var(--dock-product-text);
+    --dock-strong: var(--dock-product-text);
+    --dock-body: color-mix(in srgb, var(--dock-product-text) 76%, transparent);
+    --dock-muted: color-mix(in srgb, var(--dock-product-text) 58%, transparent);
+    --dock-value: color-mix(in srgb, var(--dock-product-text) 90%, transparent);
+    --dock-card: var(--color-dock-card-bg, color-mix(in srgb, var(--dock-product-text) 4%, transparent));
+    --dock-border: var(--color-dock-border, color-mix(in srgb, var(--dock-product-text) 14%, transparent));
+    --dock-tabs-bg: var(--color-dock-tabs-bg, color-mix(in srgb, var(--dock-product-bg) 90%, var(--dock-product-text) 10%));
+    --dock-tab-text: color-mix(in srgb, var(--dock-product-text) 66%, transparent);
+    --dock-control-bg: var(--color-dock-control-bg, color-mix(in srgb, var(--dock-product-bg) 93%, var(--dock-product-text) 7%));
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 9200;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) var(--dock-footer-height);
+    width: min(372px, calc(100vw - 24px));
+    height: var(--dock-footer-height);
+    overflow: hidden;
+    color: var(--dock-text);
+    background: var(--dock-compact-bg);
+    border: 1px solid var(--dock-border);
+    border-radius: 11px;
+    box-shadow: none;
+    isolation: isolate;
+    transition: height 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .holi-product-dock[data-active]:not([data-active=""]) {
+    height: calc(100dvh - 24px);
+    background: var(--dock-expanded-bg);
+    box-shadow: none;
+  }
+
+  .dock-content {
+    min-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 150ms ease, visibility 0ms linear 150ms;
+  }
+
+  .holi-product-dock[data-active]:not([data-active=""]) .dock-content {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 120ms, 0ms;
+  }
+
+  .dock-panel {
+    height: 100%;
+    padding: 19px 18px 22px;
+    overflow-y: auto;
+    scrollbar-color: color-mix(in srgb, var(--dock-accent) 35%, transparent) transparent;
+  }
+
+  .dock-panel[hidden] { display: none; }
+  .panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+  .panel-header h2 { margin: 3px 0 0; color: var(--dock-strong); font-size: 20px; line-height: 1.15; letter-spacing: -0.025em; }
+  .panel-eyebrow,
+  .panel-section h3 { margin: 0; color: var(--dock-accent); font: 750 9px/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  .panel-close {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--dock-body);
+    background: var(--dock-card);
+    border: 1px solid var(--dock-border);
+    border-radius: 9px;
+    cursor: pointer;
+  }
+
+  .panel-close:hover,
+  .panel-close:focus-visible { color: var(--dock-strong); border-color: color-mix(in srgb, var(--dock-accent) 55%, transparent); }
+  .panel-lead,
+  .support-card > p,
+  .about-card > p { margin: 0; color: var(--dock-body); font-size: 13px; line-height: 1.6; }
+  .panel-section,
+  .support-card,
+  .about-card { margin-top: 15px; padding: 14px; background: var(--dock-card); border: 1px solid var(--dock-border); border-radius: 12px; }
+  .panel-section h3,
+  .support-card h3,
+  .about-card h3 { margin: 0 0 13px; }
+  .support-card h3,
+  .about-card h3 { margin-top: 4px; color: var(--dock-strong); font-size: 15px; }
+  .support-card > p,
+  .about-card > p { margin-top: 8px; }
+
+  .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; color: var(--dock-value); border-bottom: 1px solid var(--dock-border); }
+  .setting-row:last-child { padding-bottom: 0; border-bottom: 0; }
+  .setting-row > div:first-child { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+  .setting-row strong { font-size: 11px; }
+  .setting-row span { color: var(--dock-muted); font-size: 9px; line-height: 1.35; }
+
+  .segmented-control { display: inline-grid; flex: 0 0 auto; grid-template-columns: repeat(3, auto); padding: 2px; background: color-mix(in srgb, var(--dock-product-bg) 88%, var(--dock-product-text) 12%); border: 1px solid var(--dock-border); border-radius: 8px; }
+  .segmented-control button { min-height: 25px; padding: 4px 7px; color: var(--dock-muted); background: transparent; border: 0; border-radius: 6px; font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; cursor: pointer; }
+  .segmented-control button[aria-pressed="true"] { color: var(--dock-strong); background: color-mix(in srgb, var(--dock-accent) 16%, transparent); }
+  .setting-row select { min-height: 29px; max-width: 132px; padding: 4px 24px 4px 8px; color: var(--dock-value); background: var(--dock-control-bg); border: 1px solid var(--dock-border); border-radius: 7px; font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+  .link-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .link-grid a,
+  .support-actions a,
+  .support-actions button,
+  .about-links a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 7px 10px; color: var(--dock-value); background: color-mix(in srgb, var(--dock-accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--dock-accent) 22%, transparent); border-radius: 8px; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-decoration: none; cursor: pointer; }
+  .link-grid a:hover,
+  .support-actions a:hover,
+  .support-actions button:hover,
+  .about-links a:hover { color: var(--dock-strong); background: color-mix(in srgb, var(--dock-accent) 14%, transparent); border-color: color-mix(in srgb, var(--dock-accent) 45%, transparent); opacity: 1; }
+  .support-actions,
+  .about-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+  .session-section { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--dock-muted); font-size: 10px; }
+  .session-section strong { color: var(--dock-value); font: 650 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: right; }
+
+  :global([data-holi-dock-context]) { margin-top: 15px; padding: 14px; color: var(--dock-value); background: var(--dock-card); border: 1px solid var(--dock-border); border-radius: 12px; }
+  :global([data-holi-dock-context] h3) { margin: 0 0 13px; color: var(--dock-accent); font: 750 9px/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
+  :global([data-holi-dock-context] dl) { margin: 0; }
+  :global([data-holi-dock-context] dl > div) { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--dock-border); }
+  :global([data-holi-dock-context] dl > div:last-child) { border-bottom: 0; }
+  :global([data-holi-dock-context] dt) { color: var(--dock-muted); font-size: 11px; }
+  :global([data-holi-dock-context] dd) { min-width: 0; margin: 0; overflow-wrap: anywhere; color: var(--dock-value); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: right; }
+  :global([data-holi-dock-actions]) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 11px; }
+  :global([data-holi-dock-actions] button) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 34px; padding: 7px 8px; color: var(--dock-value); background: color-mix(in srgb, var(--dock-accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--dock-accent) 22%, transparent); border-radius: 8px; font: 700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; cursor: pointer; }
+
+  .version-stack { display: flex; flex-direction: column; gap: 11px; margin-top: 20px; }
+  .version-card { padding: 16px; background: var(--dock-card); border: 1px solid var(--dock-border); border-radius: 11px; }
+  .version-card.is-current { background: color-mix(in srgb, var(--dock-accent) 7%, transparent); border-color: color-mix(in srgb, var(--dock-accent) 28%, transparent); }
+  .version-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .version-card strong { color: var(--dock-accent); font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .version-card time { color: var(--dock-muted); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .version-card ul { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+  .version-card li { position: relative; padding-left: 12px; color: var(--dock-body); font-size: 12px; line-height: 1.5; }
+  .version-card li::before { position: absolute; left: 0; color: var(--dock-accent); content: "·"; }
+
+  .privacy-facts { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 0; }
+  .privacy-facts > div { padding: 14px 15px; background: var(--dock-card); border: 1px solid var(--dock-border); border-left: 3px solid var(--dock-accent); border-radius: 10px; }
+  .privacy-facts > div[data-tone="connected"] { border-left-color: #d7a13f; }
+  .privacy-facts > div[data-tone="warning"] { border-left-color: #e56a6a; }
+  .privacy-facts dt { margin-bottom: 5px; color: var(--dock-muted); font-size: 9px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+  .privacy-facts dd { margin: 0; color: var(--dock-body); font-size: 12px; line-height: 1.5; }
+
+  .dock-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: var(--dock-footer-height); background: var(--dock-tabs-bg); border-top: 1px solid var(--dock-border); }
+  .dock-tabs button { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 5px; padding: 0 6px; color: var(--dock-tab-text); background: transparent; border: 0; border-top: 2px solid transparent; border-right: 1px solid var(--dock-border); font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; cursor: pointer; }
+  .dock-tabs button:last-child { border-right: 0; }
+  .dock-tabs button:hover,
+  .dock-tabs button:focus-visible,
+  .dock-tabs button[aria-selected="true"] { color: var(--dock-strong); background: color-mix(in srgb, var(--dock-accent) 10%, transparent); }
+  .dock-tabs button[aria-selected="true"] { border-top-color: var(--dock-accent); }
+  .dock-tabs button:focus-visible,
+  .panel-close:focus-visible,
+  .link-grid a:focus-visible,
+  .support-actions a:focus-visible,
+  .support-actions button:focus-visible,
+  .about-links a:focus-visible { outline: 2px solid var(--dock-accent); outline-offset: -3px; }
+
+  .privacy-no-script { position: fixed; right: 16px; bottom: 16px; z-index: 9300; width: min(400px, calc(100vw - 32px)); padding: 14px; color: var(--color-text, #18181b); background: var(--color-bg, #ffffff); border: 1px solid var(--color-border, rgba(24, 24, 27, 0.14)); border-radius: 12px; }
+
+  @media (max-width: 480px) {
+    .holi-product-dock { right: 8px; bottom: 8px; width: calc(100vw - 16px); }
+    .holi-product-dock[data-active]:not([data-active=""]) { height: calc(100dvh - 16px); }
+    .dock-panel { padding: 17px 15px 20px; }
+    .dock-tabs button { gap: 4px; padding: 0 5px; font-size: 9px; }
+    :global([data-holi-dock-context] dl > div) { grid-template-columns: 104px minmax(0, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .holi-product-dock,
+    .dock-content { transition: none; }
+  }
+</style>

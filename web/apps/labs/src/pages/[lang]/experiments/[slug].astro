@@ -1,0 +1,508 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
+import GlassCard from "@holi/ui/components/GlassCard.astro";
+import SimpleBackground from "@holi/ui/components/SimpleBackground.astro";
+import Icon from "@holi/ui/components/Icon.astro";
+import {
+  getLangFromUrl,
+  useTranslations,
+  languages,
+} from "../../../i18n/utils";
+import { getLabsChangelog, labsVersion } from "../../../release";
+import { getLabsPrivacy } from "../../../privacy";
+
+import "/src/styles/app.css";
+
+export async function getStaticPaths() {
+  const experiments = await getCollection("experiments");
+  return languages.flatMap((l) => {
+    return experiments
+      .filter((entry) => entry.data.lang === l.code && entry.data.format !== "paper")
+      .map((entry) => ({
+        params: { lang: l.code, slug: entry.slug.replace(/-[a-z]{2}$/, "") },
+        props: { entry },
+      }));
+  });
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await entry.render();
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const history = getLabsChangelog(lang);
+
+const normalizedSlug = entry.slug.replace(/-[a-z]{2}$/, "");
+const allExperiments = (await getCollection("experiments"))
+  .filter((exp) => exp.data.lang === lang)
+  .sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+const currentIndex = allExperiments.findIndex(
+  (exp) => exp.slug.replace(/-[a-z]{2}$/, "") === normalizedSlug
+);
+const prevEntry = currentIndex > 0 ? allExperiments[currentIndex - 1] : null;
+const nextEntry =
+  currentIndex >= 0 && currentIndex < allExperiments.length - 1
+    ? allExperiments[currentIndex + 1]
+    : null;
+
+const wordCount = entry.body.split(/\s+/).filter(Boolean).length;
+const readTime = Math.max(1, Math.round(wordCount / 220));
+const summary = entry.data.summary || entry.data.description;
+const tocItems = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const articleHref = (article: typeof entry) => {
+  const collection = article.data.format === "paper" ? "papers" : "experiments";
+  return `/${lang}/${collection}/${article.slug.replace(/-[a-z]{2}$/, "")}`;
+};
+
+const site = Astro.site ?? new URL("https://labs.holi.tools");
+const baseUrl = site.toString().replace(/\/$/, "");
+const canonicalUrl = `${baseUrl}${Astro.url.pathname}`;
+
+const title = `${entry.data.title} - Holi Labs`;
+const description = entry.data.description;
+const privacySummary = getLabsPrivacy(lang);
+const articleExportData = {
+  title: entry.data.title,
+  description: entry.data.description,
+  summary,
+  markdown: entry.body,
+};
+const exportLabels = {
+  copySummary: t("copy_summary"),
+  copySuccess: t("copy_success"),
+  copyFailed: t("copy_failed"),
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  languages={languages}
+  prefixDefaultLocale={true}
+  colorScheme="labs"
+  productName="Holi Labs"
+  productDescription={t("meta_description")}
+  version={labsVersion}
+  changelog={history}
+  privacySummary={privacySummary}
+>
+  <slot name="head" slot="head">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
+    <meta property="og:site_name" content="Holi Labs" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
+  </slot>
+
+  <SimpleBackground />
+
+  <main class="container mx-auto px-4 py-20 relative z-10">
+    <article class="max-w-6xl mx-auto">
+      <header class="mb-12 print-hide">
+        <a
+          href={`/${lang}/`}
+          class="back-link inline-flex items-center gap-2 text-sm uppercase tracking-widest mb-8"
+        >
+          <Icon name="arrow_back" size={16} />
+          Holi Labs
+        </a>
+
+        <div
+          class="w-20 h-20 rounded-2xl flex items-center justify-center mb-8"
+          style={`background: ${entry.data.color}20; border: 1px solid ${entry.data.color}40; color: ${entry.data.color};`}
+        >
+          <Icon name={entry.data.icon} size={48} />
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-chip">
+            {readTime} {t("read_time_suffix")}
+          </span>
+          {entry.data.category ? (
+            <span class="meta-chip">{entry.data.category}</span>
+          ) : null}
+        </div>
+
+        <h1 class="article-title text-4xl md:text-5xl font-bold mb-4">
+          {entry.data.title}
+        </h1>
+
+        <p class="article-description text-xl mb-6">
+          {entry.data.description}
+        </p>
+
+        <div class="flex flex-wrap gap-2 mb-6">
+          {
+            entry.data.tags.map((tag: string) => (
+              <a
+                href={`/${lang}/tags/${tag}`}
+                class="tag-link text-sm px-3 py-1 rounded-full transition-all"
+              >
+                #{tag}
+              </a>
+            ))
+          }
+        </div>
+
+        <div class="export-row">
+          <button class="export-btn" id="btn-copy-summary" type="button">
+            {t("copy_summary")}
+          </button>
+          <button class="export-btn" id="btn-export-md" type="button">
+            {t("export_md")}
+          </button>
+          <button class="export-btn" id="btn-export-pdf" type="button">
+            {t("export_pdf")}
+          </button>
+        </div>
+      </header>
+
+      <div class="article-grid">
+        <aside class="toc-card print-hide">
+          <div class="toc-title">{t("toc_title")}</div>
+          <nav class="toc-list">
+            {
+              tocItems.map((item) => (
+                <a
+                  class:list={[
+                    "toc-link",
+                    item.depth === 3 ? "toc-link--child" : "",
+                  ]}
+                  href={`#${item.slug}`}
+                >
+                  {item.text}
+                </a>
+              ))
+            }
+          </nav>
+        </aside>
+
+        <GlassCard padding="lg" rounded="lg" class="prose-container prose-links">
+          <div class="prose prose-lg max-w-none">
+            <Content />
+          </div>
+        </GlassCard>
+      </div>
+
+      <div class="nav-grid print-hide">
+        {prevEntry ? (
+          <GlassCard
+            clickable
+            padding="md"
+            rounded="lg"
+            accentColor={prevEntry.data.color}
+            href={articleHref(prevEntry)}
+            target="_self"
+            class="nav-card"
+          >
+            <span class="nav-label">{t("previous_label")}</span>
+            <span class="nav-title">{prevEntry.data.title}</span>
+          </GlassCard>
+        ) : (
+          <div class="nav-spacer" />
+        )}
+        {nextEntry ? (
+          <GlassCard
+            clickable
+            padding="md"
+            rounded="lg"
+            accentColor={nextEntry.data.color}
+            href={articleHref(nextEntry)}
+            target="_self"
+            class="nav-card"
+          >
+            <span class="nav-label">{t("next_label")}</span>
+            <span class="nav-title">{nextEntry.data.title}</span>
+          </GlassCard>
+        ) : (
+          <div class="nav-spacer" />
+        )}
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<script is:inline define:vars={{ articleExportData, exportLabels }}>
+  const articleExport = articleExportData;
+  const uiLabels = exportLabels;
+
+  function escapeFrontmatter(value) {
+    return String(value || "").replace(/"/g, '\\"');
+  }
+
+  function downloadBlob(blob, filename) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    link.remove();
+  }
+
+  function initExportButtons() {
+    const copyBtn = document.getElementById("btn-copy-summary");
+    const mdBtn = document.getElementById("btn-export-md");
+    const pdfBtn = document.getElementById("btn-export-pdf");
+
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(articleExport.summary || "");
+          copyBtn.textContent = uiLabels.copySuccess;
+          setTimeout(() => {
+            copyBtn.textContent = uiLabels.copySummary;
+          }, 1500);
+        } catch {
+          copyBtn.textContent = uiLabels.copyFailed;
+          setTimeout(() => {
+            copyBtn.textContent = uiLabels.copySummary;
+          }, 1500);
+        }
+      });
+    }
+
+    if (mdBtn) {
+      mdBtn.addEventListener("click", () => {
+        const frontmatter = [
+          "---",
+          `title: \"${escapeFrontmatter(articleExport.title)}\"`,
+          `description: \"${escapeFrontmatter(articleExport.description)}\"`,
+          "---",
+          "",
+        ].join("\n");
+        const md = `${frontmatter}${articleExport.markdown || ""}`;
+        const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+        const safeName = (articleExport.title || "holi-labs")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        downloadBlob(blob, `${safeName || "holi-labs"}.md`);
+      });
+    }
+
+    if (pdfBtn) {
+      pdfBtn.addEventListener("click", () => {
+        window.print();
+      });
+    }
+  }
+
+  initExportButtons();
+  document.addEventListener("astro:page-load", initExportButtons);
+</script>
+
+<style>
+  main {
+    min-height: 100vh;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .meta-chip {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-text) 7%, transparent);
+    color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  }
+
+  .back-link { color: color-mix(in srgb, var(--color-text) 58%, transparent); text-decoration: none; }
+  .back-link:hover { color: var(--color-text); }
+  .article-title { color: var(--color-text); }
+  .article-description { color: color-mix(in srgb, var(--color-text) 68%, transparent); }
+  .tag-link { color: color-mix(in srgb, var(--color-text) 72%, transparent); background: color-mix(in srgb, var(--color-text) 7%, transparent); text-decoration: none; }
+  .tag-link:hover { color: var(--color-text); background: color-mix(in srgb, var(--color-text) 13%, transparent); }
+
+  .export-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .export-btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-text) 4%, transparent);
+    color: color-mix(in srgb, var(--color-text) 82%, transparent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    transition: all 0.2s ease;
+  }
+
+  .export-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .article-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .toc-card {
+    position: sticky;
+    top: 120px;
+    align-self: start;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  }
+
+  .toc-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: color-mix(in srgb, var(--color-text) 48%, transparent);
+    margin-bottom: 12px;
+  }
+
+  .toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toc-link {
+    font-size: 13px;
+    color: color-mix(in srgb, var(--color-text) 66%, transparent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .toc-link:hover {
+    color: var(--color-text);
+  }
+
+  .toc-link--child {
+    padding-left: 12px;
+    font-size: 12px;
+  }
+
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .nav-card {
+    text-align: left;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  }
+
+  .nav-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--color-text) 92%, transparent);
+  }
+
+  .nav-spacer {
+    min-height: 80px;
+  }
+
+  @media (max-width: 900px) {
+    .article-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .toc-card {
+      position: relative;
+      top: auto;
+      order: -1;
+    }
+  }
+
+  @media print {
+    .print-hide {
+      display: none !important;
+    }
+
+    .prose-container {
+      box-shadow: none;
+      border: none;
+    }
+  }
+
+  .prose-container :global(h2) {
+    color: color-mix(in srgb, var(--color-text) 92%, transparent);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose-container :global(p) {
+    color: color-mix(in srgb, var(--color-text) 68%, transparent);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .prose-container :global(ul),
+  .prose-container :global(ol) {
+    color: color-mix(in srgb, var(--color-text) 68%, transparent);
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose-container :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .prose-container :global(strong) {
+    color: color-mix(in srgb, var(--color-text) 92%, transparent);
+  }
+
+  .prose-container :global(code) {
+    background: color-mix(in srgb, var(--color-text) 9%, transparent);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .prose-container :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+  }
+
+  .prose-container :global(th),
+  .prose-container :global(td) {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: color-mix(in srgb, var(--color-text) 74%, transparent);
+  }
+
+  .prose-container :global(th) {
+    color: color-mix(in srgb, var(--color-text) 92%, transparent);
+    font-weight: 600;
+  }
+</style>

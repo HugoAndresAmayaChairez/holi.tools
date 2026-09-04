@@ -1,0 +1,37 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import ImageWorkspace from "./ImageWorkspace.astro";
+import ProductCreature from "@holi/ui/components/ProductCreature.astro";
+import { getImageCopy, type ImageLanguage } from "../i18n/ui";
+import "../styles/app.css";
+
+interface Props { lang: ImageLanguage }
+const { lang } = Astro.props;
+const copy = getImageCopy(lang);
+---
+
+<AppLayout title={copy.title} description={copy.description} lang={lang}>
+  <a class="skip-link" href="#image-workspace">{copy.chooseImages}</a>
+  <main id="main-content" class="image-page">
+    <header class="image-hero">
+      <div>
+        <p class="eyebrow">{copy.eyebrow}</p>
+        <h1>{copy.headline}</h1>
+      </div>
+      <div class="image-hero-aside">
+        <ProductCreature name="chameleon" variant="mark" eager class="image-creature" />
+        <p class="intro">{copy.intro}</p>
+        <span class="privacy-pill">{copy.localBadge}</span>
+      </div>
+    </header>
+
+    <ImageWorkspace copy={copy} />
+  </main>
+</AppLayout>
+
+<style>
+  .skip-link { position: fixed; z-index: 10000; inset-block-start: -5rem; inset-inline-start: 1rem; padding: .75rem 1rem; border-radius: .7rem; background: var(--image-accent); color: white; font-weight: 800; }
+  .skip-link:focus { inset-block-start: 1rem; }
+  .image-hero-aside { position: relative; isolation: isolate; }
+  .image-hero-aside :global(.product-creature.image-creature) { position: absolute; z-index: -1; inset-inline-end: -.75rem; inset-block-end: -1rem; width: 6.5rem; height: 6.5rem; opacity: .08; transform: rotate(4deg); }
+</style>

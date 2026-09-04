@@ -1,0 +1,46 @@
+---
+import IdentityHeader from "./vault/IdentityHeader.astro";
+import FriendsSection from "./vault/FriendsSection.astro";
+import ProjectsSection from "./vault/ProjectsSection.astro";
+import HoliCard from "./ui/HoliCard.astro";
+
+// Modals
+import FriendModal from "./vault/modals/FriendModal.astro";
+import IdentityModal from "./vault/modals/IdentityModal.astro";
+import ProjectModals from "./vault/modals/ProjectModals.astro";
+
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section aria-label={t("nav.dashboard")} class="text-white">
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12">
+    <div class="lg:col-span-4">
+      <HoliCard class="holi-shell h-full overflow-visible" rounded="lg" padding="none">
+        <IdentityHeader />
+      </HoliCard>
+    </div>
+
+    <div class="lg:col-span-8">
+      <HoliCard class="h-full overflow-visible" rounded="lg" padding="none">
+        <div class="p-5 sm:p-6">
+          <ProjectsSection />
+        </div>
+      </HoliCard>
+    </div>
+
+    <div class="lg:col-span-12">
+      <HoliCard class="overflow-visible" rounded="lg" padding="none">
+        <div class="p-5 sm:p-6">
+          <FriendsSection />
+        </div>
+      </HoliCard>
+    </div>
+  </div>
+
+  <!-- Dialogs -->
+  <FriendModal />
+  <IdentityModal />
+  <ProjectModals />
+</section>

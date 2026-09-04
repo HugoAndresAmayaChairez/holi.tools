@@ -1,0 +1,11 @@
+# Holi Labs
+
+Practical tutorials, field notes, experiments, and reviewed technical papers for Holi.tools.
+
+- URL: https://labs.holi.tools/
+- App path: `web/apps/labs`
+- Content: `web/apps/labs/src/content`
+- English, Spanish, Chinese, Hindi, Arabic, Bengali, and Portuguese are complete public content locales.
+- Papers is a format inside Labs, not a separate product.
+- Use Labs for education and explanations; use `spec/` for normative requirements and
+  `docs/decisions/` for durable architecture choices.
