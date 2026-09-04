@@ -330,6 +330,15 @@ export const metadataAppChangelog: VersionEntry[] = [
 export const qrAppChangelog: LocalizedChangelog = {
     en: [
         {
+            version: "1.0.1",
+            date: "2026-09-04",
+            changes: [
+                "Kept the Content and Style collapse controls independent and synchronized their accessible collapse and expand labels",
+                "Removed the unintended mobile gap caused by the decorative moth participating in the workspace layout",
+                "Centered the mobile tool tabs while preserving horizontal scrolling for narrower screens and longer translations"
+            ]
+        },
+        {
             version: "1.0.0",
             date: "2026-09-04",
             changes: [
@@ -482,6 +491,15 @@ export const qrAppChangelog: LocalizedChangelog = {
     ],
     es: [
         {
+            version: "1.0.1",
+            date: "2026-09-04",
+            changes: [
+                "Separados los controles para contraer Contenido y Estilo, con etiquetas accesibles sincronizadas al contraer y mostrar",
+                "Eliminado el hueco móvil involuntario que provocaba la polilla decorativa al participar en el layout",
+                "Centradas las pestañas de herramientas en móviles conservando el desplazamiento horizontal en pantallas estrechas y traducciones largas"
+            ]
+        },
+        {
             version: "1.0.0",
             date: "2026-09-04",
             changes: [
@@ -633,6 +651,41 @@ export const qrAppChangelog: LocalizedChangelog = {
         }
     ]
 };
+
+const localizedQrPatchChanges: Record<string, string[]> = {
+    zh: [
+        "“内容”和“样式”的折叠控制现在彼此独立，并会同步更新无障碍的收起和展开标签",
+        "修复了装饰性飞蛾参与工作区布局而造成的移动端多余空白",
+        "移动端工具标签现在居中；在更窄屏幕和较长译文中仍可横向滚动"
+    ],
+    hi: [
+        "कंटेंट और स्टाइल को समेटने वाले नियंत्रण अब स्वतंत्र हैं, और उनके सुलभ समेटें और दिखाएँ लेबल स्थिति के साथ अपडेट होते हैं",
+        "वर्कस्पेस लेआउट में सजावटी पतंगे के शामिल होने से बना अनचाहा मोबाइल खाली स्थान हटाया",
+        "मोबाइल टूल टैब को केंद्र में रखा, जबकि संकरी स्क्रीन और लंबे अनुवादों के लिए क्षैतिज स्क्रॉल बना रहता है"
+    ],
+    ar: [
+        "أصبحت عناصر طيّ المحتوى والنمط مستقلة، مع مزامنة تسميات الطيّ والإظهار المخصّصة لإمكانية الوصول",
+        "أزيل الفراغ غير المقصود على الهاتف الذي نتج عن مشاركة رسمة العثّة الزخرفية في تخطيط مساحة العمل",
+        "وُسّطت تبويبات الأدوات على الهاتف مع الحفاظ على التمرير الأفقي للشاشات الأضيق والترجمات الأطول"
+    ],
+    bn: [
+        "কনটেন্ট ও স্টাইল গুটানোর নিয়ন্ত্রণ এখন আলাদা, এবং অ্যাক্সেসিবল গুটান ও দেখান লেবেল অবস্থার সঙ্গে সিঙ্ক হয়",
+        "ডেকোরেটিভ মথ ওয়ার্কস্পেস লেআউটে জায়গা নেওয়ায় মোবাইলে তৈরি হওয়া অনাকাঙ্ক্ষিত ফাঁকা স্থান সরানো হয়েছে",
+        "মোবাইল টুল ট্যাবগুলো মাঝখানে রাখা হয়েছে; সরু স্ক্রিন ও দীর্ঘ অনুবাদে অনুভূমিক স্ক্রল বজায় থাকে"
+    ],
+    pt: [
+        "Separados os controles de recolher Conteúdo e Estilo, com os rótulos acessíveis de recolher e mostrar sincronizados",
+        "Removido o espaço vazio indesejado no celular causado pela mariposa decorativa ocupar espaço no layout",
+        "Centralizadas as abas de ferramentas no celular, mantendo a rolagem horizontal em telas estreitas e traduções longas"
+    ]
+};
+
+for (const [locale, changes] of Object.entries(localizedQrPatchChanges)) {
+    qrAppChangelog[locale] = [
+        { version: "1.0.1", date: "2026-09-04", changes },
+        ...qrAppChangelog.en.slice(1)
+    ];
+}
 
 export const labsAppChangelog: LocalizedChangelog = {
     en: [
