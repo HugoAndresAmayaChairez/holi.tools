@@ -71,21 +71,23 @@ function initCollapse(): void {
   const railBtn = document.getElementById("qr-rail-toggle");
   const inspBtn = document.getElementById("qr-inspector-toggle");
 
-  const sync = () => {
-    const railOpen = root.dataset.rail !== "closed";
-    const inspOpen = root.dataset.inspector !== "closed";
-    railBtn?.setAttribute("aria-expanded", String(railOpen));
-    inspBtn?.setAttribute("aria-expanded", String(inspOpen));
-    if (railBtn) {
-      const label = railOpen ? t("qr-rail-toggle", "data-l-collapse") : t("qr-rail-toggle", "data-l-expand");
-      if (label) {
-        railBtn.setAttribute("aria-label", label);
-        railBtn.title = label;
-      }
+  const syncToggle = (button: HTMLElement | null, expanded: boolean) => {
+    if (!button) return;
+    button.setAttribute("aria-expanded", String(expanded));
+    const label = expanded ? button.dataset.lCollapse : button.dataset.lExpand;
+    if (label) {
+      button.setAttribute("aria-label", label);
+      button.title = label;
     }
   };
 
-  railBtn?.setAttribute("data-l-collapse", railBtn.getAttribute("aria-label") || "");
+  const sync = () => {
+    const railOpen = root.dataset.rail !== "closed";
+    const inspOpen = root.dataset.inspector !== "closed";
+    syncToggle(railBtn, railOpen);
+    syncToggle(inspBtn, inspOpen);
+  };
+
   railBtn?.addEventListener("click", () => {
     root.dataset.rail = root.dataset.rail === "closed" ? "open" : "closed";
     writePrefs({ rail: root.dataset.rail as Prefs["rail"] });

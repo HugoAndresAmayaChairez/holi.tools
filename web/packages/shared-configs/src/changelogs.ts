@@ -330,6 +330,15 @@ export const metadataAppChangelog: VersionEntry[] = [
 export const qrAppChangelog: LocalizedChangelog = {
     en: [
         {
+            version: "1.0.1",
+            date: "2026-09-04",
+            changes: [
+                "Kept the Content and Style collapse controls independent and synchronized their accessible collapse and expand labels",
+                "Removed the unintended mobile gap caused by the decorative moth participating in the workspace layout",
+                "Centered the mobile tool tabs while preserving horizontal scrolling for narrower screens and longer translations"
+            ]
+        },
+        {
             version: "1.0.0",
             date: "2026-09-04",
             changes: [
@@ -481,6 +490,15 @@ export const qrAppChangelog: LocalizedChangelog = {
         }
     ],
     es: [
+        {
+            version: "1.0.1",
+            date: "2026-09-04",
+            changes: [
+                "Separados los controles para contraer Contenido y Estilo, con etiquetas accesibles sincronizadas al contraer y mostrar",
+                "Eliminado el hueco móvil involuntario que provocaba la polilla decorativa al participar en el layout",
+                "Centradas las pestañas de herramientas en móviles conservando el desplazamiento horizontal en pantallas estrechas y traducciones largas"
+            ]
+        },
         {
             version: "1.0.0",
             date: "2026-09-04",

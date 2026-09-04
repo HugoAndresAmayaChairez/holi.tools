@@ -1038,7 +1038,7 @@ select.input-field {
     display: none;
 }
 
-.qr-root[data-rail="closed"] .qr-rail-collapsed {
+.qr-root[data-rail="closed"] .qr-rail > .qr-rail-collapsed {
     display: flex;
 }
 
@@ -1427,7 +1427,7 @@ select.input-field {
     box-shadow: 0 0 0 4px rgba(43, 174, 112, 0.15);
 }
 
-.stage-creature {
+.stage-body > .product-creature.stage-creature {
     position: absolute;
     right: 40px;
     top: 30px;
@@ -1547,7 +1547,7 @@ select.input-field {
     display: none;
 }
 
-.qr-root[data-inspector="closed"] .qr-rail-collapsed {
+.qr-root[data-inspector="closed"] .qr-inspector > .qr-rail-collapsed {
     display: flex;
 }
 
@@ -1725,6 +1725,10 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 @media (max-width: 900px) {
+    :root {
+        --qr-toolbar-h: 48px;
+    }
+
     .qr-body,
     .qr-root[data-rail="closed"] .qr-body,
     .qr-root[data-inspector="closed"] .qr-body,
@@ -1746,11 +1750,16 @@ input[type="color"]::-webkit-color-swatch {
         min-height: 52dvh;
     }
 
+    .qr-root:not(.generating) .stage-toolbar {
+        display: none;
+    }
+
     .qr-root:not(.generating) .stage-body {
-        min-height: calc(100dvh - var(--qr-toolbar-h));
+        min-height: 0;
         align-items: flex-start;
         justify-content: flex-start;
-        padding-top: 40px;
+        padding-block: 32px;
+        overflow-x: hidden;
     }
 
     .qr-card {
@@ -1780,7 +1789,7 @@ input[type="color"]::-webkit-color-swatch {
         display: none;
     }
 
-    .stage-creature {
+    .stage-body > .product-creature.stage-creature {
         right: -10px;
         top: auto;
         bottom: 40px;
@@ -1816,7 +1825,9 @@ input[type="color"]::-webkit-color-swatch {
 
     .inspector-tab {
         flex: 0 0 auto;
-        padding: 10px 12px 9px;
+        min-width: 44px;
+        padding: 10px 7px 9px;
+        scroll-snap-align: center;
     }
 
     .inspector-tab.is-mobile-only {
@@ -1824,8 +1835,10 @@ input[type="color"]::-webkit-color-swatch {
     }
 
     .inspector-tabs {
+        justify-content: safe center;
         border-radius: 0;
         padding-left: 0;
+        scroll-snap-type: inline proximity;
     }
 
     .inspector-panes {
