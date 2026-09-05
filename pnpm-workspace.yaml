@@ -5,7 +5,7 @@ packages:
 
 catalog:
   # Astro
-  astro: "^4.0.0"
+  astro: "^7.2.10"
   "@astrojs/tailwind": "^5.0.0"
   "@astrojs/react": "^3.0.0"
 
