@@ -1,9 +1,14 @@
 import { EditorView, basicSetup } from "codemirror";
 import { markdown } from "@codemirror/lang-markdown";
-import { Compartment, EditorState } from "@codemirror/state";
+import { Compartment, EditorState, type Text } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
-import { defaultKeymap } from "@codemirror/commands";
+import { defaultKeymap, indentWithTab } from "@codemirror/commands";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import {
+  lintGutter,
+  setDiagnostics as cmSetDiagnostics,
+  type Diagnostic as CmDiagnostic,
+} from "@codemirror/lint";
 import { tags } from "@lezer/highlight";
 import { typst } from "codemirror-lang-typst";
 
@@ -59,14 +64,37 @@ const typstEditorHighlight = HighlightStyle.define([
   },
 ]);
 
+/** 1-based line and column. */
+export interface EditorPosition {
+  line: number;
+  column: number;
+}
+
+export interface EditorDiagnostic {
+  severity: "error" | "warning" | "info";
+  message: string;
+  from: EditorPosition;
+  to?: EditorPosition;
+}
+
 export interface EditorController {
   view: EditorView;
   setWrap: (enabled: boolean) => void;
-  revealLine: (lineNumber: number) => void;
+  /** Move the cursor to a line (and optional 1-based column) and scroll it into view. */
+  revealLine: (lineNumber: number, column?: number) => void;
+  /** Replace the compiler diagnostics shown in the gutter and as underlines. */
+  setDiagnostics: (diagnostics: EditorDiagnostic[]) => void;
 }
 
 export interface EditorOptions {
   wrap?: boolean;
+}
+
+function offsetAt(doc: Text, position: EditorPosition): number {
+  const lineNumber = Math.max(1, Math.min(doc.lines, Math.round(position.line)));
+  const line = doc.line(lineNumber);
+  const column = Math.max(0, Math.min(line.length, Math.round(position.column) - 1));
+  return line.from + column;
 }
 
 export function createEditor(
@@ -105,7 +133,10 @@ export function createEditor(
       basicSetup,
       languageExtension,
       syntaxHighlighting(typstEditorHighlight),
-      keymap.of(defaultKeymap),
+      // Tab indents like a code editor; Ctrl-m (Shift-Alt-m on macOS)
+      // toggles tab-focus mode for keyboard users who need to leave the editor.
+      keymap.of([...defaultKeymap, indentWithTab]),
+      lintGutter(),
       updateListener,
       wrapCompartment.of(options.wrap ? EditorView.lineWrapping : []),
       EditorView.theme({
@@ -197,15 +228,29 @@ export function createEditor(
     });
   }
 
-  function revealLine(lineNumber: number) {
-    const safeLine = Math.max(1, Math.min(view.state.doc.lines, Math.round(lineNumber)));
-    const line = view.state.doc.line(safeLine);
+  function revealLine(lineNumber: number, column = 1) {
+    const anchor = offsetAt(view.state.doc, { line: lineNumber, column });
     view.dispatch({
-      selection: { anchor: line.from },
-      effects: EditorView.scrollIntoView(line.from, { y: "center" }),
+      selection: { anchor },
+      effects: EditorView.scrollIntoView(anchor, { y: "center" }),
     });
     view.focus();
   }
 
-  return { view, setWrap, revealLine };
+  function setDiagnostics(diagnostics: EditorDiagnostic[]) {
+    const doc = view.state.doc;
+    const mapped: CmDiagnostic[] = diagnostics.map((diagnostic) => {
+      const from = offsetAt(doc, diagnostic.from);
+      let to = diagnostic.to ? offsetAt(doc, diagnostic.to) : from;
+      if (to < from) to = from;
+      if (to === from) {
+        // Give zero-length ranges one visible character where possible.
+        to = Math.min(doc.lineAt(from).to, from + 1);
+      }
+      return { from, to, severity: diagnostic.severity, message: diagnostic.message };
+    });
+    view.dispatch(cmSetDiagnostics(view.state, mapped));
+  }
+
+  return { view, setWrap, revealLine, setDiagnostics };
 }

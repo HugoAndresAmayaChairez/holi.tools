@@ -160,7 +160,13 @@ const clientCopy = JSON.stringify(copy);
 
 <script>
   import { createEditor } from "../lib/editor/setup";
-  import { initCompiler, compileSvg, compilePdf } from "../lib/compiler/typst";
+  import {
+    initCompiler,
+    compileSvgDocument,
+    compilePdf,
+    TypstCompileError,
+    type TypstDiagnostic,
+  } from "../lib/compiler/typst";
   import {
     isMobile,
     suggestedFilename,
@@ -279,13 +285,15 @@ Everything compiles on this device with WebAssembly.
       zoomOutput: zoomLevelOutput,
     },
     {
-      compileSvg: async (source) =>
-        compileSvg(
+      compile: async (source) =>
+        compileSvgDocument(
           source,
           await fileStore.getCompilerFiles(),
           fileStore.activeEntry?.path
         ),
       onSourceJump: (ratio) => goToApproximateSource(ratio),
+      onDiagnostics: (diagnostics) => syncEditorDiagnostics(diagnostics),
+      onLocate: (diagnostic) => void locateDiagnostic(diagnostic),
       copy,
     }
   );
@@ -365,6 +373,8 @@ Everything compiles on this device with WebAssembly.
         changes: { from: 0, to: currentLen, insert: text },
       });
       isProgrammaticChange = false;
+      // Markers belong to the previous file; the next compile sets new ones.
+      editor.setDiagnostics([]);
     },
   });
 
@@ -490,25 +500,27 @@ Everything compiles on this device with WebAssembly.
     // Measure page dimensions for zoom
     requestAnimationFrame(() => preview.measureBasePage());
 
-    // Init compiler
+    await bootCompiler();
+  }
+
+  /** Load the WASM compiler; on failure show a localized notice with retry. */
+  async function bootCompiler() {
+    preview.setStatus(copy.compiling);
     try {
       console.log("Initializing Typst Compiler...");
       await initCompiler();
       console.log("Compiler Initialized");
     } catch (e) {
       console.error("Failed to init compiler", e);
-      if (previewContent) {
-        previewContent.textContent = "";
-        const errorEl = document.createElement("div");
-        errorEl.className = "text-red-500 p-4";
-        errorEl.textContent = `Error initializing compiler: ${String(e)}`;
-        previewContent.appendChild(errorEl);
-      }
+      preview.setStatus(copy.error);
+      const detail = e instanceof Error ? e.message : String(e);
+      preview.showCompilerUnavailable(detail, () => void bootCompiler());
       return;
     }
 
-    // Initial render
-    preview.schedulePreviewUpdate(initialDoc);
+    // Render whatever is in the editor now (it may have changed while loading).
+    const current = editor?.view?.state?.doc?.toString() ?? "";
+    preview.schedulePreviewUpdate(current);
   }
 
   // ── Toolbar ───────────────────────────────────────────────────────
@@ -527,7 +539,7 @@ Everything compiles on this device with WebAssembly.
         downloadPdfButton!.disabled = true;
         const prevText = downloadPdfButton!.textContent;
         downloadPdfButton!.textContent = copy.building;
-        preview.setStatus("pdf…");
+        preview.setStatus(copy.building);
 
         try {
           const pdfBytes = await compilePdf(
@@ -540,8 +552,13 @@ Everything compiles on this device with WebAssembly.
           preview.setStatus(copy.pdfReady);
         } catch (e: any) {
           console.error("PDF generation error:", e);
-          const msg = typeof e?.message === "string" ? e.message : String(e);
-          preview.showDiagnostics(Array.isArray(e) ? e : undefined, msg);
+          if (e instanceof TypstCompileError) {
+            syncEditorDiagnostics(e.diagnostics);
+            preview.showDiagnostics(e.diagnostics, copy.compilationFailed);
+          } else {
+            const msg = typeof e?.message === "string" ? e.message : String(e);
+            preview.showDiagnostics(undefined, msg);
+          }
           preview.setStatus(copy.error);
         } finally {
           downloadPdfButton!.disabled = false;
@@ -594,7 +611,7 @@ Everything compiles on this device with WebAssembly.
     }
 
     explorerEl?.addEventListener("transitionend", (event) => {
-      if (event.propertyName === "width") preview.fitPreviewToWidth();
+      if (event.propertyName === "width") preview.refit();
     });
 
     if (toggleViewButton) {
@@ -642,6 +659,89 @@ Everything compiles on this device with WebAssembly.
         sourceJumpNotice.textContent = copy.locateInstruction;
       }, 2600);
     }
+  }
+
+  // ── Diagnostics ↔ editor ─────────────────────────────────────────
+
+  function normalizePath(path: string | undefined): string {
+    return String(path || "").replaceAll("\\", "/").replace(/^\/+/, "");
+  }
+
+  /** Problems without a path belong to the main (active) file. */
+  function isActiveFilePath(path: string): boolean {
+    const target = normalizePath(path);
+    return !target || target === normalizePath(fileStore.activeEntry?.path);
+  }
+
+  function syncEditorDiagnostics(diagnostics: TypstDiagnostic[]) {
+    if (!editor) return;
+    editor.setDiagnostics(
+      diagnostics
+        .filter((d) => d.start && isActiveFilePath(d.path))
+        .map((d) => ({
+          severity: d.severity,
+          message: d.hints.length
+            ? `${d.message}\n${d.hints.map((hint) => `• ${hint}`).join("\n")}`
+            : d.message,
+          from: d.start!,
+          to: d.end,
+        }))
+    );
+  }
+
+  async function locateDiagnostic(diagnostic: TypstDiagnostic) {
+    if (!editor || !diagnostic.start) return;
+    if (!isActiveFilePath(diagnostic.path)) {
+      const target = normalizePath(diagnostic.path);
+      const entry = fileStore.fileIndex.find(
+        (file) => file.kind === "typst" && normalizePath(file.path) === target
+      );
+      if (!entry) return;
+      await fileStore.openFile(entry.id);
+    }
+    if (isMobile() && mobileView !== "editor") {
+      mobileView = "editor";
+      safeSetItem(MOBILE_VIEW_KEY, mobileView);
+      applyResponsiveLayout();
+    }
+    editor.revealLine(diagnostic.start.line, diagnostic.start.column);
+  }
+
+  // ── Save safety: flush on hide/unload, Ctrl+S ────────────────────
+
+  function flushSaveNow() {
+    void fileStore.flushSave();
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushSaveNow();
+  });
+  window.addEventListener("pagehide", flushSaveNow);
+  window.addEventListener("beforeunload", (event) => {
+    if (saveState === "saved") return;
+    flushSaveNow();
+    event.preventDefault();
+    event.returnValue = "";
+  });
+  window.addEventListener("keydown", (event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    if (event.key.toLowerCase() !== "s") return;
+    event.preventDefault();
+    if (event.shiftKey) {
+      downloadPdfButton?.click();
+      return;
+    }
+    flushSaveNow();
+  });
+
+  if (import.meta.env.DEV) {
+    (window as any).__holiTypst = {
+      get editor() {
+        return editor;
+      },
+      fileStore,
+      preview,
+    };
   }
 
   start();

@@ -146,6 +146,8 @@ export class FileStore {
   };
 
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Latest edit not yet written to storage (debounced). */
+  private pendingSave: { fileId: string; doc: string } | null = null;
   private indexSaveTimer: ReturnType<typeof setTimeout> | undefined;
   private cb: FileStoreCallbacks;
   private directoryHandle: HoliDirectoryHandle | null = null;
@@ -187,20 +189,51 @@ export class FileStore {
   scheduleSave(doc: string, fileId: string | null): void {
     if (!fileId) return;
     this.contents.set(fileId, doc);
+    this.pendingSave = { fileId, doc };
     if (this.saveTimer) clearTimeout(this.saveTimer);
-    this.saveTimer = setTimeout(() => {
-      const entry = this.fileIndex.find((file) => file.id === fileId);
-      if (!entry || entry.kind !== "typst") return;
-      this.cb.markSaving();
-      entry.updatedAt = Date.now();
-      this.scheduleIndexSave();
-      const write = this.directoryHandle
-        ? writeWorkspaceFile(this.directoryHandle, entry.storagePath ?? entry.path, doc)
-        : setStoredDoc(fileContentKey(fileId), doc);
-      void write
-        .then(() => this.cb.markSaved())
-        .catch(() => this.cb.markSaveError());
-    }, 300);
+    this.saveTimer = setTimeout(() => void this.flushSave(), 300);
+  }
+
+  get hasPendingSave(): boolean {
+    return this.pendingSave !== null;
+  }
+
+  /**
+   * Write the pending edit now instead of waiting for the debounce.
+   * Used by Ctrl+S, when the tab is hidden or closed, and before the
+   * active file or workspace changes so nothing is lost or misfiled.
+   */
+  async flushSave(): Promise<void> {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = undefined;
+    }
+    const pending = this.pendingSave;
+    if (!pending) return;
+    this.pendingSave = null;
+
+    const entry = this.fileIndex.find((file) => file.id === pending.fileId);
+    if (!entry || entry.kind !== "typst") return;
+
+    this.cb.markSaving();
+    entry.updatedAt = Date.now();
+    this.scheduleIndexSave();
+    try {
+      if (this.directoryHandle) {
+        await writeWorkspaceFile(
+          this.directoryHandle,
+          entry.storagePath ?? entry.path,
+          pending.doc
+        );
+      } else {
+        await setStoredDoc(fileContentKey(pending.fileId), pending.doc);
+      }
+      // A newer edit may have arrived while writing; it keeps the "unsaved" state.
+      if (!this.pendingSave) this.cb.markSaved();
+    } catch (error) {
+      console.error("Save failed", error);
+      this.cb.markSaveError();
+    }
   }
 
   async persistFileIndex(): Promise<void> {
@@ -306,6 +339,7 @@ export class FileStore {
 
   async openFile(fileId: string): Promise<void> {
     if (fileId === this.activeFileId) return;
+    await this.flushSave();
     const next = this.fileIndex.find((file) => file.id === fileId);
     if (!next || next.kind !== "typst") return;
     const content = await this.readEntry(next);
@@ -325,6 +359,7 @@ export class FileStore {
   async deleteFile(fileId: string): Promise<void> {
     const entry = this.fileIndex.find((file) => file.id === fileId);
     if (!entry) return;
+    if (this.pendingSave?.fileId === fileId) this.pendingSave = null;
     if (this.directoryHandle) {
       await removeWorkspaceFile(this.directoryHandle, entry.storagePath ?? entry.path);
     } else {
@@ -381,6 +416,7 @@ export class FileStore {
   }
 
   async connectFolder(): Promise<void> {
+    await this.flushSave();
     let handle = await getRememberedDirectory();
     if (handle) {
       const permission = await getDirectoryPermission(handle, true);
@@ -392,12 +428,14 @@ export class FileStore {
   }
 
   async useBrowserWorkspace(): Promise<void> {
+    await this.flushSave();
     await forgetDirectory();
     await this.loadBrowser(true);
   }
 
   async refreshWorkspace(): Promise<void> {
     if (!this.directoryHandle) return;
+    await this.flushSave();
     await this.loadDirectory(this.directoryHandle, true);
   }
 

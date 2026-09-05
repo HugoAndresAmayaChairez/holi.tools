@@ -5,8 +5,9 @@
  * zoom/pan gestures, and preview status updates.
  */
 
-import { escapeHtml, hasUnclosedInlineMath, clamp } from "../utils";
+import { hasUnclosedInlineMath, clamp } from "../utils";
 import type { TypstCopy } from "../../i18n/translations";
+import type { TypstDiagnostic } from "../compiler/typst";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -20,9 +21,19 @@ export interface PreviewRefs {
   zoomOutput: HTMLElement | null;
 }
 
+export interface PreviewOutcome {
+  /** Rendered SVG, or `null` when the document did not compile. */
+  result: string | null;
+  diagnostics: TypstDiagnostic[];
+}
+
 export interface PreviewDeps {
-  compileSvg: (source: string) => Promise<string>;
+  compile: (source: string) => Promise<PreviewOutcome>;
   onSourceJump?: (ratio: number) => void;
+  /** Receives every compile's diagnostics (errors and warnings). */
+  onDiagnostics?: (diagnostics: TypstDiagnostic[]) => void;
+  /** Called when a problem's location is clicked. */
+  onLocate?: (diagnostic: TypstDiagnostic) => void;
   copy: TypstCopy;
 }
 
@@ -37,6 +48,8 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
   let basePageWidthPx = 0;
   let basePageMinHeightPx = 0;
   let hasInitialFit = false;
+  /** True after the user zoomed by hand; auto-fit then stops overriding it. */
+  let userZoomed = false;
 
   // ── Status / errors ─────────────────────────────────────────────
 
@@ -51,48 +64,153 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
   }
 
   function clearErrors(): void {
-    if (refs.previewErrors) refs.previewErrors.innerHTML = "";
+    if (refs.previewErrors) refs.previewErrors.replaceChildren();
     setEditorErrorState(false);
   }
 
+  function formatLocation(diagnostic: TypstDiagnostic): string {
+    const path = diagnostic.path.replace(/^\/+/, "");
+    if (!diagnostic.start) return path;
+    const position = `${diagnostic.start.line}:${diagnostic.start.column}`;
+    return path ? `${path}:${position}` : position;
+  }
+
+  function severityLabel(severity: TypstDiagnostic["severity"]): string {
+    if (severity === "error") return deps.copy.error;
+    if (severity === "warning") return deps.copy.warningLabel;
+    return "info";
+  }
+
+  /**
+   * Render compiler problems in the overlay. Errors and warnings share one
+   * panel; every located problem gets a button that jumps to the source.
+   */
+  function renderDiagnostics(diagnostics: TypstDiagnostic[]): void {
+    if (!refs.previewErrors) return;
+    refs.previewErrors.replaceChildren();
+    if (diagnostics.length === 0) return;
+
+    const hasErrors = diagnostics.some((d) => d.severity === "error");
+    const panel = document.createElement("div");
+    panel.className = "preview-diagnostics";
+    panel.dataset.tone = hasErrors ? "error" : "warning";
+    panel.setAttribute("role", hasErrors ? "alert" : "status");
+
+    const head = document.createElement("div");
+    head.className = "preview-diagnostics-head";
+    const title = document.createElement("span");
+    title.textContent = hasErrors ? deps.copy.compilationFailed : deps.copy.problems;
+    const count = document.createElement("span");
+    count.className = "preview-diagnostics-count";
+    count.textContent = String(diagnostics.length);
+    head.append(title, count);
+    panel.appendChild(head);
+
+    const list = document.createElement("div");
+    list.className = "preview-diagnostics-list";
+    for (const diagnostic of diagnostics) {
+      const item = document.createElement("div");
+      item.className = "preview-diagnostic";
+      item.dataset.severity = diagnostic.severity;
+
+      const top = document.createElement("div");
+      top.className = "preview-diagnostic-top";
+      const badge = document.createElement("span");
+      badge.className = "preview-diagnostic-badge";
+      badge.textContent = severityLabel(diagnostic.severity);
+      top.appendChild(badge);
+
+      const location = formatLocation(diagnostic);
+      if (location) {
+        const canLocate = Boolean(diagnostic.start && deps.onLocate);
+        const where = document.createElement(canLocate ? "button" : "span");
+        where.className = "preview-diagnostic-location";
+        where.textContent = location;
+        if (where instanceof HTMLButtonElement) {
+          where.type = "button";
+          where.title = deps.copy.showInEditor;
+          where.addEventListener("click", () => deps.onLocate?.(diagnostic));
+        }
+        top.appendChild(where);
+      }
+      item.appendChild(top);
+
+      const message = document.createElement("div");
+      message.className = "preview-diagnostic-message";
+      message.textContent = diagnostic.message;
+      item.appendChild(message);
+
+      if (diagnostic.hints.length > 0) {
+        const hints = document.createElement("ul");
+        hints.className = "preview-diagnostic-hints";
+        for (const hint of diagnostic.hints) {
+          const li = document.createElement("li");
+          li.textContent = hint;
+          hints.appendChild(li);
+        }
+        item.appendChild(hints);
+      }
+      list.appendChild(item);
+    }
+    panel.appendChild(list);
+    refs.previewErrors.appendChild(panel);
+  }
+
+  /** Show problems as a failure; falls back to one message when the list is empty. */
   function showDiagnostics(
-    diags: unknown[] | undefined,
+    diagnostics: TypstDiagnostic[] | undefined,
     fallbackMessage: string
   ): void {
-    const message = fallbackMessage || deps.copy.compilationFailed;
-    const list = Array.isArray(diags) ? diags : [];
+    const list = Array.isArray(diagnostics) && diagnostics.length > 0
+      ? diagnostics
+      : [{
+          severity: "error" as const,
+          message: fallbackMessage || deps.copy.compilationFailed,
+          hints: [],
+          path: "",
+          package: "",
+        }];
+    setEditorErrorState(list.some((d) => d.severity === "error"));
+    renderDiagnostics(list);
+  }
 
-    setEditorErrorState(true);
-    if (!refs.previewErrors) return;
+  function renderNotice(text: string): void {
+    if (!refs.previewContent) return;
+    refs.previewContent.replaceChildren();
+    const notice = document.createElement("div");
+    notice.className = "p-4 text-sm text-gray-700";
+    notice.textContent = text;
+    refs.previewContent.appendChild(notice);
+  }
 
-    const itemsHtml = list
-      .map((d: any) => {
-        const msg = typeof d?.message === "string" ? d.message : String(d);
-        const hints: string[] = Array.isArray(d?.hints)
-          ? d.hints.filter((h: unknown) => typeof h === "string")
-          : [];
+  /** The WASM compiler could not load: explain it and offer a retry. */
+  function showCompilerUnavailable(detail: string, retry: () => void): void {
+    if (!refs.previewContent) return;
+    refs.previewContent.replaceChildren();
+    const box = document.createElement("div");
+    box.className = "preview-notice";
 
-        const hintsHtml = hints.length
-          ? `<div class="mt-1 text-[11px] text-red-800">${hints
-              .map((h) => `• ${escapeHtml(h)}`)
-              .join("<br/>")}</div>`
-          : "";
+    const text = document.createElement("p");
+    text.textContent = deps.copy.compilerUnavailable;
 
-        return `<div class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2">
-          <div class="text-sm font-semibold text-red-700">${escapeHtml(msg)}</div>
-          ${hintsHtml}
-        </div>`;
-      })
-      .join("");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pane-action pane-action--primary";
+    button.textContent = deps.copy.retry;
+    button.addEventListener("click", () => {
+      button.disabled = true;
+      retry();
+    });
 
-    refs.previewErrors.innerHTML = `
-      <div class="rounded border border-red-200 bg-white shadow-sm">
-        <div class="px-3 py-2 text-xs font-semibold text-red-700 border-b border-red-100 bg-red-50">${escapeHtml(
-          message
-        )}</div>
-        <div class="px-3 py-2">${itemsHtml || `<div class="text-sm text-red-700">${escapeHtml(message)}</div>`}</div>
-      </div>
-    `;
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = deps.copy.error;
+    const pre = document.createElement("pre");
+    pre.textContent = detail;
+    details.append(summary, pre);
+
+    box.append(text, button, details);
+    refs.previewContent.appendChild(box);
   }
 
   // ── SVG rendering ───────────────────────────────────────────────
@@ -167,7 +285,7 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
     pendingTimer = setTimeout(() => {
       if (hasUnclosedInlineMath(source)) {
         clearErrors();
-        setStatus("waiting… (close $)");
+        setStatus(deps.copy.waitingMath);
         return;
       }
       updatePreview(source);
@@ -181,35 +299,39 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
     setStatus(deps.copy.compiling);
     try {
       const startedAt = performance.now();
-      const svg = await deps.compileSvg(source);
+      const outcome = await deps.compile(source);
       if (current !== requestId) return;
 
-      refs.previewContent.innerHTML = svg;
-      ensureSvgFitsContainer();
-      if (!hasInitialFit) {
-        fitPreviewToWidth();
-        hasInitialFit = true;
+      deps.onDiagnostics?.(outcome.diagnostics);
+      const hasErrors = outcome.diagnostics.some((d) => d.severity === "error");
+
+      if (outcome.result) {
+        refs.previewContent.innerHTML = outcome.result;
+        ensureSvgFitsContainer();
+        if (!hasInitialFit) {
+          fitPreviewToWidth();
+          hasInitialFit = true;
+        }
+        lastSuccessfulSvg = outcome.result;
+      } else if (!lastSuccessfulSvg) {
+        // Keep the last successful render otherwise, so the preview never goes blank.
+        renderNotice(deps.copy.noRender);
       }
-      lastSuccessfulSvg = svg;
-      clearErrors();
-      setStatus(`${Math.round(performance.now() - startedAt)}ms`);
+
+      if (outcome.result && !hasErrors) {
+        setEditorErrorState(false);
+        renderDiagnostics(outcome.diagnostics);
+        setStatus(`${Math.round(performance.now() - startedAt)}ms`);
+      } else {
+        showDiagnostics(outcome.diagnostics, deps.copy.compilationFailed);
+        setStatus(deps.copy.error);
+      }
     } catch (e: any) {
+      if (current !== requestId) return;
       console.error("Compilation error:", e);
-
-      const diagnostics = Array.isArray(e) ? e : undefined;
-      const first = diagnostics?.[0];
-      const message =
-        typeof first?.message === "string"
-          ? first.message
-          : typeof e?.message === "string"
-            ? e.message
-            : String(e);
-
-      // Keep the last successful render to avoid the preview "going blank".
-      if (!lastSuccessfulSvg) {
-        refs.previewContent.innerHTML = `<div class="p-4 text-sm text-gray-700">${escapeHtml(deps.copy.noRender)}</div>`;
-      }
-      showDiagnostics(diagnostics, message);
+      const message = typeof e?.message === "string" ? e.message : String(e);
+      if (!lastSuccessfulSvg) renderNotice(deps.copy.noRender);
+      showDiagnostics(Array.isArray(e?.diagnostics) ? e.diagnostics : undefined, message);
       setStatus(deps.copy.error);
     }
   }
@@ -234,6 +356,7 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
 
   function setZoom(nextZoom: number): void {
     zoom = clamp(nextZoom, 0.25, 4);
+    userZoomed = true;
     applyPreviewZoom();
   }
 
@@ -255,11 +378,19 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
       refs.previewContainer.clientWidth - padding
     );
     zoom = clamp(available / basePageWidthPx, 0.25, 1);
+    userZoomed = false;
     applyPreviewZoom();
+  }
+
+  /** Fit to width again unless the user chose a zoom level by hand. */
+  function refit(): void {
+    if (userZoomed) return;
+    fitPreviewToWidth();
   }
 
   function resetZoom(): void {
     zoom = 1;
+    userZoomed = true;
     applyPreviewZoom();
     if (refs.previewContainer) {
       refs.previewContainer.scrollTop = 0;
@@ -342,6 +473,7 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
         const factor = Math.exp(-e.deltaY * 0.001);
         zoom = clamp(zoom * factor, 0.25, 4);
         if (Math.abs(prevZoom - zoom) < 0.0005) return;
+        userZoomed = true;
 
         const container = refs.previewContainer!;
         const centerX = container.scrollLeft + container.clientWidth / 2;
@@ -355,6 +487,18 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
       },
       { passive: false }
     );
+
+    // Keep the page fitted while the panes resize (splitter, sidebar, window)
+    // until the user picks a zoom level explicitly.
+    if (typeof ResizeObserver === "function") {
+      let frame = 0;
+      const observer = new ResizeObserver(() => {
+        if (userZoomed || !hasInitialFit) return;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => fitPreviewToWidth());
+      });
+      observer.observe(refs.previewContainer);
+    }
   }
 
   return {
@@ -362,8 +506,10 @@ export function createPreviewManager(refs: PreviewRefs, deps: PreviewDeps) {
     clearErrors,
     setStatus,
     showDiagnostics,
+    showCompilerUnavailable,
     applyPreviewZoom,
     fitPreviewToWidth,
+    refit,
     wirePreviewGestures,
     resetZoom,
     zoomIn,

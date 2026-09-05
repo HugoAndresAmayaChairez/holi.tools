@@ -816,6 +816,198 @@
   transform: translateY(-2px);
 }
 
+/* Compiler problems (errors + warnings) over the preview */
+.preview-diagnostics {
+  --typst-diag-color: #d1435b;
+  max-height: min(46vh, 420px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--typst-workspace-text);
+  background: color-mix(in srgb, var(--typst-panel-raised) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--typst-diag-color) 35%, var(--typst-workspace-border));
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(20, 30, 43, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.preview-diagnostics[data-tone="warning"] {
+  --typst-diag-color: #b7791f;
+}
+
+.preview-diagnostics-head {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--typst-diag-color);
+  border-bottom: 1px solid var(--typst-workspace-border);
+  font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preview-diagnostics-count {
+  min-width: 18px;
+  margin-left: auto;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--typst-diag-color) 14%, transparent);
+  border-radius: 999px;
+  text-align: center;
+}
+
+.preview-diagnostics-list {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+}
+
+.preview-diagnostic {
+  padding: 7px 9px;
+  background: color-mix(in srgb, var(--typst-diag-color) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--typst-diag-color) 18%, transparent);
+  border-radius: 8px;
+}
+
+.preview-diagnostic[data-severity="warning"] {
+  --typst-diag-color: #b7791f;
+}
+
+.preview-diagnostic[data-severity="info"] {
+  --typst-diag-color: #087eae;
+}
+
+.preview-diagnostic-top {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-diagnostic-badge {
+  padding: 2px 6px;
+  color: #fff;
+  background: var(--typst-diag-color);
+  border-radius: 5px;
+  font: 700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.preview-diagnostic-location {
+  appearance: none;
+  padding: 0;
+  color: var(--typst-workspace-muted);
+  background: transparent;
+  border: 0;
+  font: 600 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+button.preview-diagnostic-location {
+  color: var(--typst-primary-bg);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+button.preview-diagnostic-location:hover,
+button.preview-diagnostic-location:focus-visible {
+  color: var(--typst-workspace-text);
+  outline: none;
+  text-decoration-style: solid;
+}
+
+.preview-diagnostic-message {
+  font-size: 12.5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.preview-diagnostic-hints {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  color: var(--typst-workspace-muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* Compiler could not load: notice inside the page area */
+.preview-notice {
+  max-width: 34rem;
+  margin: 48px auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--typst-workspace-text);
+  background: var(--typst-panel-raised);
+  border: 1px solid var(--typst-workspace-border);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.preview-notice p {
+  margin: 0;
+}
+
+.preview-notice button {
+  align-self: flex-start;
+}
+
+.preview-notice details {
+  color: var(--typst-workspace-muted);
+  font-size: 11px;
+}
+
+.preview-notice pre {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* CodeMirror lint marks for compiler problems */
+.editor-pane .cm-lintRange-error {
+  background-image: none;
+  text-decoration: underline wavy #d1435b 1.5px;
+  text-underline-offset: 3px;
+}
+
+.editor-pane .cm-lintRange-warning {
+  background-image: none;
+  text-decoration: underline wavy #b7791f 1.5px;
+  text-underline-offset: 3px;
+}
+
+.editor-pane .cm-tooltip.cm-tooltip-lint {
+  color: var(--typst-workspace-text);
+  background: var(--typst-panel-raised);
+  border: 1px solid var(--typst-workspace-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(20, 30, 43, 0.16);
+  font-size: 12px;
+}
+
+.editor-pane .cm-diagnostic {
+  padding: 5px 8px;
+  border-left-width: 3px;
+  white-space: pre-wrap;
+}
+
+.editor-pane .cm-diagnostic-error {
+  border-left-color: #d1435b;
+}
+
+.editor-pane .cm-diagnostic-warning {
+  border-left-color: #b7791f;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-holi-theme="light"]) #typst-root {
     --typst-workspace-bg: #171a1f;

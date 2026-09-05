@@ -2,6 +2,17 @@ import type { VersionEntry } from "@holi/configs/changelogs";
 
 export const typstChangelog: VersionEntry[] = [
   {
+    version: "0.8.0",
+    date: "2026-09-04",
+    changes: [
+      "Compiler errors (and warnings, when the compiler reports them) are now readable messages with file, line, and column instead of a raw debug dump; they are underlined in the editor with a gutter marker, and each location jumps to the source, even in another project file",
+      "Ctrl+S saves immediately and Ctrl+Shift+S exports the PDF; pending edits are written when the tab is hidden or closed and before switching files or workspaces, and the browser asks before leaving with unsaved changes",
+      "Tab indents in the editor (Ctrl+M toggles tab focus mode for keyboard navigation), and the preview refits its width when the panes resize unless you zoomed by hand",
+      "When the compiler cannot be loaded, the preview explains it in your language and offers a retry; the unclosed-math and PDF status messages are translated too",
+      "Fixed the offline cache keeping a new copy of the app and the 28 MB compiler for every service-worker restart; caches are now versioned per release and old ones are removed",
+    ],
+  },
+  {
     version: "0.7.2",
     date: "2026-09-02",
     changes: [

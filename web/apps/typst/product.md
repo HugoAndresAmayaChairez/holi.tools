@@ -18,7 +18,7 @@
 
 ## Current Product
 
-- CodeMirror Typst editor with syntax support, undo/redo, and soft wrap.
+- CodeMirror Typst editor with syntax support, undo/redo, soft wrap, Tab indentation, and compiler errors and warnings shown at their line with a jump to the source.
 - Live SVG preview and PDF export through Typst WASM.
 - Multiple local projects, compact file and image actions, rename, delete, and local autosave.
 - One workspace model backed by browser storage or an explicitly connected

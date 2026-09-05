@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.16.1 - 2026-09-04
+
+### Added
+
+- [Holi Typst] 0.8.0: compiler errors and warnings with file, line, and column, underlined in the editor and clickable to jump to the source; Ctrl+S saves now and Ctrl+Shift+S exports the PDF; Tab indents; a localized retry notice when the compiler cannot load.
+
+### Fixed
+
+- [Holi QR] 1.0.2: the WebGL preview and the raster exports (PNG, JPG, WebP, PDF) were vertically mirrored; finder eyes and asymmetric shapes (Water, Heart, Leaf) now match the SVG and the Shapes tiles.
+- [Holi QR] The readability check waits for the selected shape masks before capturing, so its verdict refers to the current style.
+- [Holi QR] Scan mode can be closed again, keeps its translated copy in every state, and on phones scrolls to the drop zone.
+- [Holi Typst] Pending edits are written when the tab is hidden or closed and before switching files or workspaces; the preview refits on resize unless zoomed by hand; the offline cache no longer keeps a copy of the app and compiler per service-worker restart.
+
 ## 0.16.0 - 2026-09-04
 
 ### Added

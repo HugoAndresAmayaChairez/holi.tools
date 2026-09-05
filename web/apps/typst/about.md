@@ -15,6 +15,8 @@ working copy on the device, and exports without requiring an account.
   to that folder.
 - A consistent `<project>/` workspace structure with per-project assets in
   `images/`, without a redundant `projects/` wrapper.
+- Compiler errors mapped to editor lines (gutter marks, underlines, and a
+  problems panel whose locations jump to the source).
 - A full-height Files sidebar, PDF zoom controls, and approximate Ctrl-click
   navigation from the preview to the nearest source line.
 - `@holi/ui` for shared Holi product components.
