@@ -12,7 +12,8 @@ void main() {
     float padding = 4.0;
     float totalSize = float(uQRSize) + (padding * 2.0);
 
-    vec2 qrCoord = (vUv * totalSize) - padding;
+    // Same top-down mapping as the shape shader (row 0 of the matrix = top).
+    vec2 qrCoord = (vec2(vUv.x, 1.0 - vUv.y) * totalSize) - padding;
     ivec2 module = ivec2(floor(qrCoord));
 
     // Outside the QR bounds: no mask (transparent)

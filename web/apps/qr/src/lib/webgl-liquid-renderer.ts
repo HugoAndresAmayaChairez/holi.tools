@@ -420,7 +420,7 @@ export class WebGLLiquidRenderer {
       ts,
       config,
       (cfg) => this.render(cfg),
-      this.lastRenderConfig,
+      () => this.lastRenderConfig,
       this.initialized
     );
     if (!ts.bodyMaskAtlasTexture || !ts.eyeMaskTexture) {
@@ -1062,6 +1062,15 @@ export class WebGLLiquidRenderer {
     console.log(
       `📸 WebGL Capture: Rendering at ${this.canvasSize}px before capture...`
     );
+
+    // Make sure the Rust shape masks for *this* config are on the GPU first;
+    // otherwise render() skips the frame and the capture would show the
+    // previous style (and the verifier would check the wrong shapes).
+    const ready = await this.prepareForRender(config);
+    if (!ready) {
+      console.warn("WebGL captureHighRes: shape masks are not available");
+      return null;
+    }
 
     // CRITICAL: Render immediately before capture to fill buffer
     this.render(config);

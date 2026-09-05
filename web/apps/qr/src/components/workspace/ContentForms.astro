@@ -246,7 +246,31 @@ const t = useTranslations(lang);
 
   <!-- Scan QR Template -->
   <div class="input-template" id="template-scan">
-    <div class="scan-upload-area" id="scan-drop-zone">
+    <div class="scan-head">
+      <span class="scan-head-title"><span class="icon">qr_code_scanner</span>{t("input.scan_qr")}</span>
+      <button
+        class="ws-btn ghost"
+        type="button"
+        id="scan-close-btn"
+        title={t("input.scan.close_title")}
+        aria-label={t("input.scan.close_title")}
+      >
+        <span class="icon">x</span>{t("input.scan.close")}
+      </button>
+    </div>
+    <div
+      class="scan-upload-area"
+      id="scan-drop-zone"
+      role="button"
+      tabindex="0"
+      aria-label={t("input.scan.drop")}
+      data-scan-state="idle"
+      data-l-analyzing={t("input.scan.analyzing")}
+      data-l-analyzing-hint={t("input.scan.analyzing_hint")}
+      data-l-error={t("input.scan.error")}
+      data-l-retry={t("input.scan.retry")}
+      data-l-not-image={t("input.scan.not_image")}
+    >
       <input type="file" id="scan-file-input" accept="image/*" hidden />
       <div class="scan-upload-content">
         <span class="scan-icon icon">qr_code_scanner</span>
@@ -260,28 +284,34 @@ const t = useTranslations(lang);
         <span class="scan-result-label">{t("input.scan.decoded")}</span>
       </div>
       <div class="scan-result-preview-container" style="display: none;" id="scan-preview-container">
-        <img id="scan-preview-img" alt="Scanned QR Preview" class="scan-preview-img" />
+        <img id="scan-preview-img" alt="" class="scan-preview-img" />
       </div>
       <div class="scan-result-content" id="scan-result-content"></div>
       <div class="scan-result-actions">
         <button
           class="scan-action-btn"
+          type="button"
           id="scan-copy-btn"
           title={t("toolbar.copy")}
+          aria-label={t("toolbar.copy")}
         >
           <span class="icon">content_copy</span>
         </button>
         <button
           class="scan-action-btn"
+          type="button"
           id="scan-open-btn"
           title={t("input.scan.open")}
+          aria-label={t("input.scan.open")}
         >
           <span class="icon">open_in_new</span>
         </button>
         <button
           class="scan-action-btn"
+          type="button"
           id="scan-reset-btn"
           title={t("toolbar.reset")}
+          aria-label={t("toolbar.reset")}
         >
           <span class="icon">refresh</span>
         </button>

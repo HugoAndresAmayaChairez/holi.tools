@@ -124,6 +124,9 @@ export function initInputArea(): void {
     // Global setContentType
     (window as any).setContentType = function (type: string) {
         (window as any).currentContentType = type;
+        // Let the shell style the stage per content type (e.g. scan mode).
+        const rootEl = document.getElementById('canvas-container');
+        if (rootEl) rootEl.dataset.contentType = type;
 
         const opt = document.querySelector(`.type-option[data-type="${type}"]`);
         if (!opt) return;

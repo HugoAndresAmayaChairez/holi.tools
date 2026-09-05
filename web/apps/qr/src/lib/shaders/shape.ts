@@ -92,11 +92,17 @@ vec4 applyColoring(float alpha) {
 }
 
 void main() {
-    // Map UV to QR module coordinates with PADDING (Quiet Zone)
+    // Map UV to QR module coordinates with PADDING (Quiet Zone).
+    // WebGL's framebuffer origin is bottom-left, but the QR matrix, the body
+    // atlas and the eye mask are all top-down (row 0 = top) like the SVG.
+    // Flip Y once here so modules, neighbour bits and every rasterized shape
+    // keep the exact orientation of the Rust renderer (drops fall down,
+    // hearts point down, leaf frames curve the same corners).
+    vec2 uvTopDown = vec2(vUv.x, 1.0 - vUv.y);
     float padding = 4.0;
     float totalSize = float(uQRSize) + (padding * 2.0);
 
-    vec2 qrCoord = (vUv * totalSize) - padding;
+    vec2 qrCoord = (uvTopDown * totalSize) - padding;
     ivec2 module = ivec2(floor(qrCoord));
 
     // Bounds check

@@ -183,7 +183,10 @@ function initHero(): void {
   document.querySelectorAll<HTMLButtonElement>(".qr-rail .type-option").forEach((btn) => {
     btn.addEventListener("click", () => {
       root.dataset.state = "editing";
-      if (btn.dataset.type === "scan") selectPane("content");
+      if (btn.dataset.type === "scan") {
+        selectPane("content");
+        revealScanner();
+      }
     });
   });
   document.getElementById("btn-reset")?.addEventListener("click", () => {
@@ -410,6 +413,55 @@ function initShare(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Scan mode: remember where the user came from and always offer a way out
+// ---------------------------------------------------------------------------
+let lastNonScanType = "url";
+
+function isNarrow(): boolean {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
+/** On phones the rail sits under the stage: bring the drop zone into view. */
+function revealScanner(): void {
+  if (!isNarrow()) return;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(() => {
+    document
+      .getElementById("template-scan")
+      ?.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  }, 60);
+}
+
+export function exitScanMode(): void {
+  if (w.currentContentType !== "scan") return;
+  w.setContentType?.(lastNonScanType || "url");
+  if (root.classList.contains("generating")) {
+    // A QR is on the stage: go back to its content form.
+    if (isNarrow()) selectPane("content");
+    return;
+  }
+  // Nothing generated yet: return to the empty hero.
+  root.dataset.state = "empty";
+  const hero = document.getElementById("hero-input") as HTMLInputElement | null;
+  if (hero) hero.value = "";
+  updateToolbarContent();
+  if (isNarrow()) window.scrollTo({ top: 0, behavior: "smooth" });
+  window.setTimeout(() => hero?.focus({ preventScroll: isNarrow() }), 80);
+}
+
+function initScanMode(): void {
+  window.addEventListener("qr-type-changed", (e) => {
+    const type = (e as CustomEvent<{ type?: string }>).detail?.type || w.currentContentType;
+    if (type && type !== "scan") lastNonScanType = type;
+  });
+  document.getElementById("scan-close-btn")?.addEventListener("click", exitScanMode);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && w.currentContentType === "scan" && !isTypingTarget(e.target)) exitScanMode();
+  });
+  w.exitScanMode = exitScanMode;
+}
+
+// ---------------------------------------------------------------------------
 // Shapes: diamond frame guidance
 // ---------------------------------------------------------------------------
 const DIAMOND_SAFE_BALLS = new Set(["circle", "diamond", "star", "hexagon"]);
@@ -477,6 +529,7 @@ export function initWorkspace(): void {
   initFramePanel();
   initPresets();
   initShare();
+  initScanMode();
   initShapesHints();
   initShortcuts();
 }

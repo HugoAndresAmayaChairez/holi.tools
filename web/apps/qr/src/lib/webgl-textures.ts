@@ -171,7 +171,7 @@ export function ensureShapeMasks(
     ts: TextureState,
     config: RenderConfig,
     renderFn: (cfg: RenderConfig) => void,
-    lastRenderConfig: RenderConfig | null,
+    getLatestConfig: () => RenderConfig | null,
     initialized: boolean
 ): void {
     const body = config.bodyShapeKey;
@@ -183,6 +183,9 @@ export function ensureShapeMasks(
     const eyeChanged = ts.eyeMaskKey !== `${frame}:${ball}` || !ts.eyeMaskTexture;
     if (!bodyChanged && !eyeChanged) return;
 
+    // A load is already in flight. The re-render below reads the *latest*
+    // config, so a shape picked meanwhile is loaded right after this one
+    // instead of being dropped.
     if (ts.maskLoadPromise) return;
     ts.maskLoadPromise = loadShapeMasks(ts, body, frame, ball)
         .catch((e) => {
@@ -192,17 +195,16 @@ export function ensureShapeMasks(
             ts.maskLoadPromise = null;
             if (!ts.gl || !initialized) return;
             if (!ts.bodyMaskAtlasTexture || !ts.eyeMaskTexture) return;
-            if (!lastRenderConfig || ts.maskReadyRerenderScheduled) return;
+            if (!getLatestConfig() || ts.maskReadyRerenderScheduled) return;
 
             ts.maskReadyRerenderScheduled = true;
-            const schedule = typeof requestAnimationFrame === 'function'
-                ? requestAnimationFrame
-                : (cb: FrameRequestCallback) => window.setTimeout(cb, 16);
-
-            schedule(() => {
+            // A macrotask rather than requestAnimationFrame: rAF is paused in
+            // background tabs, which left the canvas showing the old shapes.
+            window.setTimeout(() => {
                 ts.maskReadyRerenderScheduled = false;
-                if (!lastRenderConfig || !ts.gl || !initialized) return;
-                renderFn(lastRenderConfig);
-            });
+                const latest = getLatestConfig();
+                if (!latest || !ts.gl || !initialized) return;
+                renderFn(latest);
+            }, 0);
         });
 }

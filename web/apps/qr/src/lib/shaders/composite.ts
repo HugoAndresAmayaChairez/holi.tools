@@ -162,7 +162,8 @@ float eyeOuterAlpha(vec2 eyeCoord) {
 float finderCornerCutout(vec2 uv) {
     float padding = 4.0;
     float totalSize = float(uQRSize) + (padding * 2.0);
-    vec2 qrCoord = (uv * totalSize) - padding;
+    // Top-down module space, matching the shape/mask shaders (row 0 = top).
+    vec2 qrCoord = (vec2(uv.x, 1.0 - uv.y) * totalSize) - padding;
     ivec2 module = ivec2(floor(qrCoord));
 
     bool topLeft = module.x >= 0 && module.x < 7 && module.y >= 0 && module.y < 7;

@@ -1,10 +1,15 @@
 /**
  * QR Scanner Module
- * Handles image upload, drag & drop, and WASM-based QR decoding
+ * Handles image upload, drag & drop, paste and local decoding for the "Scan"
+ * content type. All copy lives in the Astro template (translated per locale):
+ * this module only swaps states and restores the server-rendered markup.
  */
 
-import { decodeQRImage, decodeQRImageViaWasm } from './qr-engine';
+import { decodeQRImage } from './qr-engine';
 import { getIconSvg } from './icons';
+import { toastCopyResult } from './ui/toast';
+
+type ScanState = 'idle' | 'loading' | 'error' | 'result';
 
 class QRScanner {
     private dropZone: HTMLElement | null = null;
@@ -12,11 +17,12 @@ class QRScanner {
     private resultContainer: HTMLElement | null = null;
     private resultContent: HTMLElement | null = null;
     private uploadArea: HTMLElement | null = null;
+    /** Pristine, localized drop-zone markup rendered by ContentForms.astro. */
+    private idleMarkup: string | null = null;
     private lastDecodedContent: string = '';
     private abortController: AbortController | null = null;
 
     constructor() {
-        // Initialize on DOM ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.init());
         } else {
@@ -26,72 +32,86 @@ class QRScanner {
 
     private init() {
         this.dropZone = document.getElementById('scan-drop-zone');
-        this.fileInput = document.getElementById('scan-file-input') as HTMLInputElement;
+        this.fileInput = document.getElementById('scan-file-input') as HTMLInputElement | null;
         this.resultContainer = document.getElementById('scan-result');
         this.resultContent = document.getElementById('scan-result-content');
-        this.uploadArea = this.dropZone?.querySelector('.scan-upload-content') as HTMLElement;
+        this.uploadArea = this.dropZone?.querySelector('.scan-upload-content') as HTMLElement | null;
 
         if (!this.dropZone || !this.fileInput) {
-            // Scan template not in DOM yet, will be initialized when type changes
+            // Scan template not in DOM; activate() retries when the type changes.
             return;
+        }
+
+        // Keep the translated idle state so reset() can put it back verbatim.
+        const state = (this.dropZone.dataset.scanState || 'idle') as ScanState;
+        if (this.idleMarkup === null && this.uploadArea && state === 'idle') {
+            this.idleMarkup = this.uploadArea.innerHTML;
         }
 
         this.bindEvents();
     }
 
+    /** Localized copy comes from data-l-* attributes on the drop zone. */
+    private label(key: string, fallback: string): string {
+        return this.dropZone?.getAttribute('data-l-' + key)?.trim() || fallback;
+    }
+
+    private setState(state: ScanState) {
+        if (this.dropZone) this.dropZone.dataset.scanState = state;
+    }
+
     private bindEvents() {
         if (!this.dropZone || !this.fileInput) return;
 
-        // Create new AbortController for this binding session
+        this.abortController?.abort();
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
+        const openPicker = () => this.fileInput?.click();
 
-        // Click to upload
-        this.dropZone.addEventListener('click', () => {
-            this.fileInput?.click();
+        // Click or keyboard to upload. The hidden input lives inside the drop
+        // zone, so ignore the synthetic click that bubbles back from it.
+        this.dropZone.addEventListener('click', (e) => {
+            if (e.target === this.fileInput) return;
+            openPicker();
         }, { signal });
-
-        // File input change
-        this.fileInput.addEventListener('change', (e) => {
-            const files = (e.target as HTMLInputElement).files;
-            if (files && files[0]) {
-                this.processFile(files[0]);
+        this.dropZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPicker();
             }
         }, { signal });
 
-        // Drag & Drop
+        this.fileInput.addEventListener('change', (e) => {
+            const files = (e.target as HTMLInputElement).files;
+            if (files && files[0]) this.processFile(files[0]);
+        }, { signal });
+
+        // Drag & drop
         this.dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             this.dropZone?.classList.add('dragover');
         }, { signal });
-
         this.dropZone.addEventListener('dragleave', () => {
             this.dropZone?.classList.remove('dragover');
         }, { signal });
-
         this.dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             this.dropZone?.classList.remove('dragover');
-
             const files = e.dataTransfer?.files;
-            if (files && files[0]) {
-                this.processFile(files[0]);
-            }
+            if (files && files[0]) this.processFile(files[0]);
         }, { signal });
 
-        // Paste from clipboard (global but cleaned up when deactivated)
+        // Paste from clipboard while the scan template is active.
         document.addEventListener('paste', (e) => {
-            // Only handle paste when scan template is active
             const scanTemplate = document.getElementById('template-scan');
             if (!scanTemplate?.classList.contains('active')) return;
-
             const items = e.clipboardData?.items;
             if (!items) return;
-
             for (const item of items) {
                 if (item.type.startsWith('image/')) {
                     const file = item.getAsFile();
                     if (file) {
+                        e.preventDefault();
                         this.processFile(file);
                         break;
                     }
@@ -99,49 +119,38 @@ class QRScanner {
             }
         }, { signal });
 
-        // Action buttons
-        document.getElementById('scan-copy-btn')?.addEventListener('click', () => {
-            this.copyResult();
-        }, { signal });
-
-        document.getElementById('scan-open-btn')?.addEventListener('click', () => {
-            this.openResult();
-        }, { signal });
-
-        document.getElementById('scan-reset-btn')?.addEventListener('click', () => {
-            this.reset();
-        }, { signal });
+        document.getElementById('scan-copy-btn')?.addEventListener('click', () => this.copyResult(), { signal });
+        document.getElementById('scan-open-btn')?.addEventListener('click', () => this.openResult(), { signal });
+        document.getElementById('scan-reset-btn')?.addEventListener('click', () => this.reset(), { signal });
     }
 
     private async processFile(file: File) {
-        if (!file.type.startsWith('image/')) {
-            this.showError('Please upload an image file');
+        // Some mobile pickers report an empty MIME type; let the decoder try those.
+        if (file.type && !file.type.startsWith('image/')) {
+            this.showError(this.label('not-image', 'Please choose an image file.'));
             return;
         }
 
-        // Show loading state
         this.showLoading();
 
         try {
-            // Decode from pixels (bounded to 1024px for speed/consistency)
+            // Decode from pixels (bounded to 1024px for speed/consistency).
             const imageData = await this.fileToImageData(file, 1024);
 
-            // Prefer ZXing-like Rust/WASM decoder; fall back to jsQR.
-            const decoded = (await decodeQRImageViaWasm(imageData)) ?? (await decodeQRImage(imageData));
+            // Native BarcodeDetector first (most robust with camera photos),
+            // then the Rust/WASM decoder. Everything runs in this browser.
+            const decoded = await decodeQRImage(imageData);
 
             if (!decoded) {
-                this.showError('Could not decode QR code. Make sure the image contains a valid QR code.');
+                this.showError(this.label('error', 'No QR code found in that image.'));
                 return;
             }
 
             this.lastDecodedContent = decoded;
-
-            const previewUrl = URL.createObjectURL(file);
-            this.showResult(decoded, previewUrl);
-
-        } catch (error: any) {
-            console.error('QR Scan failed:', error);
-            this.showError('Could not decode QR code. Make sure the image contains a valid QR code.');
+            this.showResult(decoded, URL.createObjectURL(file));
+        } catch (error) {
+            console.warn('QR scan failed:', error);
+            this.showError(this.label('error', 'No QR code found in that image.'));
         }
     }
 
@@ -158,6 +167,7 @@ class QRScanner {
             if (!ctx) throw new Error('Canvas context not available');
 
             ctx.drawImage(bitmap, 0, 0, width, height);
+            bitmap.close?.();
             return ctx.getImageData(0, 0, width, height);
         }
 
@@ -191,147 +201,133 @@ class QRScanner {
         return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
     }
 
+    /** Render a transient state (loading/error) with the app's own icons. */
+    private renderStatus(icon: string, primary: string, secondary: string) {
+        if (!this.uploadArea) return;
+        this.uploadArea.replaceChildren();
+
+        const iconEl = document.createElement('span');
+        iconEl.className = 'scan-icon icon';
+        iconEl.innerHTML = getIconSvg(icon, 22) || '';
+
+        const text = document.createElement('span');
+        text.className = 'scan-text';
+        text.textContent = primary;
+
+        const hint = document.createElement('span');
+        hint.className = 'scan-hint';
+        hint.textContent = secondary;
+
+        this.uploadArea.append(iconEl, text, hint);
+    }
+
     private showLoading() {
-        if (this.uploadArea) {
-            this.uploadArea.innerHTML = `
-                <div class="scan-loading">
-                    <span class="scan-spinner">🔍</span>
-                    <span class="scan-text-primary">Analyzing image...</span>
-                    <span class="scan-text-secondary">Looking for QR patterns</span>
-                </div>
-            `;
-        }
+        this.setState('loading');
+        this.renderStatus(
+            'qr_code_scanner',
+            this.label('analyzing', 'Reading the image…'),
+            this.label('analyzing-hint', 'Looking for a QR code')
+        );
+    }
+
+    private showError(message: string) {
+        this.setState('error');
+        if (this.dropZone) this.dropZone.style.display = 'flex';
+        if (this.resultContainer) this.resultContainer.style.display = 'none';
+        if (this.fileInput) this.fileInput.value = '';
+        this.renderStatus('error', message, this.label('retry', 'Choose or drop another image to try again.'));
     }
 
     private showResult(content: string, previewUrl?: string) {
+        this.setState('result');
         if (this.resultContent) {
             this.resultContent.textContent = content;
         }
 
         const previewContainer = document.getElementById('scan-preview-container');
-        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement;
+        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement | null;
 
         if (previewContainer && previewImg) {
+            if (previewImg.src && previewImg.src.startsWith('blob:')) {
+                URL.revokeObjectURL(previewImg.src);
+            }
             if (previewUrl) {
-                if (previewImg.src && previewImg.src.startsWith('blob:')) {
-                    URL.revokeObjectURL(previewImg.src);
-                }
                 previewImg.src = previewUrl;
                 previewContainer.style.display = 'flex';
             } else {
+                previewImg.removeAttribute('src');
                 previewContainer.style.display = 'none';
             }
         }
 
         // Hide upload area, show result
-        if (this.dropZone) {
-            this.dropZone.style.display = 'none';
-        }
-        if (this.resultContainer) {
-            this.resultContainer.style.display = 'block';
-        }
+        if (this.dropZone) this.dropZone.style.display = 'none';
+        if (this.resultContainer) this.resultContainer.style.display = 'block';
+        if (this.fileInput) this.fileInput.value = '';
 
-        // Update icons in action buttons
         this.initActionIcons();
 
-        // Check if content is a URL to enable open button
+        // Only offer "open" for URL-like payloads.
         const openBtn = document.getElementById('scan-open-btn');
         if (openBtn) {
-            const isUrl = this.isUrl(content);
-            openBtn.style.display = isUrl ? 'flex' : 'none';
-        }
-    }
-
-    private showError(message: string) {
-        if (this.uploadArea) {
-            this.uploadArea.innerHTML = `
-                <div class="scan-error">
-                    <span class="scan-icon-error">⚠️</span>
-                    <span class="scan-text-primary">${message}</span>
-                    <span class="scan-text-secondary">Click or drop another image to try again</span>
-                </div>
-            `;
+            openBtn.style.display = this.isUrl(content) ? 'flex' : 'none';
         }
     }
 
     private reset() {
         this.lastDecodedContent = '';
+        this.setState('idle');
 
         const previewContainer = document.getElementById('scan-preview-container');
-        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement;
+        const previewImg = document.getElementById('scan-preview-img') as HTMLImageElement | null;
         if (previewContainer && previewImg) {
             if (previewImg.src && previewImg.src.startsWith('blob:')) {
                 URL.revokeObjectURL(previewImg.src);
             }
-            previewImg.src = '';
+            previewImg.removeAttribute('src');
             previewContainer.style.display = 'none';
         }
 
-        // Reset file input
-        if (this.fileInput) {
-            this.fileInput.value = '';
-        }
+        if (this.fileInput) this.fileInput.value = '';
+        if (this.dropZone) this.dropZone.style.display = 'flex';
+        if (this.resultContainer) this.resultContainer.style.display = 'none';
 
-        // Show upload area, hide result
-        if (this.dropZone) {
-            this.dropZone.style.display = 'flex';
-        }
-        if (this.resultContainer) {
-            this.resultContainer.style.display = 'none';
-        }
-
-        // Reset upload area content with improved UX
-        if (this.uploadArea) {
-            this.uploadArea.innerHTML = `
-                <div class="scan-icon-container">
-                    <span class="scan-icon">📸</span>
-                </div>
-                <span class="scan-text-primary">Scan a QR Code</span>
-                <span class="scan-text-secondary">
-                    Drop an image here, click to browse, or paste (Ctrl+V)
-                </span>
-                <span class="scan-formats">Supports: PNG, JPG, GIF, WebP</span>
-            `;
+        // Put the translated idle markup back and make sure its icon is an SVG
+        // (the boot icon pass may have run before or after the capture).
+        if (this.uploadArea && this.idleMarkup !== null) {
+            this.uploadArea.innerHTML = this.idleMarkup;
+            this.uploadArea.querySelectorAll<HTMLElement>('.icon').forEach((el) => {
+                const name = el.textContent?.trim();
+                if (name && !el.querySelector('svg') && /^[a-z_]+$/.test(name)) {
+                    el.innerHTML = getIconSvg(name, 22) || name;
+                }
+            });
         }
     }
 
     private copyResult() {
         if (!this.lastDecodedContent) return;
-
-        navigator.clipboard.writeText(this.lastDecodedContent).then(() => {
-            // Visual feedback
-            const btn = document.getElementById('scan-copy-btn');
-            if (btn) {
-                const originalTitle = btn.title;
-                btn.title = 'Copied!';
-                setTimeout(() => {
-                    btn.title = originalTitle;
-                }, 1500);
-            }
-        });
+        navigator.clipboard.writeText(this.lastDecodedContent)
+            .then(() => toastCopyResult(true))
+            .catch(() => toastCopyResult(false));
     }
 
     private openResult() {
         if (!this.lastDecodedContent || !this.isUrl(this.lastDecodedContent)) return;
 
-        let url = this.lastDecodedContent;
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        let url = this.lastDecodedContent.trim();
+        if (!/^https?:\/\//i.test(url)) {
             url = 'https://' + url;
         }
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener');
     }
 
     private isUrl(str: string): boolean {
-        try {
-            // Basic URL detection
-            return /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}/i.test(str);
-        } catch {
-            return false;
-        }
+        // Basic URL detection
+        return /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}/i.test(str.trim());
     }
 
     private initActionIcons() {
-        // Initialize icons in action buttons
         const icons = [
             { id: 'scan-copy-btn', icon: 'content_copy' },
             { id: 'scan-open-btn', icon: 'open_in_new' },
@@ -339,9 +335,8 @@ class QRScanner {
         ];
 
         icons.forEach(({ id, icon }) => {
-            const btn = document.getElementById(id);
-            const iconEl = btn?.querySelector('.icon');
-            if (iconEl) {
+            const iconEl = document.getElementById(id)?.querySelector('.icon');
+            if (iconEl && !iconEl.querySelector('svg')) {
                 const svg = getIconSvg(icon, 18);
                 if (svg) iconEl.innerHTML = svg;
             }
@@ -349,21 +344,20 @@ class QRScanner {
     }
 
     /**
-     * Cleanup event listeners when scan template is deactivated
+     * Cleanup event listeners when the scan template is deactivated.
      */
     public deactivate() {
         if (this.abortController) {
             this.abortController.abort();
             this.abortController = null;
-            console.log('QRScanner: Deactivated, event listeners removed');
         }
     }
 
     /**
-     * Reinitialize when scan template becomes active
+     * (Re)initialize when the scan template becomes active.
      */
     public activate() {
-        this.deactivate(); // Cleanup any existing listeners first
+        this.deactivate();
         this.init();
         this.reset();
     }

@@ -330,6 +330,16 @@ export const metadataAppChangelog: VersionEntry[] = [
 export const qrAppChangelog: LocalizedChangelog = {
     en: [
         {
+            version: "1.0.2",
+            date: "2026-09-04",
+            changes: [
+                "Fixed the live preview and the PNG, JPG, WebP and PDF exports being vertically mirrored: the finder eyes now sit top-left, top-right and bottom-left exactly as in the SVG, and the Water modules, Heart eye and Leaf frame render the way their Shapes tiles show them",
+                "The readability check now waits for the selected shapes before capturing, so its verdict always refers to the current style",
+                "Scan mode can be closed again (button or Escape), returns to where you were, and on phones scrolls straight to the image drop zone",
+                "The scanner keeps its translated copy in every state, explains what to do on the stage, and tries the browser's native detector before the local Rust decoder for camera photos"
+            ]
+        },
+        {
             version: "1.0.1",
             date: "2026-09-04",
             changes: [
@@ -490,6 +500,16 @@ export const qrAppChangelog: LocalizedChangelog = {
         }
     ],
     es: [
+        {
+            version: "1.0.2",
+            date: "2026-09-04",
+            changes: [
+                "Corregida la vista previa y las exportaciones PNG, JPG, WebP y PDF, que salían invertidas verticalmente: los ojos quedan arriba-izquierda, arriba-derecha y abajo-izquierda como en el SVG, y los módulos Agua, el ojo Corazón y el marco Hoja se ven como en sus miniaturas de Formas",
+                "La comprobación de legibilidad espera a que carguen las formas elegidas antes de capturar, así su veredicto siempre corresponde al estilo actual",
+                "El modo escaneo se puede cerrar de nuevo (botón o Escape), vuelve a donde estabas y en móviles lleva directo a la zona para soltar la imagen",
+                "El escáner conserva sus textos traducidos en todos los estados, explica qué hacer en el escenario y prueba el detector nativo del navegador antes del decodificador local en Rust para fotos de cámara"
+            ]
+        },
         {
             version: "1.0.1",
             date: "2026-09-04",
@@ -680,10 +700,44 @@ const localizedQrPatchChanges: Record<string, string[]> = {
     ]
 };
 
+const localizedQrPatch102Changes: Record<string, string[]> = {
+    zh: [
+        "修复了实时预览及 PNG、JPG、WebP 和 PDF 导出被上下镜像的问题：定位眼现在与 SVG 一样位于左上、右上和左下，水滴模块、心形眼和叶形边框也与“形状”缩略图一致",
+        "可读性检查会先等所选形状加载完成再截图，因此结果始终对应当前样式",
+        "扫描模式可以再次关闭（按钮或 Escape），会返回原来的位置，在手机上会直接滚动到图片拖放区",
+        "扫描器在每个状态都保留已翻译的文案，在舞台上说明该做什么，并在使用本地 Rust 解码器之前先尝试浏览器的原生检测器来处理相机照片"
+    ],
+    hi: [
+        "लाइव प्रीव्यू और PNG, JPG, WebP व PDF एक्सपोर्ट का ऊपर-नीचे उलटा दिखना ठीक किया: फाइंडर आँखें अब SVG की तरह ऊपर-बाएँ, ऊपर-दाएँ और नीचे-बाएँ रहती हैं, और Water मॉड्यूल, Heart आँख और Leaf फ़्रेम वैसे ही दिखते हैं जैसे Shapes की टाइलों में",
+        "पठनीयता जाँच अब चुनी हुई आकृतियाँ लोड होने तक इंतज़ार करके कैप्चर करती है, इसलिए उसका नतीजा हमेशा मौजूदा स्टाइल का होता है",
+        "स्कैन मोड फिर से बंद किया जा सकता है (बटन या Escape), आप जहाँ थे वहीं लौटता है, और फ़ोन पर सीधे इमेज ड्रॉप ज़ोन तक स्क्रॉल करता है",
+        "स्कैनर हर स्थिति में अपने अनुवादित टेक्स्ट रखता है, स्टेज पर बताता है कि क्या करना है, और कैमरा फ़ोटो के लिए लोकल Rust डिकोडर से पहले ब्राउज़र का नेटिव डिटेक्टर आज़माता है"
+    ],
+    ar: [
+        "أُصلحت المعاينة الحية وتصديرات PNG وJPG وWebP وPDF التي كانت تظهر مقلوبة رأسيًا: تستقر عيون التحديد الآن أعلى اليسار وأعلى اليمين وأسفل اليسار كما في SVG، وتظهر وحدات الماء وعين القلب وإطار الورقة كما في مصغّرات الأشكال",
+        "ينتظر فحص القابلية للقراءة تحميل الأشكال المختارة قبل الالتقاط، فيعبّر حكمه دائمًا عن النمط الحالي",
+        "يمكن إغلاق وضع المسح مجددًا (بالزر أو Escape)، ويعود إلى حيث كنت، وعلى الهاتف ينتقل مباشرة إلى منطقة إفلات الصورة",
+        "يحتفظ الماسح بنصوصه المترجمة في كل حالة، ويشرح على المسرح ما ينبغي فعله، ويجرّب كاشف المتصفح الأصلي قبل وحدة فك الترميز المحلية بلغة Rust لصور الكاميرا"
+    ],
+    bn: [
+        "লাইভ প্রিভিউ এবং PNG, JPG, WebP ও PDF এক্সপোর্ট উল্টো (উপর-নিচ) হয়ে যাওয়ার সমস্যা ঠিক করা হয়েছে: ফাইন্ডার চোখগুলো এখন SVG-এর মতোই উপরে-বামে, উপরে-ডানে ও নিচে-বামে থাকে, আর Water মডিউল, Heart চোখ ও Leaf ফ্রেম Shapes টাইলের মতোই দেখায়",
+        "পঠনযোগ্যতা পরীক্ষা এখন নির্বাচিত আকৃতি লোড হওয়া পর্যন্ত অপেক্ষা করে ক্যাপচার নেয়, তাই এর রায় সবসময় বর্তমান স্টাইলের",
+        "স্ক্যান মোড আবার বন্ধ করা যায় (বোতাম বা Escape), আপনি যেখানে ছিলেন সেখানে ফিরে যায়, আর ফোনে সরাসরি ছবি ড্রপ করার জায়গায় স্ক্রল করে",
+        "স্ক্যানার প্রতিটি অবস্থায় অনূদিত লেখা বজায় রাখে, স্টেজে কী করতে হবে তা জানায়, এবং ক্যামেরার ছবির জন্য লোকাল Rust ডিকোডারের আগে ব্রাউজারের নেটিভ ডিটেক্টর চেষ্টা করে"
+    ],
+    pt: [
+        "Corrigida a pré-visualização e as exportações PNG, JPG, WebP e PDF, que saíam espelhadas na vertical: os olhos ficam no canto superior esquerdo, superior direito e inferior esquerdo como no SVG, e os módulos Água, o olho Coração e a moldura Folha aparecem como nas miniaturas de Formas",
+        "A verificação de legibilidade espera as formas escolhidas carregarem antes de capturar, então o veredito sempre corresponde ao estilo atual",
+        "O modo de leitura pode ser fechado de novo (botão ou Escape), volta para onde você estava e, no celular, rola direto até a área para soltar a imagem",
+        "O leitor mantém os textos traduzidos em todos os estados, explica o que fazer no palco e tenta o detector nativo do navegador antes do decodificador local em Rust para fotos de câmera"
+    ]
+};
+
 for (const [locale, changes] of Object.entries(localizedQrPatchChanges)) {
     qrAppChangelog[locale] = [
+        { version: "1.0.2", date: "2026-09-04", changes: localizedQrPatch102Changes[locale] ?? qrAppChangelog.en[0].changes },
         { version: "1.0.1", date: "2026-09-04", changes },
-        ...qrAppChangelog.en.slice(1)
+        ...qrAppChangelog.en.slice(2)
     ];
 }
 

@@ -953,6 +953,51 @@ select.input-field {
     height: 14px;
 }
 
+.scan-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.scan-head-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--qr-text);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.scan-head-title .icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.scan-upload-area:focus-visible {
+    outline: 2px solid var(--qr-accent);
+    outline-offset: 2px;
+}
+
+.scan-upload-area[data-scan-state="error"] {
+    border-color: var(--qr-danger);
+}
+
+.scan-upload-area[data-scan-state="error"] .scan-icon {
+    color: var(--qr-danger);
+}
+
+.scan-upload-area[data-scan-state="loading"] .scan-icon svg {
+    animation: scan-pulse 1s ease-in-out infinite;
+}
+
+@keyframes scan-pulse {
+    50% {
+        opacity: 0.35;
+    }
+}
+
 /* Saved styles (presets) */
 .preset-chips {
     display: flex;
@@ -1277,6 +1322,19 @@ select.input-field {
 
 .qr-root[data-state="editing"]:not(.generating) .stage-placeholder {
     display: flex;
+}
+
+/* Scan mode: the stage explains what to do instead of asking for content. */
+.stage-placeholder-scan {
+    display: none;
+}
+
+.qr-root[data-content-type="scan"] .stage-placeholder-default {
+    display: none;
+}
+
+.qr-root[data-content-type="scan"] .stage-placeholder-scan {
+    display: inline;
 }
 
 .shapes-btn[data-risky="true"] {
@@ -1923,5 +1981,9 @@ input[type="color"]::-webkit-color-swatch {
     .ws-btn,
     .type-option {
         transition: none;
+    }
+
+    .scan-upload-area[data-scan-state="loading"] .scan-icon svg {
+        animation: none;
     }
 }
