@@ -1,16 +1,35 @@
 {
-    "name": "@holi/wasm-qr",
-    "version": "0.1.0",
-    "type": "module",
-    "description": "Holi.tools QR code generator (WASM)",
-    "main": "pkg/holi_wasm_qr.js",
-    "types": "pkg/holi_wasm_qr.d.ts",
-    "scripts": {
-        "build": "wasm-pack build --target web --release",
-        "build:dev": "wasm-pack build --target web --dev"
+  "name": "@holi/wasm-qr",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Holi.tools QR code generator (WASM)",
+  "main": "pkg/holi_wasm_qr.js",
+  "types": "pkg/holi_wasm_qr.d.ts",
+  "scripts": {
+    "build": "pnpm build:web && pnpm build:node",
+    "build:dev": "wasm-pack build --target web --dev",
+    "build:node": "wasm-pack build --target nodejs --release --out-dir pkg-node",
+    "build:web": "wasm-pack build --target web --release",
+    "prepack": "node scripts/prepare-package.mjs"
+  },
+  "files": [
+    "pkg",
+    "pkg-node",
+    "CHANGELOG.md",
+    "scripts"
+  ],
+  "license": "AGPL-3.0",
+  "exports": {
+    ".": {
+      "types": "./pkg/holi_wasm_qr.d.ts",
+      "default": "./pkg/holi_wasm_qr.js"
     },
-    "files": [
-        "pkg"
-    ],
-    "license": "AGPL-3.0"
+    "./node": {
+      "types": "./pkg-node/holi_wasm_qr.d.ts",
+      "default": "./pkg-node/holi_wasm_qr.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -10,7 +10,7 @@ that must survive refactors, alternate implementations, or new frontends.
 - Protocol state machines.
 - Export/import behavior.
 - Compatibility requirements across Rust, WASM, and web apps.
-- Test vectors or links to `vectors/`.
+- Test vectors in `spec/vectors/`.
 
 ## What Does Not Belong Here
 
@@ -24,10 +24,12 @@ that must survive refactors, alternate implementations, or new frontends.
 
 | Topic | Current Location | Notes |
 | --- | --- | --- |
-| QR styling and export behavior | Not yet extracted | Add a focused normative spec when changing stable export/render contracts. |
+| QR styling and export behavior | `spec/qr-style-v1.md` | Portable styles and the explicit local rendering subset. |
+| Document templates | `spec/document-template-v1.md` | JSON data, virtual files and shared diagnostics. |
+| MCP tools | `spec/mcp-tools-v1.md` | Local inputs, outputs, paths and transport privacy. |
 | User/Vault identity and P2P | Not yet extracted | Security-sensitive; add protocol specs before expanding connected infrastructure. |
 | Typst editor and collaboration | `docs/decisions/0002-private-collaboration.md` | Move protocol details here only after the threat model is accepted. |
-| Cross-implementation vectors | `vectors/` | Store reusable examples for Rust/WASM/web parity. |
+| Cross-implementation vectors | `spec/vectors/` | Reusable QR, document and MCP fixtures exercised by engine/server tests. |
 | Product privacy summaries | `spec/privacy-summary-v1.md` | Required facts and wording invariants for every public tool. |
 
 ## Spec Template

@@ -1,0 +1,42 @@
+{
+  "name": "@holi/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "AGPL-3.0",
+  "files": [
+    "dist",
+    "fonts",
+    "skills",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "start": "node dist/main.js"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "catalog:",
+    "@types/node": "^22.19.0"
+  },
+  "description": "Holi Local: local Typst documents and QR batch tools for AI assistants",
+  "bin": {
+    "holi-mcp": "dist/main.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@holi/engine-qr": "workspace:*",
+    "@holi/engine-typst": "workspace:*",
+    "@holi/wasm-qr": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@myriaddreamin/typst.ts": "0.7.0-rc2",
+    "@myriaddreamin/typst-ts-web-compiler": "0.7.0-rc2",
+    "zod": "^3.25.76"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -32,4 +32,6 @@ pub use shapes::{
     BodyShape, EyeBallShape, EyeFrameShape, Neighbors,
 };
 pub use verify::rasterize_svg_alpha;
+#[cfg(feature = "verify")]
+pub use verify::rasterize_svg_png;
 pub use verify::{decode_image, verify_svg};

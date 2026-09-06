@@ -6,6 +6,40 @@
 
 use crate::error::QrError;
 
+/// Rasterize a generated QR SVG to PNG without consulting the host filesystem.
+#[cfg(feature = "verify")]
+pub fn rasterize_svg_png(svg: &str, size: u32) -> Result<Vec<u8>, QrError> {
+    if !(128..=4096).contains(&size) {
+        return Err(QrError::VerificationFailed("PNG size must be 128–4096".into()));
+    }
+    let mut options = resvg::usvg::Options::default();
+    // No filesystem lookup for SVG image references, even for direct Rust callers.
+    options.image_href_resolver.resolve_string = Box::new(|_, _| None);
+    let tree = resvg::usvg::Tree::from_str(svg, &options)
+        .map_err(|_| QrError::VerificationFailed("Invalid SVG".into()))?;
+    let mut pixmap = tiny_skia::Pixmap::new(size, size)
+        .ok_or_else(|| QrError::VerificationFailed("Failed to allocate PNG".into()))?;
+    let scale = (size as f32 / tree.size().width()).min(size as f32 / tree.size().height());
+    resvg::render(&tree, tiny_skia::Transform::from_scale(scale, scale), &mut pixmap.as_mut());
+    pixmap.encode_png().map_err(|_| QrError::VerificationFailed("PNG encoding failed".into()))
+}
+
+#[cfg(all(test, feature = "verify"))]
+mod png_tests {
+    use super::*;
+    #[test]
+    fn generated_png_decodes_and_has_requested_dimensions() {
+        let qr = crate::generate_qr("Holi Local: hola", crate::ErrorCorrectionLevel::Medium).unwrap();
+        let svg = crate::render_svg(&qr);
+        let png = rasterize_svg_png(&svg, 512).unwrap();
+        let decoded = image::load_from_memory(&png).unwrap();
+        assert_eq!((decoded.width(), decoded.height()), (512, 512));
+        assert_eq!(decode_image(&png).unwrap(), "Holi Local: hola");
+        assert!(rasterize_svg_png(&svg, 4097).is_err());
+        assert!(rasterize_svg_png(&svg, 0).is_err());
+    }
+}
+
 /// Rasterize an SVG into an alpha mask (single channel).
 ///
 /// This is used by the web preview pipeline to keep WebGL shapes 1:1 with the official SVG

@@ -1,4 +1,6 @@
 packages:
+  - "packages/engines/*"
+  - "local/*"
   - "web/apps/*"
   - "web/packages/*"
   - "crates/wasm/*"

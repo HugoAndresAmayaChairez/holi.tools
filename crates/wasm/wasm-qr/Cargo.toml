@@ -1,6 +1,6 @@
 [package]
 name = "holi_wasm_qr"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Holi.tools QR code generator (WASM)"
 license = "AGPL-3.0"

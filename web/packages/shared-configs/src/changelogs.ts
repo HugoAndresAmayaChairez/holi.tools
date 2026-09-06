@@ -741,6 +741,19 @@ for (const [locale, changes] of Object.entries(localizedQrPatchChanges)) {
     ];
 }
 
+const qr103Changes: Record<string, string> = {
+    en: "Saved styles and SVG exports now share their portable engine with Holi Local; unsafe style object keys are rejected while existing style links remain compatible",
+    es: "Los estilos guardados y la exportación SVG comparten motor con Holi Local; se rechazan claves inseguras y se conserva la compatibilidad de los enlaces de estilo",
+    zh: "已保存的样式和 SVG 导出与 Holi Local 共用引擎；拒绝不安全的样式对象键，并保持现有样式链接兼容",
+    hi: "सहेजी गई शैलियाँ और SVG निर्यात अब Holi Local के साथ इंजन साझा करते हैं; असुरक्षित शैली कुंजियाँ अस्वीकार की जाती हैं और पुराने शैली लिंक संगत रहते हैं",
+    ar: "تستخدم الأنماط المحفوظة وتصديرات SVG محرك Holi Local نفسه؛ تُرفض مفاتيح الأنماط غير الآمنة مع الحفاظ على توافق روابط الأنماط الحالية",
+    bn: "সংরক্ষিত শৈলী ও SVG রপ্তানি এখন Holi Local-এর ইঞ্জিন ব্যবহার করে; অনিরাপদ শৈলী কী প্রত্যাখ্যান করা হয় এবং আগের শৈলী লিংক সামঞ্জস্যপূর্ণ থাকে",
+    pt: "Os estilos salvos e as exportações SVG compartilham o motor do Holi Local; chaves inseguras são rejeitadas e os links de estilo existentes continuam compatíveis"
+};
+for (const [locale, changes] of Object.entries(qr103Changes)) {
+    qrAppChangelog[locale].unshift({ version: "1.0.3", date: "2026-09-05", changes: [changes] });
+}
+
 export const labsAppChangelog: LocalizedChangelog = {
     en: [
         {

@@ -8,12 +8,14 @@ export default tseslint.config(
     ignores: [
       "**/dist/**",
       "**/pkg/**",
+      "**/pkg-node/**",
       "**/target/**",
       "**/node_modules/**",
       "**/.astro/**",
       "**/.wrangler/**",
       "web/apps/**/scripts/**",
       "web/apps/**/test-output/**",
+      "local/mcp/test-output/**",
     ],
   },
   {

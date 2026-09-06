@@ -18,6 +18,11 @@ explain what leaves the device and which service can observe it.
 
 `web/apps/test` is an internal sandbox and is not a public product.
 
+[Holi Local](local/mcp/README.md) exposes the same QR and Typst engines to AI
+assistants through a Node MCP server. The v0.1 implementation includes offline
+PDF templates, custom Typst compilation and SVG/PNG QR batches; real client
+acceptance and npm publication are tracked in ADR 0003.
+
 ## Start locally
 
 ```bash
@@ -25,7 +30,10 @@ pnpm install
 pnpm dev
 ```
 
-Build one product with `pnpm --filter holi-<product> build`. Run JavaScript
+Build shared engines with `pnpm build:engines` before a direct app build.
+Build one product with `pnpm --filter holi-<product> build` or the local server
+and its dependencies with `pnpm build:local`. Build the QR Node WASM target
+before the first server test (`pnpm --filter @holi/wasm-qr build:node`). Run JavaScript
 tests with `pnpm test` and Rust tests with
 `cargo test --workspace --no-fail-fast`.
 

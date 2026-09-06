@@ -1,7 +1,7 @@
 {
   "name": "holi-typst",
   "type": "module",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -26,7 +26,8 @@
     "astro": "catalog:",
     "codemirror": "^6.0.2",
     "codemirror-lang-typst": "^0.4.0",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "@holi/engine-typst": "workspace:*"
   },
   "devDependencies": {
     "vite-plugin-top-level-await": "catalog:",

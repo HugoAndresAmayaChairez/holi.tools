@@ -6,20 +6,8 @@
  * download. The frame is part of the portable style (see style.ts).
  */
 
-export interface FrameState {
-  enabled: boolean;
-  text: string;
-  bg: string;
-  fg: string;
-}
-
-export const DEFAULT_FRAME: FrameState = {
-  enabled: false,
-  text: "",
-  bg: "#24211d",
-  fg: "#ffffff",
-};
-
+import {DEFAULT_FRAME, type FrameState} from '@holi/engine-qr/style';
+export {DEFAULT_FRAME, type FrameState} from '@holi/engine-qr/style';
 const frame: FrameState = { ...DEFAULT_FRAME };
 let defaultText = "SCAN ME";
 

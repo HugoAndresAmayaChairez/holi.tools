@@ -45,3 +45,6 @@ target/
 **/target/
 pkg/
 **/pkg/
+
+pkg-node/
+local/mcp/test-output/

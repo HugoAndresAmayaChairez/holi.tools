@@ -1,6 +1,7 @@
 import type { VersionEntry } from "@holi/configs/changelogs";
 
 export const typstChangelog: VersionEntry[] = [
+  {version: "0.8.1", date: "2026-09-05", changes: ["PDF export and preview now use the same compilation and diagnostic contracts as Holi Local; browser workspace files and existing document behavior are preserved"]},
   {
     version: "0.8.0",
     date: "2026-09-04",

@@ -9,6 +9,8 @@ working copy on the device, and exports without requiring an account.
 - Astro for the application shell.
 - Vanilla TypeScript and CodeMirror 6 for the editor workflow.
 - Typst WebAssembly packages for compilation, preview, and PDF export.
+- `@holi/engine-typst` for shared compilation and diagnostics; the browser keeps
+  its own module loading, rendering, editor and storage adapters.
 - IndexedDB for the default browser workspace and editor preferences.
 - Optional File System Access integration for a user-selected local folder;
   permission is requested by an explicit action and files are written directly

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.17.0 - 2026-09-05
+
+### Added
+
+- [Holi Local] 0.1.0: a Node MCP server with local PDF templates and Typst compilation, styled QR batches in SVG and PNG that are read back with the local decoder, stdio and authenticated loopback HTTP transports, explicit output folders that are never overwritten, and operator-controlled Typst package downloads. npm publication and real-client acceptance remain gated by ADR 0003.
+- Normative QR style, document template and MCP tool contracts in `spec/` with shared vectors, plus Node WASM builds and Windows/macOS server tests in CI.
+
+### Changed
+
+- [Holi QR] 1.0.3 and [Holi Typst] 0.8.1 share runtime-independent engines (`@holi/engine-qr`, `@holi/engine-typst`) with Holi Local; existing web workflows and saved-style links remain compatible.
+
+### Removed
+
+- The unused `wasm-qr-lite` and `wasm-renderer` crates and the obsolete `conductor/`, `papers/` and `vectors/` folders. Test still owns the remaining `wasm-core` consumers.
+
+### Privacy
+
+- [Holi Local] Input stays in worker memory and an explicit output folder; the network is used only for Typst packages when the operator opts in, and the assistant provider's own handling of prompts and tool results is disclosed as outside Holi's control.
+
 ## 0.16.1 - 2026-09-04
 
 ### Added

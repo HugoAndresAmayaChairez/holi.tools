@@ -1,0 +1,31 @@
+{
+  "valid": [
+    "report.pdf",
+    "report-2026.09.pdf",
+    "qr_001.pdf",
+    "A.pdf",
+    "multi.part.PDF"
+  ],
+  "invalid": [
+    "",
+    "../report.pdf",
+    "/report.pdf",
+    "C:\\report.pdf",
+    "C:report.pdf",
+    "\\\\server\\report.pdf",
+    "sub/report.pdf",
+    "sub\\report.pdf",
+    "report.pdf:stream",
+    ".hidden.pdf",
+    "CON.pdf",
+    "con.extra.pdf",
+    "NUL.pdf",
+    "COM1.pdf",
+    "lpt9.pdf",
+    "report.pdf.",
+    "report.pdf ",
+    "report.png",
+    "mañana.pdf",
+    "a\u0000.pdf"
+  ]
+}

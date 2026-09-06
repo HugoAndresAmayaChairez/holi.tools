@@ -19,6 +19,7 @@ connected action whose behavior is disclosed before use.
 | User | Explore local identity, contacts, and private collaboration. | Public experimental client; never required by other tools. |
 | Labs | Publish practical tutorials, field notes, experiments, and reviewed papers. | Seven-locale learning publication, not a requirement backlog. |
 | Test | Exercise unstable UI and infrastructure. | Internal only; never a public promise. |
+| Holi Local | Let AI assistants render documents and QR batches on the device. | MCP v0.1 implementation; external client acceptance pending ADR 0003. |
 
 ## Product rules
 

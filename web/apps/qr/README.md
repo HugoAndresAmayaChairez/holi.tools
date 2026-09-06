@@ -30,14 +30,15 @@ static app. Live at <https://qr.holi.tools>.
 
 `src/lib/boot.ts` is the client entry: icons → `qr-controller` → content types
 → `lib/workspace/shell.ts` (collapse, tabs, hero, status, presets, links,
-shortcuts). `lib/workspace/style.ts` owns the portable style shape;
+shortcuts). `@holi/engine-qr` owns the portable style shape while
+`lib/workspace/style.ts` adapts it to the browser;
 `lib/workspace/frame.ts` renders and exports the text frame.
 
 ## Engine
 
 - `crates/core/holi-qr` — pure Rust: matrix, shape geometry, styled SVG,
   optional `verify` feature (rxing + resvg).
-- `crates/wasm/wasm-qr` — browser adapter; also rasterises the body-shape atlas
+- `crates/wasm/wasm-qr` — browser and Node adapter; also rasterises the body-shape atlas
   and eye mask the WebGL preview samples, so preview and export share geometry.
 - `src/lib/webgl-liquid-renderer.ts` — WebGL preview and high-resolution capture.
 - `src/lib/wasm-svg-renderer.ts` — vector export.
@@ -51,6 +52,7 @@ body/frame/ball combination with the local verifier.
 
 ```bash
 pnpm --filter @holi/wasm-qr build   # wasm-pack (needs the wasm32 target)
+pnpm build:engines
 pnpm --filter holi-qr dev
 pnpm --filter holi-qr build
 pnpm --filter holi-qr test

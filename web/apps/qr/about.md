@@ -17,3 +17,5 @@ multiple export formats.
 - Tailwind CSS via @holi/configs
 - Components via @holi/ui
 - Rust/WASM via `holi-qr`, `wasm-qr`, and `wasm-qr-svg`
+- Portable styles, layers, shape catalogs and SVG orchestration through
+  `@holi/engine-qr`, also consumed by Holi Local. Browser state stays app-local.

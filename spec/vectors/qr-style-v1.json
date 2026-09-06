@@ -1,0 +1,220 @@
+{
+  "default": {
+    "v": 1,
+    "app": "holi-qr",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "logoSize": 0.2,
+      "logoBgEnabled": true,
+      "logoBgColor": "#ffffff",
+      "logoBgShape": "rounded",
+      "logoPadding": 0,
+      "logoCornerRadius": 10
+    },
+    "layers": {
+      "version": 1,
+      "bg": {
+        "enabled": true,
+        "color": "#ffffff",
+        "opacity": 1,
+        "boundsScale": 1.25,
+        "blendMode": "normal",
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "paper": {
+        "enabled": true,
+        "color": "#ffffff",
+        "opacity": 1,
+        "boundsScale": 1.1,
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "ink": {
+        "enabled": true,
+        "color": "#000000",
+        "opacity": 1,
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0,
+        "liquid": {
+          "enabled": false,
+          "blur": 0.35,
+          "thresh": 6
+        },
+        "noise": {
+          "enabled": false,
+          "amount": 0.3,
+          "scale": 100
+        },
+        "gradient": {
+          "type": 0,
+          "color2": "#000000",
+          "angle": 0
+        }
+      },
+      "logo": {
+        "enabled": true,
+        "opacity": 1,
+        "fit": "contain"
+      }
+    },
+    "frame": {
+      "enabled": false,
+      "text": "",
+      "bg": "#24211d",
+      "fg": "#ffffff"
+    }
+  },
+  "unicode": {
+    "v": 1,
+    "app": "holi-qr",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "logoSize": 0.2,
+      "logoBgEnabled": true,
+      "logoBgColor": "#ffffff",
+      "logoBgShape": "rounded",
+      "logoPadding": 0,
+      "logoCornerRadius": 10
+    },
+    "layers": {
+      "version": 1,
+      "bg": {
+        "enabled": true,
+        "color": "#ffffff",
+        "opacity": 1,
+        "boundsScale": 1.25,
+        "blendMode": "normal",
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "paper": {
+        "enabled": true,
+        "color": "#ffffff",
+        "opacity": 1,
+        "boundsScale": 1.1,
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "ink": {
+        "enabled": true,
+        "color": "#000000",
+        "opacity": 1,
+        "fit": "cover",
+        "rotation": 0,
+        "scale": 1,
+        "offsetX": 0,
+        "offsetY": 0,
+        "liquid": {
+          "enabled": false,
+          "blur": 0.35,
+          "thresh": 6
+        },
+        "noise": {
+          "enabled": false,
+          "amount": 0.3,
+          "scale": 100
+        },
+        "gradient": {
+          "type": 0,
+          "color2": "#000000",
+          "angle": 0
+        }
+      },
+      "logo": {
+        "enabled": true,
+        "opacity": 1,
+        "fit": "contain"
+      }
+    },
+    "frame": {
+      "enabled": false,
+      "text": "",
+      "bg": "#24211d",
+      "fg": "#ffffff"
+    },
+    "name": "Diseño ñ 漢字"
+  },
+  "fragment": "eyJ2IjoxLCJhcHAiOiJob2xpLXFyIiwiY29uZmlnIjp7ImJvZHlTaGFwZSI6InNxdWFyZSIsImV5ZUZyYW1lU2hhcGUiOiJzcXVhcmUiLCJleWVCYWxsU2hhcGUiOiJzcXVhcmUiLCJlY2MiOiJNIiwibG9nb1NpemUiOjAuMiwibG9nb0JnRW5hYmxlZCI6dHJ1ZSwibG9nb0JnQ29sb3IiOiIjZmZmZmZmIiwibG9nb0JnU2hhcGUiOiJyb3VuZGVkIiwibG9nb1BhZGRpbmciOjAsImxvZ29Db3JuZXJSYWRpdXMiOjEwfSwibGF5ZXJzIjp7InZlcnNpb24iOjEsImJnIjp7ImVuYWJsZWQiOnRydWUsImNvbG9yIjoiI2ZmZmZmZiIsIm9wYWNpdHkiOjEsImJvdW5kc1NjYWxlIjoxLjI1LCJibGVuZE1vZGUiOiJub3JtYWwiLCJmaXQiOiJjb3ZlciIsInJvdGF0aW9uIjowLCJzY2FsZSI6MSwib2Zmc2V0WCI6MCwib2Zmc2V0WSI6MH0sInBhcGVyIjp7ImVuYWJsZWQiOnRydWUsImNvbG9yIjoiI2ZmZmZmZiIsIm9wYWNpdHkiOjEsImJvdW5kc1NjYWxlIjoxLjEsImZpdCI6ImNvdmVyIiwicm90YXRpb24iOjAsInNjYWxlIjoxLCJvZmZzZXRYIjowLCJvZmZzZXRZIjowfSwiaW5rIjp7ImVuYWJsZWQiOnRydWUsImNvbG9yIjoiIzAwMDAwMCIsIm9wYWNpdHkiOjEsImZpdCI6ImNvdmVyIiwicm90YXRpb24iOjAsInNjYWxlIjoxLCJvZmZzZXRYIjowLCJvZmZzZXRZIjowLCJsaXF1aWQiOnsiZW5hYmxlZCI6ZmFsc2UsImJsdXIiOjAuMzUsInRocmVzaCI6Nn0sIm5vaXNlIjp7ImVuYWJsZWQiOmZhbHNlLCJhbW91bnQiOjAuMywic2NhbGUiOjEwMH0sImdyYWRpZW50Ijp7InR5cGUiOjAsImNvbG9yMiI6IiMwMDAwMDAiLCJhbmdsZSI6MH19LCJsb2dvIjp7ImVuYWJsZWQiOnRydWUsIm9wYWNpdHkiOjEsImZpdCI6ImNvbnRhaW4ifX0sImZyYW1lIjp7ImVuYWJsZWQiOmZhbHNlLCJ0ZXh0IjoiIiwiYmciOiIjMjQyMTFkIiwiZmciOiIjZmZmZmZmIn0sIm5hbWUiOiJEaXNlw7FvIMOxIOa8ouWtlyJ9",
+  "invalidPatches": [
+    {
+      "v": 2
+    },
+    {
+      "config": {
+        "ecc": "X"
+      }
+    },
+    {
+      "layers": null
+    },
+    {
+      "frame": {
+        "enabled": "yes"
+      }
+    },
+    {
+      "name": 1
+    }
+  ],
+  "unsupportedPatches": [
+    {
+      "frame": {
+        "enabled": true
+      }
+    },
+    {
+      "layers": {
+        "ink": {
+          "noise": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "layers": {
+        "ink": {
+          "gradient": {
+            "type": 3
+          }
+        }
+      }
+    },
+    {
+      "layers": {
+        "bg": {
+          "blendMode": "multiply"
+        }
+      }
+    },
+    {
+      "layers": {
+        "paper": {
+          "opacity": 0.5
+        }
+      }
+    }
+  ]
+}

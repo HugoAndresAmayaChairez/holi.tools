@@ -9,48 +9,11 @@
  */
 import { state } from "../qr-engine";
 import { createDefaultLayersConfig, type QRLayersConfig } from "../core/layers";
-import { getFrameState, setFrameState, type FrameState, DEFAULT_FRAME } from "./frame";
+import { getFrameState, setFrameState, DEFAULT_FRAME } from "./frame";
 
-export const STYLE_VERSION = 1;
-
-export interface QrStyle {
-  v: typeof STYLE_VERSION;
-  app: "holi-qr";
-  name?: string;
-  config: {
-    bodyShape: string;
-    eyeFrameShape: string;
-    eyeBallShape: string;
-    ecc: "L" | "M" | "Q" | "H";
-    mask?: number;
-    logoSize?: number;
-    logoBgEnabled?: boolean;
-    logoBgColor?: string;
-    logoBgShape?: string;
-    logoPadding?: number;
-    logoCornerRadius?: number;
-  };
-  layers: Omit<QRLayersConfig, "card"> & { card?: never };
-  frame: FrameState;
-}
-
+import {STYLE_VERSION, stripImages, deepMerge, toBase64Url, fromBase64Url, isQrStyle, type QrStyle} from '@holi/engine-qr/style';
+export {STYLE_VERSION, defaultStyle, isQrStyle, type QrStyle} from '@holi/engine-qr/style';
 type AnyRecord = Record<string, unknown>;
-
-const IMAGE_KEYS = new Set(["image"]);
-
-function stripImages<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripImages) as T;
-  if (value && typeof value === "object") {
-    const out: AnyRecord = {};
-    for (const [k, v] of Object.entries(value as AnyRecord)) {
-      if (IMAGE_KEYS.has(k)) continue;
-      out[k] = stripImages(v);
-    }
-    return out as T;
-  }
-  return value;
-}
-
 function getController(): any {
   return (window as any).qrController;
 }
@@ -85,24 +48,6 @@ export function serializeStyle(name?: string): QrStyle {
     layers: layers as QrStyle["layers"],
     frame: { ...getFrameState() },
   };
-}
-
-export function isQrStyle(value: unknown): value is QrStyle {
-  if (!value || typeof value !== "object") return false;
-  const s = value as AnyRecord;
-  return s.app === "holi-qr" && s.v === STYLE_VERSION && !!s.config && !!s.layers;
-}
-
-function deepMerge(target: AnyRecord, patch: AnyRecord): void {
-  for (const [k, v] of Object.entries(patch)) {
-    if (IMAGE_KEYS.has(k)) continue;
-    if (v && typeof v === "object" && !Array.isArray(v)) {
-      if (!target[k] || typeof target[k] !== "object") target[k] = {};
-      deepMerge(target[k] as AnyRecord, v as AnyRecord);
-    } else {
-      target[k] = v;
-    }
-  }
 }
 
 function setInputValue(id: string, value: string | number): void {
@@ -189,30 +134,6 @@ export function applyStyle(style: QrStyle): void {
   window.dispatchEvent(new CustomEvent("qr-style-applied", { detail: style }));
 }
 
-/** Default style = fresh layers + square shapes + no frame. */
-export function defaultStyle(): QrStyle {
-  const layers = stripImages(createDefaultLayersConfig()) as AnyRecord;
-  delete layers.card;
-  return {
-    v: STYLE_VERSION,
-    app: "holi-qr",
-    config: {
-      bodyShape: "square",
-      eyeFrameShape: "square",
-      eyeBallShape: "square",
-      ecc: "M",
-      logoSize: 0.2,
-      logoBgEnabled: true,
-      logoBgColor: "#ffffff",
-      logoBgShape: "rounded",
-      logoPadding: 0,
-      logoCornerRadius: 10,
-    },
-    layers: layers as QrStyle["layers"],
-    frame: { ...DEFAULT_FRAME },
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Saved styles (browser-local)
 // ---------------------------------------------------------------------------
@@ -279,20 +200,6 @@ export function addImportedStyle(style: QrStyle): SavedStyle {
 // Style links (URL fragment)
 // ---------------------------------------------------------------------------
 const HASH_KEY = "s";
-
-function toBase64Url(json: string): string {
-  const bytes = new TextEncoder().encode(json);
-  let bin = "";
-  bytes.forEach((b) => (bin += String.fromCharCode(b)));
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function fromBase64Url(text: string): string {
-  const b64 = text.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((text.length + 3) % 4);
-  const bin = atob(b64);
-  const bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
 
 /** Absolute URL of the current page carrying the current style in its fragment. */
 export function buildStyleLink(): string {

@@ -1,0 +1,74 @@
+{
+  "literal": {
+    "title": "Holi #read(\"secret\") <>& \\ ñ 漢字",
+    "sections": [
+      {
+        "heading": "Quotes: \"hello\"",
+        "body": "Line one\nLine two $x$ #panic(\"no\")"
+      }
+    ]
+  },
+  "invalidData": [
+    {},
+    { "title": "Title", "sections": [] },
+    { "title": "Title", "sections": [{ "heading": "Hi", "body": 123 }] },
+    {
+      "title": "Title",
+      "sections": [{ "heading": "Hi", "body": "OK" }],
+      "extra": true
+    }
+  ],
+  "paths": {
+    "valid": ["main.typ", "report/images/a.png", "capítulo/uno.typ"],
+    "invalid": [
+      "",
+      "/etc/passwd",
+      "../x",
+      "a/../x",
+      "C:/secret",
+      "C:\\secret",
+      "a\\x",
+      "//server/share",
+      "a//b",
+      "./main.typ",
+      "a\u0000b"
+    ]
+  },
+  "diagnostics": {
+    "raw": [
+      {
+        "severity": "Error",
+        "message": "unknown variable",
+        "path": "/report/main.typ",
+        "range": "1:2-1:5"
+      },
+      { "severity": "Hint", "message": "Check the spelling" },
+      {
+        "severity": "Warning",
+        "message": "Unknown font",
+        "path": "report/main.typ",
+        "range": "0:0-0:1"
+      }
+    ],
+    "expected": [
+      {
+        "severity": "error",
+        "message": "unknown variable",
+        "hints": ["Check the spelling"],
+        "path": "report/main.typ",
+        "package": "",
+        "start": { "line": 2, "column": 3 },
+        "end": { "line": 2, "column": 6 }
+      },
+      {
+        "severity": "warning",
+        "message": "Unknown font",
+        "hints": [],
+        "path": "report/main.typ",
+        "package": "",
+        "start": { "line": 1, "column": 1 },
+        "end": { "line": 1, "column": 2 }
+      }
+    ]
+  }
+}

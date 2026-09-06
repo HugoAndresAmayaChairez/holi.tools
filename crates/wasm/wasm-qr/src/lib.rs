@@ -892,6 +892,13 @@ pub fn decode_qr_image(image_data: &[u8]) -> Result<String, JsValue> {
     decode_image(image_data).map_err(|e| JsValue::from_str(&format!("Decode failed: {:?}", e)))
 }
 
+/// The same styled SVG engine as the browser, rasterized locally to PNG bytes.
+#[wasm_bindgen]
+pub fn render_official_png(text: &str, config_json: &str, size: u32) -> Result<Vec<u8>, JsValue> {
+    let svg = render_official_svg(text, config_json)?;
+    holi_qr::rasterize_svg_png(&svg, size).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
 /// Generate a body-module alpha mask atlas for the WebGL preview.
 ///
 /// Rust is the shape source-of-truth (same geometry used for the official SVG).

@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
@@ -70,6 +70,10 @@ jobs:
         working-directory: crates/wasm/wasm-qr-svg
         run: wasm-pack build --target web --release --out-dir pkg
 
+      - name: Build QR Node WASM
+        working-directory: crates/wasm/wasm-qr
+        run: wasm-pack build --target nodejs --release --out-dir pkg-node
+
       - name: Build crypto WASM
         working-directory: crates/wasm/wasm-crypto
         run: wasm-pack build --target web --release --out-dir pkg
@@ -92,6 +96,7 @@ jobs:
           retention-days: 1
           path: |
             crates/wasm/wasm-qr/pkg
+            crates/wasm/wasm-qr/pkg-node
             crates/wasm/wasm-qr-svg/pkg
             crates/wasm/wasm-crypto/pkg
             crates/wasm/wasm-core/pkg
@@ -123,10 +128,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build:engines
       - run: pnpm --filter holi-${{ matrix.app }} build
 
   # ============================================
@@ -151,11 +157,35 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+
+  test-local:
+    name: Holi Local (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: [lint, build-wasm]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-pkg
+          path: crates/wasm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:local
 
   # ============================================
   # STAGE 5: Rust Tests (Unit tests for core)

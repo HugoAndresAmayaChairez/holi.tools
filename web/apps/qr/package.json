@@ -1,7 +1,7 @@
 {
   "name": "holi-qr",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -19,7 +19,8 @@
     "astro": "catalog:",
     "gif.js": "^0.2.0",
     "gifuct-js": "^2.1.2",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "@holi/engine-qr": "workspace:*"
   },
   "devDependencies": {
     "vite-plugin-top-level-await": "catalog:",

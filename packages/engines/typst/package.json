@@ -1,0 +1,31 @@
+{
+  "name": "@holi/engine-typst",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "AGPL-3.0",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "catalog:",
+    "@types/node": "^22.19.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
