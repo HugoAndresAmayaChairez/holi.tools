@@ -7,9 +7,7 @@ members = [
   "crates/wasm/wasm-crypto",
   "crates/wasm/wasm-p2p",
   "crates/wasm/wasm-qr",
-  "crates/wasm/wasm-qr-lite",
   "crates/wasm/wasm-qr-svg",
-  "crates/wasm/wasm-renderer",
 ]
 
 [profile.release]
