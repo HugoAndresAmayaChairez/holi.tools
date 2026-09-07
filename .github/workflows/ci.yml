@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.28.2
 
@@ -122,7 +122,7 @@ jobs:
           name: wasm-pkg
           path: crates/wasm
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.28.2
 
@@ -151,7 +151,7 @@ jobs:
           name: wasm-pkg
           path: crates/wasm
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.28.2
 
@@ -195,7 +195,7 @@ jobs:
         with:
           name: wasm-pkg
           path: crates/wasm
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.28.2
       - uses: actions/setup-node@v4
