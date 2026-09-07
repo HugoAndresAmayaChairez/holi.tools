@@ -19,7 +19,7 @@ jobs:
     name: Lint & Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: pnpm/action-setup@v4
         with:
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -114,7 +114,7 @@ jobs:
       matrix:
         app: [main, labs, typst, qr, user, metadata, image, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download WASM packages
         uses: actions/download-artifact@v4
@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, build-wasm]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download WASM packages
         uses: actions/download-artifact@v4
@@ -190,7 +190,7 @@ jobs:
           - os: macos-latest
             binary: holi-mcp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           name: wasm-pkg
@@ -244,7 +244,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
