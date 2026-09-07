@@ -1,0 +1,594 @@
+[
+  {
+    "name": "holi_info",
+    "description": "Version, privacy, limits, support and Shadow Log.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": "number",
+          "const": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "path": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["severity", "message", "hints", "path", "package"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["v", "ok", "diagnostics"],
+      "additionalProperties": true,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "execution": {
+      "taskSupport": "forbidden"
+    }
+  },
+  {
+    "name": "document_templates",
+    "description": "List bundled offline Typst templates, source, data schemas and examples.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": "number",
+          "const": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "path": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["severity", "message", "hints", "path", "package"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["v", "ok", "diagnostics"],
+      "additionalProperties": true,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "execution": {
+      "taskSupport": "forbidden"
+    }
+  },
+  {
+    "name": "document_render",
+    "description": "Render JSON data using a bundled Typst template to a new PDF in the configured output folder.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": ["template", "data", "filename"],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": "number",
+          "const": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "path": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["severity", "message", "hints", "path", "package"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["v", "ok", "diagnostics"],
+      "additionalProperties": true,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "execution": {
+      "taskSupport": "forbidden"
+    }
+  },
+  {
+    "name": "document_compile",
+    "description": "Compile Typst source plus optional virtual files to a new PDF. No host-file reads. Packages require operator opt-in.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 8388608
+              },
+              "encoding": {
+                "type": "string",
+                "enum": ["utf8", "base64"],
+                "default": "utf8"
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["typst", "image", "data"],
+                "default": "data"
+              }
+            },
+            "required": ["path", "content"],
+            "additionalProperties": false
+          },
+          "maxItems": 100,
+          "default": []
+        },
+        "mainPath": {
+          "type": "string",
+          "maxLength": 240,
+          "default": "main.typ"
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": ["source", "filename"],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": "number",
+          "const": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "path": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["severity", "message", "hints", "path", "package"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["v", "ok", "diagnostics"],
+      "additionalProperties": true,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "execution": {
+      "taskSupport": "forbidden"
+    }
+  },
+  {
+    "name": "qr_batch",
+    "description": "Render 1–100 QR codes using a portable QR style v1. New SVG/PNG files only. Rendered bytes are decoded in memory before writing unless verify is false; still scan final exports before distribution.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2953
+              },
+              "filename": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": ["content", "filename"],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "style": {},
+        "format": {
+          "type": "string",
+          "enum": ["svg", "png"],
+          "default": "png"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 4096,
+          "default": 1024
+        },
+        "verify": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["items"],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "type": "number",
+          "const": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "hints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "path": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              },
+              "end": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "column": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": ["line", "column"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["severity", "message", "hints", "path", "package"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["v", "ok", "diagnostics"],
+      "additionalProperties": true,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "execution": {
+      "taskSupport": "forbidden"
+    }
+  }
+]

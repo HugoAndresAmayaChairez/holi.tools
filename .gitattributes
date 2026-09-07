@@ -1,0 +1,5 @@
+# Preserve upstream notice bytes: packaging verifies their original SHA-256.
+local/mcp/native/notices/canonical/** -text -whitespace
+local/mcp/native/notices/declarations/** -text -whitespace
+local/mcp/native/notices/extra/** -text -whitespace
+local/mcp/native/notices/upstream/** -text -whitespace

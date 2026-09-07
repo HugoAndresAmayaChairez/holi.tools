@@ -28,8 +28,8 @@ export async function render(job: Job): Promise<JobResult> {
     }
     if (!job.verify) return { data, diagnostics: [] };
 
-    // Read the artifact back with the same local decoder the web app's
-    // readability check uses, so a pretty but unreadable style is reported.
+    // Decode the rendered bytes in memory before the server writes them.
+    // This checks readability, not the file on disk or a printed copy.
     let decoded: string | undefined;
     try {
       decoded =

@@ -1,0 +1,111 @@
+[
+  {
+    "v": 1,
+    "id": "report",
+    "name": "Report",
+    "description": "A titled report with an optional byline and plain-text sections.",
+    "entrypoint": "main.typ",
+    "dataSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "author": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "heading": {
+                "type": "string",
+                "maxLength": 100000
+              },
+              "body": {
+                "type": "string",
+                "maxLength": 100000
+              }
+            },
+            "required": ["heading", "body"]
+          }
+        }
+      },
+      "required": ["title", "sections"]
+    },
+    "example": {
+      "title": "Project report",
+      "author": "Holi",
+      "date": "2026-09-05",
+      "sections": [
+        {
+          "heading": "Findings",
+          "body": "Write the verified findings here."
+        }
+      ]
+    },
+    "source": "#let data = json(\"data.json\")\n#set page(paper: \"a4\", margin: 24mm, numbering: \"1\")\n#set text(font: \"Libertinus Serif\", size: 11pt)\n#set par(justify: true)\n#text(size: 26pt, weight: \"bold\", data.title)\n#if \"subtitle\" in data { parbreak(); text(size: 14pt, data.subtitle) }\n#v(8pt)\n#if \"author\" in data { text(data.author); linebreak() }\n#if \"date\" in data { text(fill: rgb(\"666666\"), data.date) }\n#v(14pt)\n#for section in data.sections {\n  heading(level: 1, section.heading)\n  parbreak()\n  text(section.body)\n  parbreak()\n}\n"
+  },
+  {
+    "v": 1,
+    "id": "letter",
+    "name": "Letter",
+    "description": "A letter with sender, recipient, date, subject and plain-text body.",
+    "entrypoint": "main.typ",
+    "dataSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sender": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "recipient": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "subject": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "closing": {
+          "type": "string",
+          "maxLength": 100000
+        }
+      },
+      "required": ["sender", "recipient", "date", "subject", "body"]
+    },
+    "example": {
+      "sender": "Alex Rivera",
+      "recipient": "Project team",
+      "date": "2026-09-05",
+      "subject": "Project update",
+      "body": "The review is ready.",
+      "closing": "Thank you,\nAlex"
+    },
+    "source": "#let data = json(\"data.json\")\n#set page(paper: \"a4\", margin: 25mm)\n#set text(font: \"Libertinus Serif\", size: 11pt)\n#text(weight: \"bold\", data.sender)\n#parbreak()\n#text(data.date)\n#v(18pt)\n#text(data.recipient)\n#v(18pt)\n#text(size: 14pt, weight: \"bold\", data.subject)\n#v(12pt)\n#text(data.body)\n#if \"closing\" in data { v(18pt); text(data.closing) }\n"
+  }
+]

@@ -1,33 +1,18 @@
 {
   "name": "@holi/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "license": "AGPL-3.0",
-  "files": [
-    "dist",
-    "fonts",
-    "skills",
-    "README.md",
-    "CHANGELOG.md"
-  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "start": "node dist/main.js"
+    "test:legacy": "vitest run test/contracts.test.ts test/integration.test.ts test/startup.test.ts",
+    "build:legacy": "tsc -p tsconfig.json",
+    "test": "vitest run test/native.test.ts",
+    "build": "cargo build --manifest-path native/Cargo.toml --profile native"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
     "vitest": "catalog:",
-    "@types/node": "^22.19.0"
-  },
-  "description": "Holi Local: local Typst documents and QR batch tools for AI assistants",
-  "bin": {
-    "holi-mcp": "dist/main.js"
-  },
-  "engines": {
-    "node": ">=22"
-  },
-  "dependencies": {
+    "@types/node": "^22.19.0",
     "@holi/engine-qr": "workspace:*",
     "@holi/engine-typst": "workspace:*",
     "@holi/wasm-qr": "workspace:*",
@@ -36,7 +21,9 @@
     "@myriaddreamin/typst-ts-web-compiler": "0.7.0-rc2",
     "zod": "^3.25.76"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "description": "Build and acceptance harness for the Rust-native Holi Local MCP server",
+  "engines": {
+    "node": ">=22"
+  },
+  "private": true
 }

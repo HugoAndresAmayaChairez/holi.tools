@@ -9,17 +9,17 @@ connected action whose behavior is disclosed before use.
 
 ## Product family
 
-| Product | Primary job | Current position |
-| --- | --- | --- |
-| Hub | Explain Holi and help people find the right tool. | Public production shell. |
-| Typst | Edit, preview, and export Typst documents locally. | Primary active beta. |
-| QR | Create and export highly styled QR codes locally. | Public production tool. |
-| Metadata | Reveal privacy-sensitive metadata before sharing a file. | Public production tool. |
-| Image | Optimize, resize, crop, convert, and clean images in one local workspace. | Public production tool. |
-| User | Explore local identity, contacts, and private collaboration. | Public experimental client; never required by other tools. |
-| Labs | Publish practical tutorials, field notes, experiments, and reviewed papers. | Seven-locale learning publication, not a requirement backlog. |
-| Test | Exercise unstable UI and infrastructure. | Internal only; never a public promise. |
-| Holi Local | Let AI assistants render documents and QR batches on the device. | MCP v0.1 implementation; external client acceptance pending ADR 0003. |
+| Product    | Primary job                                                                 | Current position                                                                                 |
+| ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Hub        | Explain Holi and help people find the right tool.                           | Public production shell.                                                                         |
+| Typst      | Edit, preview, and export Typst documents locally.                          | Primary active beta.                                                                             |
+| QR         | Create and export highly styled QR codes locally.                           | Public production tool.                                                                          |
+| Metadata   | Reveal privacy-sensitive metadata before sharing a file.                    | Public production tool.                                                                          |
+| Image      | Optimize, resize, crop, convert, and clean images in one local workspace.   | Public production tool.                                                                          |
+| User       | Explore local identity, contacts, and private collaboration.                | Public experimental client; never required by other tools.                                       |
+| Labs       | Publish practical tutorials, field notes, experiments, and reviewed papers. | Seven-locale learning publication, not a requirement backlog.                                    |
+| Test       | Exercise unstable UI and infrastructure.                                    | Internal only; never a public promise.                                                           |
+| Holi Local | Let AI assistants render documents and QR batches on the device.            | Native Rust MCP v0.2 implementation; distribution and native client acceptance pending ADR 0003. |
 
 ## Product rules
 

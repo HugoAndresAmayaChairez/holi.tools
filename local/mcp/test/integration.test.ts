@@ -73,7 +73,11 @@ describe("real stdio MCP lifecycle", () => {
       "qr_batch",
     ]);
     const info = await call("holi_info");
-    expect(info.version).toBe("0.1.0");
+    const manifest = JSON.parse(
+      await readFile(new URL("../package.json", import.meta.url), "utf8")
+    );
+    // The retained legacy runtime reads the current private harness metadata.
+    expect(info.version).toBe(manifest.version);
     expect(info.packageDownloads).toBe(false);
     expect(info.outputFolder).toBe(await (await createOutputFolder(root)).root);
     expect((await call("document_templates")).templates).toHaveLength(2);

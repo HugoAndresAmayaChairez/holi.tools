@@ -5,6 +5,7 @@ import { createOutputFolder } from "./output.js";
 import { createService } from "./server.js";
 import { startHttp } from "./http.js";
 import { version } from "./info.js";
+import { startupReason } from "./startup.js";
 
 try {
   const { values } = parseArgs({
@@ -57,11 +58,8 @@ try {
     }
   }
 } catch (error) {
-  // Startup errors only describe arguments, the output folder or token
-  // requirements; they never contain document data or the token itself.
-  const reason = error instanceof Error ? error.message : String(error);
   process.stderr.write(
-    `Holi Local could not start: ${reason}\nRun with --help for usage; the output folder must exist and be an absolute local path.\n`
+    `Holi Local could not start: ${startupReason(error)}\nRun with --help for usage; the output folder must exist and be an absolute local path.\n`
   );
   process.exitCode = 1;
 }

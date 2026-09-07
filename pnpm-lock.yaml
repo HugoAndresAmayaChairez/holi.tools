@@ -74,7 +74,7 @@ importers:
   crates/wasm/wasm-qr-svg: {}
 
   local/mcp:
-    dependencies:
+    devDependencies:
       '@holi/engine-qr':
         specifier: workspace:*
         version: link:../../packages/engines/qr
@@ -93,10 +93,6 @@ importers:
       '@myriaddreamin/typst.ts':
         specifier: 0.7.0-rc2
         version: 0.7.0-rc2(@myriaddreamin/typst-ts-renderer@0.7.0-rc2)(@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2)
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
-    devDependencies:
       '@types/node':
         specifier: ^22.19.0
         version: 22.20.1
@@ -106,6 +102,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.0.16(@types/node@22.20.1)(jiti@1.21.7)(yaml@2.8.2)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
 
   packages/engines/qr:
     devDependencies:

@@ -5,6 +5,7 @@ description: Generate batches of styled QR codes as local SVG or PNG files throu
 
 Use `holi_info` for the output folder and limits. Call `qr_batch` with 1–100
 items, each containing exact content and a unique filename matching `format`.
+Holi Local 0.2 runs as a native executable; no Node or npm runtime is needed.
 Use portable ASCII basenames; keep Unicode in the QR content. Do not rewrite
 URLs, credentials or other payloads without a task reason.
 
@@ -18,9 +19,11 @@ Inspect every ordered item result: a batch can partially succeed. Retry only
 failed items with unused filenames, since successful files persist and cannot
 be overwritten. Return successful artifact paths and explain failures.
 
-Each written item reports `verified`: the server read the file back with its
-local decoder. When it is false, tell the user which items failed the check,
-and offer a simpler style (plain ink color, standard shapes, ECC H or a larger
+By default, each written item reports `verified`: the server decoded the rendered
+bytes in memory before saving them; it does not reread the file on disk.
+With `verify: false`, this field is omitted. When verification fails, tell the
+user which items failed the check, and offer a simpler style (plain ink color,
+standard shapes, ECC H or a larger
 size) under new filenames instead of silently delivering them.
 
 Scan final exports at the intended print/display size before distribution.

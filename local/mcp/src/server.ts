@@ -274,7 +274,7 @@ export function createService(output: OutputFolder, allowPackages: boolean) {
       "qr_batch",
       {
         description:
-          "Render 1–100 QR codes using a portable QR style v1. New SVG/PNG files only. Each item is read back with the local decoder unless verify is false; still scan final exports before distribution.",
+          "Render 1–100 QR codes using a portable QR style v1. New SVG/PNG files only. Rendered bytes are decoded in memory before writing unless verify is false; still scan final exports before distribution.",
         inputSchema: z
           .object({
             items: z
@@ -352,7 +352,9 @@ export function createService(output: OutputFolder, allowPackages: boolean) {
               items.push({
                 index,
                 ok: true,
-                ...(args.verify ? { verified: rendered.verified === true } : {}),
+                ...(args.verify
+                  ? { verified: rendered.verified === true }
+                  : {}),
                 diagnostics: rendered.diagnostics,
                 artifact,
               });

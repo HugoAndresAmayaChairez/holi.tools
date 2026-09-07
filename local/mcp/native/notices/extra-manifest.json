@@ -1,0 +1,299 @@
+{
+  "packages": [
+    {
+      "name": "comemo-macros",
+      "version": "0.5.1",
+      "license": "MIT OR Apache-2.0",
+      "files": [
+        {
+          "path": "extra/comemo-macros-0.5.1-LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/typst/comemo/0eaf0707f37032ad936d6d63bb60755fdd1d2cda/LICENSE-MIT",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/comemo-macros-0.5.1-LICENSE-APACHE",
+          "url": "https://raw.githubusercontent.com/typst/comemo/0eaf0707f37032ad936d6d63bb60755fdd1d2cda/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        }
+      ],
+      "revision": "0eaf0707f37032ad936d6d63bb60755fdd1d2cda",
+      "crateChecksum": "a3c400139ba1389ef9e20ad2d87cda68b437a66483aa0da616bdf2cea7413853"
+    },
+    {
+      "name": "encoding-index-japanese",
+      "version": "1.20141219.5",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding-index-japanese-1.20141219.5-NOTICE.txt",
+          "sha256": "a75c0881d80d51b43c39a2a17c6340e5767fd60639136238e68b6eb714ffc3c2",
+          "origin": "Preserved header notices and manifest from the published encoding-index-japanese-1.20141219.5 crate; archive SHA-256 04e8b2ff42e9a05335dbf8b5c6f7567e5591d0d916ccef4e0b1710d32a0d0c91 as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "04e8b2ff42e9a05335dbf8b5c6f7567e5591d0d916ccef4e0b1710d32a0d0c91"
+    },
+    {
+      "name": "encoding-index-korean",
+      "version": "1.20141219.5",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding-index-korean-1.20141219.5-NOTICE.txt",
+          "sha256": "7fc77bcd544a5598d068cfdbfeacec73464af039e9af04e1c7466ff102c27997",
+          "origin": "Preserved header notices and manifest from the published encoding-index-korean-1.20141219.5 crate; archive SHA-256 4dc33fb8e6bcba213fe2f14275f0963fd16f0a02c878e3095ecfdf5bee529d81 as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "4dc33fb8e6bcba213fe2f14275f0963fd16f0a02c878e3095ecfdf5bee529d81"
+    },
+    {
+      "name": "encoding-index-simpchinese",
+      "version": "1.20141219.5",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding-index-simpchinese-1.20141219.5-NOTICE.txt",
+          "sha256": "dc691427c5f80291d33011edf1e7630a9805468f5b29545e6bbf3dbacf2108fd",
+          "origin": "Preserved header notices and manifest from the published encoding-index-simpchinese-1.20141219.5 crate; archive SHA-256 d87a7194909b9118fc707194baa434a4e3b0fb6a5a757c73c3adb07aa25031f7 as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "d87a7194909b9118fc707194baa434a4e3b0fb6a5a757c73c3adb07aa25031f7"
+    },
+    {
+      "name": "encoding-index-singlebyte",
+      "version": "1.20141219.5",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding-index-singlebyte-1.20141219.5-NOTICE.txt",
+          "sha256": "28b502adb2d918ec77b6de7f159dc4c8e055f5ec84a2e0490d3306c770afb128",
+          "origin": "Preserved header notices and manifest from the published encoding-index-singlebyte-1.20141219.5 crate; archive SHA-256 3351d5acffb224af9ca265f435b859c7c01537c0849754d3db3fdf2bfe2ae84a as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "3351d5acffb224af9ca265f435b859c7c01537c0849754d3db3fdf2bfe2ae84a"
+    },
+    {
+      "name": "encoding-index-tradchinese",
+      "version": "1.20141219.5",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding-index-tradchinese-1.20141219.5-NOTICE.txt",
+          "sha256": "0464d27ab41f89663885e5f3bd15f52a24cd0d08f54a26d465b60170e80872d2",
+          "origin": "Preserved header notices and manifest from the published encoding-index-tradchinese-1.20141219.5 crate; archive SHA-256 fd0e20d5688ce3cab59eb3ef3a2083a5c77bf496cb798dc6fcdb75f323890c18 as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "fd0e20d5688ce3cab59eb3ef3a2083a5c77bf496cb798dc6fcdb75f323890c18"
+    },
+    {
+      "name": "encoding_index_tests",
+      "version": "0.1.4",
+      "license": "CC0-1.0",
+      "files": [
+        {
+          "path": "extra/encoding_index_tests-0.1.4-NOTICE.txt",
+          "sha256": "d8f66a5aa38d54d88bd889aa07812b7851dff89c402ab546d797823b5f570e27",
+          "origin": "Preserved header notices and manifest from the published encoding_index_tests-0.1.4 crate; archive SHA-256 a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569 as recorded in Cargo.lock."
+        },
+        {
+          "path": "extra/CC0-1.0.txt",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "crateChecksum": "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
+    },
+    {
+      "name": "glidesort",
+      "version": "0.1.2",
+      "license": "MIT OR Apache-2.0",
+      "files": [
+        {
+          "path": "extra/glidesort-0.1.2-NOTICE.txt",
+          "url": "https://raw.githubusercontent.com/orlp/glidesort/c4df9518ec23a424a867b3d50967f0aaafe3c0fd/README.md",
+          "sha256": "e74f6835c2208450b26427e02b1f2c7e2504bbcf0c06671c86de349c8ba9bbe6",
+          "origin": "Exact License section from the README of published glidesort 0.1.2. That revision has no standalone license files. Apache-2.0 is the redistribution option documented by the accompanying complete official Apache license text; no copyright holder is invented."
+        },
+        {
+          "path": "extra/Apache-2.0.txt",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "revision": "c4df9518ec23a424a867b3d50967f0aaafe3c0fd",
+      "crateChecksum": "f2e102e6eb644d3e0b186fc161e4460417880a0a0b87d235f2e5b8fb30f2e9e0",
+      "exception": "The published crate and exact VCS revision contain no standalone license text. The original README declares MIT OR Apache-2.0; its declaration is preserved with the complete Apache-2.0 text as the selected alternative. No copyright notice has been invented."
+    },
+    {
+      "name": "profiling",
+      "version": "1.0.18",
+      "license": "MIT OR Apache-2.0",
+      "files": [
+        {
+          "path": "extra/profiling-1.0.18-LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/8271551172eb6fa4cba47369aedd93790c623df9/LICENSE-MIT",
+          "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/profiling-1.0.18-LICENSE-APACHE",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/8271551172eb6fa4cba47369aedd93790c623df9/LICENSE-APACHE",
+          "sha256": "10d30a673cd5e9349bdc02aeb48f14b3386d27d0da32df8f0a555d4aa16aa551",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        }
+      ],
+      "revision": "8271551172eb6fa4cba47369aedd93790c623df9",
+      "crateChecksum": "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
+    },
+    {
+      "name": "profiling-procmacros",
+      "version": "1.0.18",
+      "license": "MIT OR Apache-2.0",
+      "files": [
+        {
+          "path": "extra/profiling-procmacros-1.0.18-LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/8271551172eb6fa4cba47369aedd93790c623df9/LICENSE-MIT",
+          "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/profiling-procmacros-1.0.18-LICENSE-APACHE",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/8271551172eb6fa4cba47369aedd93790c623df9/LICENSE-APACHE",
+          "sha256": "10d30a673cd5e9349bdc02aeb48f14b3386d27d0da32df8f0a555d4aa16aa551",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        }
+      ],
+      "revision": "8271551172eb6fa4cba47369aedd93790c623df9",
+      "crateChecksum": "4488a4a36b9a4ba6b9334a32a39971f77c1436ec82c38707bce707699cc3bbcb"
+    },
+    {
+      "name": "roman-numerals-rs",
+      "version": "3.1.0",
+      "license": "0BSD OR CC0-1.0",
+      "files": [
+        {
+          "path": "extra/roman-numerals-rs-3.1.0-LICENCE.rst",
+          "url": "https://raw.githubusercontent.com/AA-Turner/roman-numerals/ec81337f99d8b557a6fce10f674c054050551444/LICENCE.rst",
+          "sha256": "c744ffc7e120b22e6620b613298dc003a2613c0ae489ee414fb1d473f24f916f",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        }
+      ],
+      "revision": "ec81337f99d8b557a6fce10f674c054050551444",
+      "crateChecksum": "c85cd47a33a4510b1424fe796498e174c6a9cf94e606460ef022a19f3e4ff85e"
+    },
+    {
+      "name": "zune-core",
+      "version": "0.4.12",
+      "license": "MIT OR Apache-2.0 OR Zlib",
+      "files": [
+        {
+          "path": "extra/zune-core-0.4.12-LICENSE.md",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/f8fbb123d5ed04441e8324a555bfcda0cb1bd28f/LICENSE.md",
+          "sha256": "c6dff146a9f31848ac296faa5a08a4253caf2c384c86f906dc99e7fc0a39cc8c",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/zune-core-0.4.12-LICENSE-ZLIB",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/f8fbb123d5ed04441e8324a555bfcda0cb1bd28f/LICENSE-ZLIB",
+          "sha256": "7fa429541e55b1509909e058f2d21a37467e4958ec713b357f6e0cf9dc4ee352",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/Apache-2.0.txt",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "revision": "f8fbb123d5ed04441e8324a555bfcda0cb1bd28f",
+      "crateChecksum": "3f423a2c17029964870cfaabb1f13dfab7d092a62a29a89264f4d36990ca414a"
+    },
+    {
+      "name": "zune-inflate",
+      "version": "0.2.54",
+      "license": "MIT OR Apache-2.0 OR Zlib",
+      "files": [
+        {
+          "path": "extra/zune-inflate-0.2.54-LICENSE.md",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/69502ce83fdfecdd0beefd677e2abb3781b29d98/LICENSE.md",
+          "sha256": "e870d7fd7819a9f0453c62798cb52ae95d148a8c91dc2de1d983f997143c72de",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/zune-inflate-0.2.54-LICENSE-ZLIB",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/69502ce83fdfecdd0beefd677e2abb3781b29d98/LICENSE-ZLIB",
+          "sha256": "7fa429541e55b1509909e058f2d21a37467e4958ec713b357f6e0cf9dc4ee352",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/Apache-2.0.txt",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "revision": "69502ce83fdfecdd0beefd677e2abb3781b29d98",
+      "crateChecksum": "73ab332fe2f6680068f3582b16a24f90ad7096d5d39b974d1c0aff0125116f02"
+    },
+    {
+      "name": "zune-jpeg",
+      "version": "0.4.21",
+      "license": "MIT OR Apache-2.0 OR Zlib",
+      "files": [
+        {
+          "path": "extra/zune-jpeg-0.4.21-LICENSE.md",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/fa2c767a01d7d9373911d0bf63e0588553d67e0e/LICENSE.md",
+          "sha256": "c6dff146a9f31848ac296faa5a08a4253caf2c384c86f906dc99e7fc0a39cc8c",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/zune-jpeg-0.4.21-LICENSE-ZLIB",
+          "url": "https://raw.githubusercontent.com/etemesi254/zune-image/fa2c767a01d7d9373911d0bf63e0588553d67e0e/LICENSE-ZLIB",
+          "sha256": "7fa429541e55b1509909e058f2d21a37467e4958ec713b357f6e0cf9dc4ee352",
+          "origin": "Repository-root notice at the exact .cargo_vcs_info.json revision of this published crate."
+        },
+        {
+          "path": "extra/Apache-2.0.txt",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "origin": "Official complete license text; downloaded without modification."
+        }
+      ],
+      "revision": "fa2c767a01d7d9373911d0bf63e0588553d67e0e",
+      "crateChecksum": "29ce2c8a9384ad323cf564b67da86e21d3cfdff87908bc1223ed5c99bc792713"
+    }
+  ]
+}

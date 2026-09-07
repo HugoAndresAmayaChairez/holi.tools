@@ -1,10 +1,16 @@
 # Changelog
 
+## 0.18.0 - 2026-09-06
+
+- [Holi Local] 0.2.0 replaces the unpublished Node runtime with a native Rust MCP executable. Native Typst and the shared QR core run in disposable processes with time and memory bounds; the five v1 tools, local output protections and opt-in network policy remain available.
+- Fonts, templates and skills are embedded. Platform archive preparation includes licenses and corresponding source; native publication and real Claude client acceptance remain tracked in ADR 0003.
+- Web and native document generation share one template manifest, and native/browser QR rendering share the same pure Rust renderer.
+
 ## 0.17.0 - 2026-09-05
 
 ### Added
 
-- [Holi Local] 0.1.0: a Node MCP server with local PDF templates and Typst compilation, styled QR batches in SVG and PNG that are read back with the local decoder, stdio and authenticated loopback HTTP transports, explicit output folders that are never overwritten, and operator-controlled Typst package downloads. npm publication and real-client acceptance remain gated by ADR 0003.
+- [Holi Local] 0.1.0: a Node MCP server with local PDF templates and Typst compilation, styled QR batches in SVG and PNG decoded in memory before writing, stdio and authenticated loopback HTTP transports, explicit output folders that are never overwritten, and operator-controlled Typst package downloads. npm publication and real-client acceptance remain gated by ADR 0003.
 - Normative QR style, document template and MCP tool contracts in `spec/` with shared vectors, plus Node WASM builds and Windows/macOS server tests in CI.
 
 ### Changed
@@ -224,6 +230,7 @@
 ## 0.6.3 - 2026-09-02
 
 ### Fixed
+
 - [Holi Typst] Fixed the Privacy control layout and opened its details in a full-height right sidebar.
 
 ## 0.6.2 - 2026-09-02

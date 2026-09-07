@@ -25,8 +25,10 @@
     "deploy:metadata": "turbo run build --filter=holi-metadata && wrangler pages deploy ./web/apps/metadata/dist --project-name metadata-holi --commit-dirty=true",
     "deploy:image": "turbo run build --filter=holi-image && wrangler pages deploy ./web/apps/image/dist --project-name image-holi --commit-dirty=true",
     "build:engines": "pnpm --filter \"@holi/engine-*\" build",
-    "build:local": "turbo run build --filter=@holi/mcp",
-    "test:local": "pnpm build:engines && pnpm --filter @holi/mcp build && pnpm --filter \"@holi/engine-*\" test && pnpm --filter @holi/mcp test"
+    "build:local": "cargo build -p holi-mcp --profile native",
+    "test:local": "pnpm build:engines && cargo test -p holi-mcp && cargo build -p holi-mcp && pnpm --filter \"@holi/engine-*\" test && pnpm --filter @holi/mcp test",
+    "test:local:legacy": "pnpm build:engines && pnpm --filter @holi/mcp build:legacy && pnpm --filter @holi/mcp test:legacy",
+    "package:local": "node scripts/package-local.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

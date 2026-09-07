@@ -1,0 +1,227 @@
+[
+  {
+    "name": "default",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 7210,
+    "svgFnv64": "2f8baeb418faf28c"
+  },
+  {
+    "name": "unicode",
+    "content": "Holi Local: español, ü y 漢字",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 10194,
+    "svgFnv64": "bf1ea622cd79ec0c"
+  },
+  {
+    "name": "rounded-linear",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "rounded",
+      "eyeFrameShape": "circle",
+      "eyeBallShape": "circle",
+      "ecc": "M",
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": true,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#1640ab"
+      ],
+      "gradientAngle": 1.234,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 94586,
+    "svgFnv64": "17c7a2509f8da01a"
+  },
+  {
+    "name": "liquid-radial",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "water",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": true,
+      "gradientType": "radial",
+      "gradientColors": [
+        "#000000",
+        "#173650"
+      ],
+      "gradientAngle": -0.314,
+      "effectLiquid": true,
+      "effectBlur": 0.4,
+      "effectCrystalize": 7
+    },
+    "svgBytes": 72721,
+    "svgFnv64": "bed1fad2a4c2a4a2"
+  },
+  {
+    "name": "alpha-underlay",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "orbit",
+      "eyeBallShape": "heart",
+      "ecc": "M",
+      "fgColor": "#124",
+      "bgColor": "#ffeeaaff",
+      "baseColor": "#abcdef88",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#124",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 10288,
+    "svgFnv64": "b2ab548213ae2434"
+  },
+  {
+    "name": "transparent-paper",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "dots",
+      "eyeFrameShape": "rounded",
+      "eyeBallShape": "square",
+      "ecc": "H",
+      "fgColor": "#000000",
+      "bgColor": "transparent",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.2,
+      "artBoundsScale": 1.5,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 32174,
+    "svgFnv64": "977cf72f97a41e84"
+  },
+  {
+    "name": "ink-off",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "square",
+      "eyeFrameShape": "square",
+      "eyeBallShape": "square",
+      "ecc": "M",
+      "mask": 3,
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": false,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 3802,
+    "svgFnv64": "6afa73b8e36c47f8"
+  },
+  {
+    "name": "legacy-shapes",
+    "content": "https://holi.tools/qr-test",
+    "config": {
+      "bodyShape": "classy-rounded",
+      "eyeFrameShape": "heavy-rounded",
+      "eyeBallShape": "octagon",
+      "ecc": "L",
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "baseColor": "#ffffff",
+      "inkEnabled": true,
+      "paperBoundsScale": 1.1,
+      "artBoundsScale": 1.25,
+      "gradientEnabled": false,
+      "gradientType": "linear",
+      "gradientColors": [
+        "#000000",
+        "#000000"
+      ],
+      "gradientAngle": 0,
+      "effectLiquid": false,
+      "effectBlur": 0.35,
+      "effectCrystalize": 6
+    },
+    "svgBytes": 44646,
+    "svgFnv64": "1d68b54ed8067016"
+  }
+]

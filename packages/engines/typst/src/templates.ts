@@ -1,3 +1,4 @@
+import templateManifest from "./templates.v1.json" with { type: "json" };
 import type { WorkspaceFile } from "./compiler.js";
 
 export interface DocumentTemplate {
@@ -11,105 +12,8 @@ export interface DocumentTemplate {
   source: string;
 }
 
-const text = { type: "string", maxLength: 100_000 };
-const schema = (properties: Record<string, unknown>, required: string[]) => ({
-  type: "object",
-  additionalProperties: false,
-  properties,
-  required,
-});
-
-export const documentTemplates: readonly DocumentTemplate[] = [
-  {
-    v: 1,
-    id: "report",
-    name: "Report",
-    description:
-      "A titled report with an optional byline and plain-text sections.",
-    entrypoint: "main.typ",
-    dataSchema: schema(
-      {
-        title: text,
-        subtitle: text,
-        author: text,
-        date: text,
-        sections: {
-          type: "array",
-          minItems: 1,
-          maxItems: 100,
-          items: schema({ heading: text, body: text }, ["heading", "body"]),
-        },
-      },
-      ["title", "sections"]
-    ),
-    example: {
-      title: "Project report",
-      author: "Holi",
-      date: "2026-09-05",
-      sections: [
-        { heading: "Findings", body: "Write the verified findings here." },
-      ],
-    },
-    source: `#let data = json("data.json")
-#set page(paper: "a4", margin: 24mm, numbering: "1")
-#set text(font: "Libertinus Serif", size: 11pt)
-#set par(justify: true)
-#text(size: 26pt, weight: "bold", data.title)
-#if "subtitle" in data { parbreak(); text(size: 14pt, data.subtitle) }
-#v(8pt)
-#if "author" in data { text(data.author); linebreak() }
-#if "date" in data { text(fill: rgb("666666"), data.date) }
-#v(14pt)
-#for section in data.sections {
-  heading(level: 1, section.heading)
-  parbreak()
-  text(section.body)
-  parbreak()
-}
-`,
-  },
-  {
-    v: 1,
-    id: "letter",
-    name: "Letter",
-    description:
-      "A letter with sender, recipient, date, subject and plain-text body.",
-    entrypoint: "main.typ",
-    dataSchema: schema(
-      {
-        sender: text,
-        recipient: text,
-        date: text,
-        subject: text,
-        body: text,
-        closing: text,
-      },
-      ["sender", "recipient", "date", "subject", "body"]
-    ),
-    example: {
-      sender: "Alex Rivera",
-      recipient: "Project team",
-      date: "2026-09-05",
-      subject: "Project update",
-      body: "The review is ready.",
-      closing: "Thank you,\nAlex",
-    },
-    source: `#let data = json("data.json")
-#set page(paper: "a4", margin: 25mm)
-#set text(font: "Libertinus Serif", size: 11pt)
-#text(weight: "bold", data.sender)
-#parbreak()
-#text(data.date)
-#v(18pt)
-#text(data.recipient)
-#v(18pt)
-#text(size: 14pt, weight: "bold", data.subject)
-#v(12pt)
-#text(data.body)
-#if "closing" in data { v(18pt); text(data.closing) }
-`,
-  },
-];
+export const documentTemplates =
+  templateManifest as unknown as readonly DocumentTemplate[];
 
 function validate(
   value: unknown,

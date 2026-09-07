@@ -5,6 +5,8 @@ description: Create PDF reports, letters or Typst documents with a connected Hol
 
 Read `holi_info` to discover the configured output folder, limits and package
 policy. Use `document_templates` for the exact template schemas and source.
+Holi Local 0.2 uses a native executable; invoke its connected MCP tools directly.
+Do not require the user to install Node or npm to run the server.
 
 Use `document_render` for reports and letters. Pass the user's text as JSON;
 do not interpolate it into Typst code. For custom layouts use

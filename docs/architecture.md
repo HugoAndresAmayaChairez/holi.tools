@@ -7,7 +7,8 @@ web/apps/                 Deployable Astro applications
 web/packages/ui/          Stable shared layouts and UI primitives
 web/packages/shared-configs/ Small catalogs and shared contracts
 packages/engines/          Runtime-independent TypeScript engines (QR and Typst)
-local/mcp/                 Holi Local Node MCP server, bundled fonts and skill packs
+local/mcp/native/          Holi Local native Rust MCP executable
+local/mcp/                 Bundled fonts, skill packs and MCP test tooling
 crates/core/              Pure Rust logic with host tests
 crates/wasm/              Thin browser adapters and experiments
 spec/                     Normative, testable contracts
@@ -53,41 +54,55 @@ editor.
 
 ## Rust and WASM
 
-Rust remains internal infrastructure. Holi Local adds a Node consumer of the
-same QR engine; it does not create a public Rust library or document CLI.
+Rust remains internal infrastructure and powers the native Holi Local
+executable. This explicitly approved local runtime shares the QR core with the
+shipping browser consumer and compiles Typst natively. It does not create a
+public Rust library or a standalone document-generation CLI.
 
-| Area | Decision |
-| --- | --- |
-| `holi-qr`, `wasm-qr`, `wasm-qr-svg` | Keep for the shipping QR engine. |
-| `holi-p2p` | Keep narrow for tested protocol primitives. |
-| `wasm-crypto`, `wasm-p2p` | Keep on probation for Holi User; require browser and threat-model coverage. |
-| `wasm-core` | No production consumers; retain only while Test experiments need migration. |
-| `wasm-qr-lite`, `wasm-renderer` | Retired under ADR 0003; no consumers. |
+| Area                                | Decision                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `holi-qr`, `wasm-qr`, `wasm-qr-svg` | Keep for the shipping QR engine.                                            |
+| `holi-p2p`                          | Keep narrow for tested protocol primitives.                                 |
+| `wasm-crypto`, `wasm-p2p`           | Keep on probation for Holi User; require browser and threat-model coverage. |
+| `wasm-core`                         | No production consumers; retain only while Test experiments need migration. |
+| `wasm-qr-lite`, `wasm-renderer`     | Retired under ADR 0003; no consumers.                                       |
 
-New Rust work must have a named web consumer and a measured advantage over
-strict TypeScript. Browser APIs, IndexedDB/OPFS, DOM state, and routine UI logic
-default to TypeScript.
+New browser Rust work must have a named web consumer and a measured advantage
+over strict TypeScript. Browser APIs, IndexedDB/OPFS, DOM state, and routine UI
+logic default to TypeScript. Holi Local's native runtime is the explicit ADR
+0003 exception: one executable replaces the Node/WASM runtime stack, retaining
+the tested contracts and subprocess isolation. Performance claims require
+measurements; language choice alone does not establish them.
 
 ## Shared engines and Holi Local
 
-`@holi/engine-typst` owns compiler orchestration, virtual workspace mounting,
+`@holi/engine-typst` owns browser compiler orchestration, virtual workspace mounting,
 diagnostics and bundled report/letter templates. `@holi/engine-qr` owns portable
 styles/layers, shape catalogs and the SVG render adapter. Neither package owns
 DOM, disk or network access. Browser loaders, editor state, storage, translations
 and WebGL/canvas remain in their apps. Engines ship compiled JavaScript and
-types for Node and source exports for the web bundler.
+types and source exports for the web bundler. The canonical
+`packages/engines/typst/src/templates.v1.json` is consumed by the web engine and
+embedded in the native server; template data schemas and source have one owner.
 
-`@holi/mcp` supplies fonts and a memory-only Typst filesystem in disposable
-workers. An explicit existing output root is mandatory; tool calls cannot
+The `holi-mcp` crate in `local/mcp/native` embeds native Typst, `holi-qr`, fonts,
+templates and skills in one executable; end users need no Node/npm installation
+or browser WASM compiler. Optional Typst package WASM plugins run through
+Typst's embedded interpreter inside the worker. The server supplies a memory-only Typst filesystem in disposable native
+subprocesses. An explicit existing output root is mandatory; tool calls cannot
 change it or overwrite files. Stdio is the default. Streamable HTTP binds only
 loopback and requires token, Host and Origin validation. Typst package downloads
 are disabled unless the operator opts in; the AI client's own network/privacy
 behavior is outside the server's control. See `spec/mcp-tools-v1.md` and
-`local/mcp/README.md` for limits and the complete flow.
+`local/mcp/README.md` for limits and the complete flow. The prior TypeScript
+server is retained only as an explicit migration reference and legacy test
+target, not a distributed runtime. Its npm package is private development
+tooling. Native artifacts carry license, font notices, skills and source details.
 
-`wasm-qr` builds `pkg/` for browsers and `pkg-node/` for Node. The PNG adapter
-uses the existing resvg/tiny-skia verification stack; no second rasterizer or
-QR implementation is introduced. Reusable vectors live in `spec/vectors/`.
+`wasm-qr` builds `pkg/` for browsers and `pkg-node/` as an independent QR oracle
+for integration tests and the legacy reference. Native QR calls `holi-qr`
+directly. PNG rendering uses the existing resvg/tiny-skia stack; no second
+rasterizer or QR implementation is introduced. Reusable vectors live in `spec/vectors/`.
 The obsolete top-level `conductor/`, `papers/` and `vectors/` were retired;
 published Papers content remains inside Labs. `wasm-core` stays until Test's
 vault/webgpu imports are migrated.

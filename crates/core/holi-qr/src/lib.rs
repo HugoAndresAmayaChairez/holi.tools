@@ -16,12 +16,14 @@
 //! ```
 
 mod error;
+mod official;
 mod qr;
 mod render;
 mod shapes;
 mod verify;
 
 pub use error::QrError;
+pub use official::{render_official_svg, SvgOfficialConfig};
 pub use qr::{generate_qr, ErrorCorrectionLevel, QrCode};
 pub use render::{
     build_styled_svg_paths, render_svg, render_svg_styled, render_svg_with_options, RenderOptions,

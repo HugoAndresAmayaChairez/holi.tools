@@ -1,0 +1,29 @@
+encoding_index_tests-0.1.4 — license provenance and preserved source headers
+Published crate SHA-256 from Cargo.lock: a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569
+The published crate provides no VCS revision. No revision is inferred.
+Cargo.toml declares CC0-1.0. Complete CC0 text is distributed alongside this notice.
+
+Original published Cargo.toml:
+[package]
+name = "encoding_index_tests"
+version = "0.1.4"
+authors = ["Kang Seonghoon <public+rust@mearie.org>"]
+
+description = "Helper macros used to test index tables for character encodings"
+homepage = "https://github.com/lifthrasiir/rust-encoding"
+readme = "../../../README.md"
+license = "CC0-1.0"
+
+[lib]
+name = "encoding_index_tests"
+path = "index_tests.rs"
+
+
+Original source header: index_tests.rs
+// This is a part of rust-encoding.
+// Copyright (c) 2013-2015, Kang Seonghoon.
+// See README.md and LICENSE.txt for details.
+
+//! Macros and utilities for testing indices.
+
+/// Makes a common test suite for single-byte indices.

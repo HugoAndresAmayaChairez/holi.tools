@@ -16,7 +16,7 @@ export type Job =
       config: Record<string, unknown>;
       format: "svg" | "png";
       size: number;
-      /** Read the rendered file back with the local decoder. */
+      /** Decode the rendered bytes in memory before writing the file. */
       verify: boolean;
     };
 export interface JobResult {
