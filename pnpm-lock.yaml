@@ -48,8 +48,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2(jiti@1.21.7)
       pnpm:
-        specifier: 10.28.2
-        version: 10.28.2
+        specifier: 11.25.0
+        version: 11.25.0
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
@@ -3245,9 +3245,9 @@ packages:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
 
-  pnpm@10.28.2:
-    resolution: {integrity: sha512-QYcvA3rSL3NI47Heu69+hnz9RI8nJtnPdMCPGVB8MdLI56EVJbmD/rwt9kC1Q43uYCPrsfhO1DzC1lTSvDJiZA==}
-    engines: {node: '>=18.12'}
+  pnpm@11.25.0:
+    resolution: {integrity: sha512-XN6SW08HX3Jetx+64YpC/+eEUkeJ8ZthxzHLhyHsKKruFg4BqNWvT+2ypCzb8wDv4j2zVrDUoXtNY+EfirfJVg==}
+    engines: {node: '>=22.13'}
     hasBin: true
 
   postcss-import@15.1.0:
@@ -3683,6 +3683,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -6968,7 +6969,7 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
-  pnpm@10.28.2: {}
+  pnpm@11.25.0: {}
 
   postcss-import@15.1.0(postcss@8.5.6):
     dependencies:
