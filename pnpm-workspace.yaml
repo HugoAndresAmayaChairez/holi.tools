@@ -20,5 +20,5 @@ catalog:
 
   # Vite Plugins & Testing
   vite-plugin-top-level-await: "^1.6.0"
-  vite-plugin-wasm: "^3.5.0"
+  vite-plugin-wasm: "^3.6.0"
   vitest: "^4.0.16"
