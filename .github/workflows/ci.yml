@@ -89,7 +89,7 @@ jobs:
       # Multiple paths share crates/wasm as their common root, so the
       # artifact contains wasm-<name>/pkg/... and restores under crates/wasm.
       - name: Upload WASM packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wasm-pkg
           if-no-files-found: error
@@ -229,7 +229,7 @@ jobs:
       - name: Collect native release archives
         run: node scripts/package-local.mjs
       - name: Upload native platform artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: holi-local-${{ runner.os }}-${{ runner.arch }}
           path: dist/local/
