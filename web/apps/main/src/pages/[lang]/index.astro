@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
 import { getLangFromUrl, languages } from "../../i18n/utils";
-import { mainAppChangelog } from "@holi/configs/changelogs";
+import { getMainChangelog } from "../../release";
 import { DEFAULT_LANG } from "@holi/configs/i18n";
 
 export function getStaticPaths() {
@@ -13,7 +13,7 @@ export function getStaticPaths() {
 }
 
 const lang = getLangFromUrl(Astro.url);
-const history = mainAppChangelog[lang] || mainAppChangelog.en;
+const history = getMainChangelog(lang);
 const currentVersion = history[0]?.version || "0.0.0";
 ---
 

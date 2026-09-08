@@ -67,7 +67,15 @@ try {
 await mkdir(output);
 await cp(binary, join(output, executable));
 if (process.platform !== "win32") await chmod(join(output, executable), 0o755);
-for (const file of ["README.md", "CHANGELOG.md", "fonts", "skills"])
+for (const file of [
+  "README.md",
+  "CHANGELOG.md",
+  "INSTALL.md",
+  "INSTALL.es.md",
+  "TEST-PROMPT.md",
+  "fonts",
+  "skills",
+])
   await cp(join(root, "local/mcp", file), join(output, file), {
     recursive: true,
   });
@@ -98,12 +106,18 @@ for (const file of [
   "crates",
   "local/mcp/LICENSE",
   "local/mcp/native",
+  "local/installer",
   "local/mcp/fonts",
   "local/mcp/skills",
   "local/mcp/README.md",
+  "local/mcp/INSTALL.md",
+  "local/mcp/INSTALL.es.md",
+  "local/mcp/TEST-PROMPT.md",
   "local/mcp/CHANGELOG.md",
   "packages/engines/typst/src/templates.v1.json",
   "scripts/package-local.mjs",
+  "scripts/package-local-installer.mjs",
+  "scripts/test-local-installer.mjs",
   "spec",
 ]) {
   await mkdir(resolve(source, file, ".."), { recursive: true });
@@ -184,7 +198,11 @@ async function collectNotices(target) {
   if (!entry)
     throw new Error("Native Cargo package is missing from dependency metadata");
   const selected = new Set();
-  const pending = [entry.id];
+  const setup = metadata.packages.find(
+    (item) => item.name === "holi-local-setup" && item.source === null
+  );
+  if (!setup) throw new Error("Installer Cargo package is missing");
+  const pending = [entry.id, setup.id];
   while (pending.length) {
     const id = pending.pop();
     if (selected.has(id)) continue;
@@ -218,7 +236,7 @@ async function collectNotices(target) {
 
   const sections = [
     "# Rust dependency notices",
-    `Non-development dependency graph reachable from holi-mcp for ${target}, including build dependencies. Versions and crate checksums are pinned in source/Cargo.lock.`,
+    `Non-development dependency graph reachable from holi-mcp and holi-local-setup for ${target}, including build dependencies. Versions and crate checksums are pinned in source/Cargo.lock.`,
     "Upstream texts omitted by published crates are supplemented from pinned revisions. Explicit canonical-text exceptions preserve the upstream declaration without inventing copyright notices. See THIRD-PARTY-PROVENANCE.json and source/local/mcp/native/notices/.",
   ];
   const records = [];

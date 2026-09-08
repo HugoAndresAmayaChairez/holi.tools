@@ -1,5 +1,17 @@
 # Holi Local Shadow Log
 
+## 0.3.0 — 2026-09-07
+
+- Added a self-contained native installer for Windows and Ubuntu with default
+  per-user paths, custom program/output folders and an interactive console.
+- Explicit Claude client integration preserves unrelated settings and backs up
+  previous configuration. Claude Code skills install automatically when selected;
+  Desktop skills are supplied as ZIPs for optional upload.
+- Added Spanish/English installation guides and a five-tool acceptance prompt.
+  Skills discover configured paths through holi_info. Upgrades retain prior
+  versions and documents. Installation is offline, with no PATH or service changes.
+- Public download release remains pending; installer candidates are local/CI artifacts.
+
 ## 0.2.0 — 2026-09-06
 
 - Replaced the distributed Node/TypeScript server with a native Rust executable for Windows, macOS and Linux. Running Holi Local no longer needs a Node/npm installation or the browser WASM compiler.

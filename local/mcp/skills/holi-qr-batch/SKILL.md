@@ -5,7 +5,16 @@ description: Generate batches of styled QR codes as local SVG or PNG files throu
 
 Use `holi_info` for the output folder and limits. Call `qr_batch` with 1–100
 items, each containing exact content and a unique filename matching `format`.
-Holi Local 0.2 runs as a native executable; no Node or npm runtime is needed.
+Holi Local runs as a native executable; no Node or npm runtime is needed.
+
+If tools are unavailable, report the missing MCP connection. Installing this
+skill does not create it. The default installer directory is
+`%LOCALAPPDATA%/Programs/HoliLocal` on Windows or
+`${XDG_DATA_HOME:-$HOME/.local/share}/holi-local` on Ubuntu; it contains
+`mcp.json` and `INSTALLATION.md` with resolved paths. Default output is
+`<user home>/Holi/Output`. Custom paths are valid: consult `holi_info` instead
+of assuming these defaults. The client must load that MCP configuration.
+
 Use portable ASCII basenames; keep Unicode in the QR content. Do not rewrite
 URLs, credentials or other payloads without a task reason.
 

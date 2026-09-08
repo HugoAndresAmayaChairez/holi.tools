@@ -246,8 +246,13 @@ Verified executable: 50,740,736 bytes; SHA-256
 The final suite compared its complete embedded Shadow Log and skill resources
 against the current source files, and confirmed the privacy resource matches
 the information tool. All 23 acceptance cases refer to this final executable.
-Native Linux/macOS runs, hosted CI and real Claude clients remain separate
-acceptance evidence; they are not inferred from this Windows result.
+Hosted CI for commit `b04af29564496d6ac5af6ff564742adaf15eb1ec` subsequently
+passed on Linux, Windows and macOS, including the native Rust tests, MCP SDK
+acceptance and packaging jobs. The complete run also passed all web builds,
+WASM builds, JavaScript tests, Rust workspace tests and lint:
+[CI run 34085592716](https://github.com/HugoAndresAmayaChairez/holi.tools/actions/runs/34085592716).
+The result was checked on 2026-09-07. These hosted SDK runs do not establish
+real Claude Desktop/Code acceptance or public release availability.
 
 A separate local comparison used three fresh server processes per runtime,
 identical JSON input and timings including child-process startup. Median

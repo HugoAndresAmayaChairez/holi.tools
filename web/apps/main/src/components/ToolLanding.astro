@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
 import ProductCreature from "@holi/ui/components/ProductCreature.astro";
-import { mainAppChangelog } from "@holi/configs/changelogs";
+import { getMainChangelog } from "../release";
 import { LANGUAGES, DEFAULT_LANG } from "@holi/configs/i18n";
 import packageInfo from "../../package.json";
 import { getMainPrivacy } from "../privacy";
@@ -14,7 +14,7 @@ const { lang, tool } = Astro.props;
 const copy = getEditorialCopy(lang);
 const story = copy.tools[tool];
 const identity = toolIdentity[tool];
-const history = mainAppChangelog[lang] ?? mainAppChangelog.en;
+const history = getMainChangelog(lang);
 const homeHref = lang === DEFAULT_LANG ? "/" : `/${lang}/`;
 const localePrefix = lang === DEFAULT_LANG ? "" : "/" + lang;
 const canonicalUrl = `https://holi.tools${localePrefix}/tools/${tool}/`;

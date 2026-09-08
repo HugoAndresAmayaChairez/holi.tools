@@ -28,7 +28,9 @@
     "build:local": "cargo build -p holi-mcp --profile native",
     "test:local": "pnpm build:engines && cargo test -p holi-mcp && cargo build -p holi-mcp && pnpm --filter \"@holi/engine-*\" test && pnpm --filter @holi/mcp test",
     "test:local:legacy": "pnpm build:engines && pnpm --filter @holi/mcp build:legacy && pnpm --filter @holi/mcp test:legacy",
-    "package:local": "node scripts/package-local.mjs"
+    "package:local": "node scripts/package-local.mjs",
+    "package:local:installer": "node scripts/package-local-installer.mjs",
+    "test:local:installer": "node scripts/test-local-installer.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

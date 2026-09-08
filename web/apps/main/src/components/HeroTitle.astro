@@ -2,14 +2,16 @@
 import ProductCreature from "@holi/ui/components/ProductCreature.astro";
 import { getLangFromUrl } from "../i18n/utils";
 import { getEditorialCopy } from "../i18n/editorial";
+import { getRuntimeCopy } from "../i18n/runtime";
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getEditorialCopy(lang);
+const runtime = getRuntimeCopy(lang);
 ---
 
 <section id="HeroTitle" class="editorial-hero">
   <div class="hero-copy">
-    <p class="hero-eyebrow">{copy.eyebrow}</p>
+    <p class="hero-eyebrow">{runtime.eyebrow}</p>
     <h1>
       <span class="brand-spectrum">holi tools</span>
       <span>{copy.heroLine}</span>
@@ -18,7 +20,7 @@ const copy = getEditorialCopy(lang);
 
   <aside class="hero-aside">
     <ProductCreature name="hummingbird" variant="mark" eager class="hero-creature" />
-    <p>{copy.heroIntro}</p>
+    <p>{runtime.intro}</p>
     <a href="#ToolsExplorer">{copy.explore}<span aria-hidden="true">↓</span></a>
     <span class="local-pill"><i aria-hidden="true"></i>{copy.localLabel}</span>
   </aside>

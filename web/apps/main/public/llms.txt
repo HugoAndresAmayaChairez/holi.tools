@@ -5,6 +5,20 @@ values: privacy by default, no subscriptions, offline-capable core workflows,
 selective high-performance Rust/WASM, truthful disclosures for connected
 features, and educational technical documentation.
 
+## Browser and native workflows
+
+Browser tools provide visual editing, preview and export with local processing.
+Holi Local 0.2.0 is a native Rust MCP engine for PDF documents and PNG/SVG QR
+batches. It embeds rendering assets and does not require Node. Public downloads
+are not yet published; build/setup instructions are in `local/mcp/README.md`
+in the source repository. The hub provides localized setup guidance at
+`/#local-setup` and the corresponding locale home pages.
+
+The two workflows currently run independently: no automatic file synchronization
+or browser live preview of native jobs is implemented. Local rendering does not
+prevent an AI provider from receiving prompts, tool inputs or results. Typst
+package downloads are disabled by default in Holi Local.
+
 ## Sites
 
 - Main hub: https://holi.tools/

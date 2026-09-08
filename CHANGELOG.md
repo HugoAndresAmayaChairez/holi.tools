@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.0 - 2026-09-07
+
+- [Holi Local] 0.3.0 adds offline native installers for Windows and Ubuntu,
+  default/custom folders, explicit Claude integration with configuration backups,
+  personal skills/ZIPs and Spanish/English setup instructions. Public release pending.
+- [Main] 0.9.0 introduces browser editing/preview and Holi Local PDF/QR automation
+  paths, with setup instructions in all seven locales. Availability, independent
+  operation and AI-provider privacy boundaries are explicit; no automatic
+  web/native synchronization or public binary download is promised.
+
 ## 0.18.0 - 2026-09-06
 
 - [Holi Local] 0.2.0 replaces the unpublished Node runtime with a native Rust MCP executable. Native Typst and the shared QR core run in disposable processes with time and memory bounds; the five v1 tools, local output protections and opt-in network policy remain available.
