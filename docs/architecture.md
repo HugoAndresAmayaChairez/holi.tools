@@ -8,6 +8,7 @@ web/packages/ui/          Stable shared layouts and UI primitives
 web/packages/shared-configs/ Small catalogs and shared contracts
 packages/engines/          Runtime-independent TypeScript engines (QR and Typst)
 local/mcp/native/          Holi Local native Rust MCP executable
+local/installer/           Offline per-user Windows/Ubuntu setup executable
 local/mcp/                 Bundled fonts, skill packs and MCP test tooling
 crates/core/              Pure Rust logic with host tests
 crates/wasm/              Thin browser adapters and experiments
@@ -98,6 +99,13 @@ behavior is outside the server's control. See `spec/mcp-tools-v1.md` and
 server is retained only as an explicit migration reference and legacy test
 target, not a distributed runtime. Its npm package is private development
 tooling. Native artifacts carry license, font notices, skills and source details.
+
+`holi-local-setup` embeds that complete archive and installs it into a versioned
+per-user directory. It generates absolute MCP paths and, when a client is
+explicitly selected, merges its Holi entry with a backup. The independent output
+folder survives updates. The installer does not add a service, PATH entry,
+network listener or browser bridge. See `spec/native-install-v1.md` for the
+installation contract and `local/mcp/INSTALL.md` for client instructions.
 
 `wasm-qr` builds `pkg/` for browsers and `pkg-node/` as an independent QR oracle
 for integration tests and the legacy reference. Native QR calls `holi-qr`
