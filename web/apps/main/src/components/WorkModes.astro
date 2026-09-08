@@ -1,0 +1,74 @@
+---
+import { getLangFromUrl } from "../i18n/utils";
+import { getRuntimeCopy } from "../i18n/runtime";
+const copy = getRuntimeCopy(getLangFromUrl(Astro.url));
+const command = ".\\holi-local-setup-0.3.0-win32-x64.exe --yes --client claude-desktop";
+---
+
+<section id="work-modes" aria-labelledby="work-modes-title" class="work-modes">
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h2 id="work-modes-title">{copy.title}</h2>
+  <div class="modes">
+    <article class="mode web-mode">
+      <span class="mode-number" aria-hidden="true">01 / WEB</span>
+      <h3>{copy.webTitle}</h3>
+      <p>{copy.webBody}</p>
+      <a class="mode-action" href="#ToolsExplorer">{copy.webAction}<span aria-hidden="true"> ↓</span></a>
+    </article>
+    <article class="mode local-mode">
+      <span class="mode-number" aria-hidden="true">02 / LOCAL</span>
+      <h3>{copy.localTitle}</h3>
+      <p>{copy.localBody}</p>
+      <span class="release-status">{copy.status}</span>
+      <a class="mode-action" href="#local-setup">{copy.localAction}<span aria-hidden="true"> ↓</span></a>
+    </article>
+  </div>
+  <p class="bridge-note">{copy.bridge}</p>
+  <details id="local-setup">
+    <summary>{copy.setup}</summary>
+    <div class="setup-body">
+      <ol>
+        <li><p>{copy.steps[0]}</p><pre dir="ltr" tabindex="0"><code>{command}</code></pre></li>
+        <li><p>{copy.steps[1]}</p></li>
+        <li><p>{copy.steps[2]}</p></li>
+      </ol>
+      <p class="privacy-note">{copy.privacy}</p>
+      <a href="https://github.com/HugoAndresAmayaChairez/holi.tools/tree/main/local/mcp">{copy.docs}<span aria-hidden="true"> ↗</span></a>
+    </div>
+  </details>
+</section>
+
+<script>
+  const setup = document.querySelector<HTMLDetailsElement>("#local-setup");
+  document.querySelector<HTMLAnchorElement>('a[href="#local-setup"]')?.addEventListener("click", () => {
+    if (setup) setup.open = true;
+  });
+  if (location.hash === "#local-setup" && setup) setup.open = true;
+</script>
+
+<style>
+  .work-modes { width: min(100% - 2rem, 92rem); margin: 0 auto; padding: clamp(2.5rem, 5vw, 5rem) 0 0; }
+  .eyebrow { margin: 0 0 1rem; font: 750 .75rem/1.4 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; }
+  h2 { margin: 0 0 2rem; font-size: clamp(2rem, 4vw, 4rem); font-weight: 450; letter-spacing: -.045em; line-height: 1.1; }
+  .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .mode { display: flex; flex-direction: column; align-items: start; padding: clamp(1.25rem, 3vw, 3rem); border: 1px solid var(--color-border); border-radius: 1rem; background: color-mix(in srgb, var(--color-text) 3%, var(--color-bg)); }
+  .web-mode { border-top: 3px solid #0284c7; }
+  .local-mode { border-top: 3px solid #c65431; }
+  .mode-number { font: 750 .72rem/1.4 ui-monospace, monospace; opacity: .75; }
+  h3 { margin: 1.1rem 0 .5rem; font-size: clamp(1.5rem, 2.5vw, 2.4rem); font-weight: 550; line-height: 1.2; letter-spacing: -.025em; }
+  p { line-height: 1.65; }
+  .mode p { max-width: 48ch; margin: .5rem 0 1.5rem; }
+  .release-status { margin-bottom: 1.5rem; font-size: .8rem; padding: .4rem .7rem; border: 1px solid var(--color-border); border-radius: .5rem; }
+  a { color: inherit; text-underline-offset: .3em; }
+  .mode-action { margin-top: auto; font-weight: 750; padding-block: .5rem; }
+  .bridge-note { max-width: 88ch; font-size: .92rem; margin: 1.25rem 0 2rem; }
+  details { border-block: 1px solid var(--color-border); scroll-margin-top: 6rem; }
+  summary { padding: 1.4rem .5rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+  .setup-body { max-width: 62rem; padding: 0 .5rem 2rem; }
+  ol { margin: 0; padding-inline-start: 1.5rem; }
+  li { padding-inline-start: .5rem; }
+  pre { max-width: 100%; padding: 1rem; overflow: auto; background: color-mix(in srgb, var(--color-text) 6%, var(--color-bg)); border: 1px solid var(--color-border); border-radius: .6rem; font-size: .85rem; text-align: start; }
+  .privacy-note { border-inline-start: 3px solid #c65431; padding-inline-start: 1rem; margin-block: 1.5rem; }
+  a:focus-visible, summary:focus-visible, pre:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
+  @media (max-width: 700px) { .modes { grid-template-columns: 1fr; } }
+</style>

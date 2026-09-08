@@ -27,6 +27,7 @@ that must survive refactors, alternate implementations, or new frontends.
 | QR styling and export behavior | `spec/qr-style-v1.md` | Portable styles and the explicit local rendering subset. |
 | Document templates | `spec/document-template-v1.md` | JSON data, virtual files and shared diagnostics. |
 | MCP tools | `spec/mcp-tools-v1.md` | Local inputs, outputs, paths and transport privacy. |
+| Native installation | `spec/native-install-v1.md` | Per-user paths, client configuration, skills, integrity and retained outputs. |
 | User/Vault identity and P2P | Not yet extracted | Security-sensitive; add protocol specs before expanding connected infrastructure. |
 | Typst editor and collaboration | `docs/decisions/0002-private-collaboration.md` | Move protocol details here only after the threat model is accepted. |
 | Cross-implementation vectors | `spec/vectors/` | Reusable QR, document and MCP fixtures exercised by engine/server tests. |

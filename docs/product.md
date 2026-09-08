@@ -23,6 +23,12 @@ connected action whose behavior is disclosed before use.
 
 ## Product rules
 
+The hub presents browser tools as the visual editing, preview and export
+surfaces, and Holi Local as an optional native automation engine for PDF and
+QR through MCP. Browser workflows remain independently useful. Automatic
+web/native file synchronization and native-job live preview are not implemented;
+they must not be implied by the shared product presentation.
+
 - A useful local vertical flow comes before accounts or collaboration.
 - Collaboration is an optional capability around a project, not ownership of
   the project by Holi.

@@ -5,6 +5,11 @@ The **Main Hub** is the central landing page for the Holi.tools ecosystem. It se
 ## Purpose
 
 - Provide a unified user interface for tool discovery.
+- Explain browser editing/preview/export and native PDF/QR automation as two
+  independent ways to work. Holi Local is an optional MCP engine, not a desktop
+  window or a requirement for the web tools.
+- Provide setup guidance in all seven locales, with public downloads explicitly
+  pending. Do not promise automatic file synchronization or native-job preview.
 - Link only to real public tools; Image, Typst, QR, Metadata, and Labs are currently available.
 - Organize discovery by user outcome (Create, Transform, Inspect, and Learn) with search and local recent shortcuts.
 - Give each public product a short editorial landing at `/tools/<product>/`
@@ -23,14 +28,14 @@ The **Main Hub** is the central landing page for the Holi.tools ecosystem. It se
 
 ## Product identities
 
-| Surface | Accent | Sketch detail |
-| --- | --- | --- |
-| Main | Multicolor | Hummingbird |
-| Image | Rust | Chameleon |
-| Typst | Blue | Owl |
-| QR | Indigo | Moth |
-| Metadata | Green | Lynx |
-| Labs | Green | Axolotl |
+| Surface     | Accent      | Sketch detail |
+| ----------- | ----------- | ------------- |
+| Main        | Multicolor  | Hummingbird   |
+| Image       | Rust        | Chameleon     |
+| Typst       | Blue        | Owl           |
+| QR          | Indigo      | Moth          |
+| Metadata    | Green       | Lynx          |
+| Labs        | Green       | Axolotl       |
 | Labs Papers | Labs accent | Origami crane |
 
 The PNG sketches have transparent backgrounds and remain low-contrast,

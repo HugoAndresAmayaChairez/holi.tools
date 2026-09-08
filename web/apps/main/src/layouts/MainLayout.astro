@@ -2,6 +2,8 @@
 import BaseLayout from "@holi/ui/layouts/BaseLayout.astro";
 import HeroTitle from "../components/HeroTitle.astro";
 import ToolsExplorer from "../components/ToolsExplorer.astro";
+import WorkModes from "../components/WorkModes.astro";
+import { getRuntimeCopy } from "../i18n/runtime";
 import "../styles/app.css";
 import "@holi/ui/styles/fonts.css";
 import { getLangFromUrl, useTranslations, languages } from "../i18n/utils";
@@ -15,6 +17,7 @@ interface Props {
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const description = getRuntimeCopy(lang).intro;
 const { version, changelog } = Astro.props;
 const privacySummary = getMainPrivacy(lang);
 const baseUrl = "https://holi.tools";
@@ -24,13 +27,13 @@ const canonicalUrl = `${baseUrl}${currentPath}`;
 
 <BaseLayout
   title={`Holi.tools - ${t("hero_slogan")}`}
-  description={t("seo_description")}
+  description={description}
   lang={lang}
   languages={languages}
   colorScheme="default"
   showCanvasGrid={false}
   productName="Holi.tools"
-  productDescription={t("seo_description")}
+  productDescription={description}
   version={version}
   changelog={changelog}
   privacySummary={privacySummary}
@@ -43,13 +46,13 @@ const canonicalUrl = `${baseUrl}${currentPath}`;
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={`Holi.tools - ${t("hero_slogan")}`} />
-    <meta property="og:description" content={t("seo_description")} />
+    <meta property="og:description" content={description} />
     <meta property="og:image" content={`${baseUrl}/og-image.svg`} />
     <meta property="og:locale" content={lang} />
     <meta property="og:site_name" content="Holi.tools" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={`Holi.tools - ${t("hero_slogan")}`} />
-    <meta name="twitter:description" content={t("seo_description")} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={`${baseUrl}/og-image.svg`} />
     <meta name="theme-color" content="#f4efe7" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -57,16 +60,17 @@ const canonicalUrl = `${baseUrl}${currentPath}`;
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "Holi.tools",
-      description: t("seo_description"),
+      description,
       url: baseUrl,
       inLanguage: languages.map((language) => language.code),
       hasPart: Object.values(toolIdentity).map((tool) => ({ "@type": "WebApplication", name: tool.name, url: tool.href, isAccessibleForFree: true })),
     })} />
   </slot>
 
-  <a href="#ToolsExplorer" class="skip-link">{t("skip_to_content") || "Skip to main content"}</a>
+  <a href="#work-modes" class="skip-link">{t("skip_to_content") || "Skip to main content"}</a>
   <div class="main-home">
     <header class="main-header"><HeroTitle /></header>
+    <WorkModes />
     <ToolsExplorer />
   </div>
 </BaseLayout>

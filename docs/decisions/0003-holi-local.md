@@ -246,8 +246,13 @@ Verified executable: 50,740,736 bytes; SHA-256
 The final suite compared its complete embedded Shadow Log and skill resources
 against the current source files, and confirmed the privacy resource matches
 the information tool. All 23 acceptance cases refer to this final executable.
-Native Linux/macOS runs, hosted CI and real Claude clients remain separate
-acceptance evidence; they are not inferred from this Windows result.
+Hosted CI for commit `b04af29564496d6ac5af6ff564742adaf15eb1ec` subsequently
+passed on Linux, Windows and macOS, including the native Rust tests, MCP SDK
+acceptance and packaging jobs. The complete run also passed all web builds,
+WASM builds, JavaScript tests, Rust workspace tests and lint:
+[CI run 34085592716](https://github.com/HugoAndresAmayaChairez/holi.tools/actions/runs/34085592716).
+The result was checked on 2026-09-07. These hosted SDK runs do not establish
+real Claude Desktop/Code acceptance or public release availability.
 
 A separate local comparison used three fresh server processes per runtime,
 identical JSON input and timings including child-process startup. Median
@@ -268,7 +273,46 @@ font licenses, dependency notices and pinned notice provenance. Verification is
 recorded in that validation folder's `archive-evidence.json`; this local package
 has not been published.
 
-### Remaining native acceptance evidence
+### Native installer candidate 0.3.0 — 2026-09-07
+
+The per-user installer is specified in `spec/native-install-v1.md`; setup and
+client/skill instructions live in `local/mcp/INSTALL.md` and `INSTALL.es.md`.
+Windows acceptance used isolated user homes, never the maintainer's real
+Claude configuration. It passed default/custom Unicode paths, configuration
+preservation and byte-for-byte backups, repeat installation, invalid JSON,
+replacement guards, unrelated-folder rejection, output retention and MCP
+PDF/QR generation from the installed executable with PATH empty. A separate
+update between two distinct bundle hashes retained the previous executable
+and documents, updated the client and backed up an edited personal skill.
+The interactive console flow was exercised through a terminal, including
+Spanish confirmation. This does not constitute real Claude application testing.
+
+Local evidence is retained under the ignored paths
+`local/mcp/test-output/installer-u0u8nc/evidence.json`,
+`local/mcp/test-output/installer-SpqPl1/update-evidence.json` and
+`local/mcp/test-output/installer-interactive/`. Both skill ZIPs were also opened
+with Python's independent ZIP reader: layout, CRC and SKILL.md bytes matched.
+Five installer Rust tests, both skill validations, 23 native MCP SDK tests,
+Main's 43-page build and lint passed locally.
+
+The tested Windows installer is 29,356,544 bytes, SHA-256
+`e28aa66bf2e1a2c5cfb5aea0312aaa5b4ee825864f1df92d0305ff64b39bda50`.
+The native 0.3.0 engine is 50,747,904 bytes, SHA-256
+`1e02bdd6677841da5e2226259026e4b49263eceb4070916e0f131cfa958da3fc`.
+These are unsigned local candidates, not published releases.
+
+Ubuntu 24.04 x64 passed the installer Rust tests, all native MCP SDK acceptance
+cases, self-contained packaging and default/custom installation acceptance in
+[CI run 34174549992](https://github.com/HugoAndresAmayaChairez/holi.tools/actions/runs/34174549992)
+for commit `90eb490`. The downloaded setup artifact is 30,912,008 bytes,
+SHA-256 `2d574e0813528de7182c238bf2b08ad0b2cbad24a521926a07ae485f687cd827`;
+the downloaded bytes matched its checksum. Artifacts are retained by CI for
+14 days and are also saved locally under `dist/local/`. This is installer/SDK
+acceptance on Ubuntu, not a Claude Code conversation or a public release.
+The same run also passed Windows installer acceptance and macOS native/portable
+acceptance, plus all web builds, JavaScript tests, WASM, Rust workspace and lint.
+
+### Remaining native client acceptance evidence
 
 | Client         | Windows                 | macOS                   |
 | -------------- | ----------------------- | ----------------------- |

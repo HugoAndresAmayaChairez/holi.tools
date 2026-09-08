@@ -1,11 +1,19 @@
 # Holi Local
 
 Holi's document and QR engines as a native MCP server for AI assistants.
-Version 0.2.0 is a Rust executable for Windows, macOS and Linux. It embeds
+Version 0.3.0 is a Rust executable for Windows, macOS and Linux. It embeds
 Typst, the shared `holi-qr` core, fonts, templates and skill resources; running
 it requires no Node.js/npm installation or browser WASM compiler. Release availability and
 real-client acceptance are tracked in [ADR 0003](../../docs/decisions/0003-holi-local.md).
 The source implementation does not imply that downloadable releases are published.
+
+## Install without developer tools
+
+Use the self-contained Windows or Ubuntu setup executable: it includes the
+engine, offers default/custom paths and can configure your selected Claude
+client. See [English instructions](INSTALL.md), [instrucciones en español](INSTALL.es.md)
+and the [five-tool test prompt](TEST-PROMPT.md). Public downloads are pending;
+local and CI candidates are not a published release.
 
 ## Build and start
 

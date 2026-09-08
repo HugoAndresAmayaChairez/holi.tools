@@ -163,7 +163,7 @@ describe("native executable over real stdio MCP", () => {
     ]);
     const info = await call("holi_info");
     expect(info).toMatchObject({
-      version: "0.2.0",
+      version: "0.3.0",
       packageDownloads: false,
       outputFolder: await realpath(root),
       limits: {

@@ -183,7 +183,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             binary: holi-mcp
           - os: windows-latest
             binary: holi-mcp.exe
@@ -218,6 +218,9 @@ jobs:
         run: cargo build -p holi-mcp --profile native --locked
       - name: Test native Rust runtime
         run: cargo test -p holi-mcp --profile native --locked
+      - name: Test native installer
+        if: runner.os != 'macOS'
+        run: cargo test -p holi-local-setup --locked
       - name: Exercise native executable through MCP SDK
         run: pnpm --filter @holi/mcp exec vitest run test/native.test.ts
         env:
@@ -228,6 +231,10 @@ jobs:
         run: cargo fetch --locked
       - name: Collect native release archives
         run: node scripts/package-local.mjs
+      - name: Build self-contained Windows and Ubuntu installers
+        run: node scripts/package-local-installer.mjs
+      - name: Verify default and custom installations in isolated homes
+        run: node scripts/test-local-installer.mjs
       - name: Upload native platform artifacts
         uses: actions/upload-artifact@v4
         with:

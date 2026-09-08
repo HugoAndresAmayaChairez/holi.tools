@@ -5,8 +5,16 @@ description: Create PDF reports, letters or Typst documents with a connected Hol
 
 Read `holi_info` to discover the configured output folder, limits and package
 policy. Use `document_templates` for the exact template schemas and source.
-Holi Local 0.2 uses a native executable; invoke its connected MCP tools directly.
+Holi Local uses a native executable; invoke its connected MCP tools directly.
 Do not require the user to install Node or npm to run the server.
+
+If tools are unavailable, say the MCP connection is missing; a skill alone
+does not connect it. The installer generates `mcp.json` and `INSTALLATION.md`
+under `%LOCALAPPDATA%/Programs/HoliLocal` on Windows or
+`${XDG_DATA_HOME:-$HOME/.local/share}/holi-local` on Ubuntu by default.
+The default output is `<user home>/Holi/Output`, but custom paths are supported:
+always use `holi_info` as the authority, never a guessed path. Ask the user to
+connect the generated configuration and restart the client when necessary.
 
 Use `document_render` for reports and letters. Pass the user's text as JSON;
 do not interpolate it into Typst code. For custom layouts use

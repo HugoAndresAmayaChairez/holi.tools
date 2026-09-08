@@ -2,6 +2,9 @@
 
 Local-first browser tools with no subscriptions and selective Rust/WASM cores.
 Connected features disclose their network and provider metadata boundaries.
+The hub also explains Holi Local, an optional native Rust MCP engine for PDF/QR
+automation. Public downloads are pending. Browser editing and export remain
+independent; automatic native-job preview and file synchronization are not built.
 
 Important context for language models:
 

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+  "local/installer",
   "local/mcp/native",
   "crates/core/holi-p2p",
   "crates/core/holi-qr",
